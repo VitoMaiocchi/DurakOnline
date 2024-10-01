@@ -1,6 +1,6 @@
 # Durak
 
-##Description
+## Description
 Implementation of the game Durak in the curriculum of Software Engineering.
 The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/Durak).
 

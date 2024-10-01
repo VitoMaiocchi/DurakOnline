@@ -4,6 +4,8 @@
 
 ## SRS Durak project first deadline
 
+_link for the word document_: [](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/srs_template-ieee.odt?d=w077abe6ede854e3786881c74002d59ce&csf=1&web=1&e=ZGRYhh)
+
 ### ToDO
 
 #### 1. Title page and table of content 

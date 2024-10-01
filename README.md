@@ -7,28 +7,28 @@
 ### ToDO
 
 #### 1. Title page and table of content 
-_1 person_
+whoever is first
+
 #### 2. Overall description 
-_1 person_
+@twaldmann
 
-#### 3. External interface and requirements
-
-- User Interface _1 person_
-- Communication Interface _1 person_
+#### 3. External interface and requirements 
+@eholenstein
+- User Interface
+- Communication Interface 
 
 #### 4. Systems requirements
-
+@norutz
 - 12 functional 
-- 4 non-functional
 
 #### 5. System scenarios
-
+@dpoluyanov
 - 4 scenarios 
-_2 people_ @dpoluyanov
+
 
 #### 6. System constrains
-_1 person_
-
+@twaldmann
+- 4 non-functional
 
 ## Server team
 

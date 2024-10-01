@@ -4,6 +4,22 @@
 Implementation of the game Durak in the curriculum of Software Engineering.
 The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/Durak).
 
+## Rules 
+- **There is no winner, only one loser, the durak**
+- You can only beat a card with another card of the same sign or trump.
+- A trump card of any rank beats any non-trump card
+- The ranking of the cards is as follows (ascending) **'2, 3, 4, 5, 6, 7, 8, 9, 10, J, Q, K, A.'**
+- The game is counter-clockwise
+- A battle is one turn
+- An attack is a card that has been laid for the next player to defend
+- A battle can consit of 6 small attacks (6 cards that are laid on the field).
+- Only the cards that are already on the battle field can be added as attacks (the numbers must match).
+
+##### Edge cases 
+- The very first battle can only be a maximum of 5 attacks.
+- The very first card cannot be passed on.
+- 
+
 ## SRS Durak project first deadline
 
 _link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/srs_template-ieee.odt?d=w077abe6ede854e3786881c74002d59ce&csf=1&web=1&e=ZGRYhh)

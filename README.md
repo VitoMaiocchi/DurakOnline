@@ -1,8 +1,8 @@
-# durak
+# Durak
 
 
 
-## Durak project first deadline
+## SRS Durak project first deadline
 
 ### ToDO
 
@@ -13,23 +13,27 @@ _1 person_
 
 #### 3. External interface and requirements
 
-- User Interface
-- Communication Interface
+- User Interface _1 person_
+- Communication Interface _1 person_
 
 #### 4. Systems requirements
 
-- 12 functional
+- 12 functional 
 - 4 non-functional
 
 #### 5. System scenarios
 
-- 4 scenarios
+- 4 scenarios 
+_2 people_ @dpoluyanov
 
 #### 6. System constrains
 _1 person_
 
 
+## Server team
 
+
+## Client team
 
 
 

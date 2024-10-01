@@ -2,6 +2,44 @@
 
 
 
+## Durak project first deadline
+
+### ToDO
+
+#### 1. Title page and table of content 
+1 person
+#### 2. Overall description 
+1 person
+
+#### 3. External interface and requirements
+
+- User Interface
+- Communication Interface
+
+#### 4. Systems requirements
+
+- 12 functional
+- 4 non-functional
+
+#### 5. System scenarios
+
+- 4 scenarios
+
+#### 6. System constrains
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Getting started
 
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.

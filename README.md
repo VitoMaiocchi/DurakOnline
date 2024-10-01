@@ -7,9 +7,9 @@
 ### ToDO
 
 #### 1. Title page and table of content 
-1 person
+_1 person_
 #### 2. Overall description 
-1 person
+_1 person_
 
 #### 3. External interface and requirements
 
@@ -26,7 +26,7 @@
 - 4 scenarios
 
 #### 6. System constrains
-
+_1 person_
 
 
 

@@ -1,4 +1,0 @@
-# git ignore file to avoid pushing unwanted stuff to the repo
-
-# text files
-*.text

@@ -1,0 +1,4 @@
+# a file to ignore the sensititve files from getting pushed to git
+
+# ignore .txt files
+*.txt 

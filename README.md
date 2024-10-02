@@ -22,7 +22,7 @@ The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/
 
 ## SRS Durak project first deadline
 
-_link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/srs_template-ieee.odt?d=w077abe6ede854e3786881c74002d59ce&csf=1&web=1&e=ZGRYhh)
+_link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/srs_durak.docx?d=w9ebff62a57a04528947512cd6dfb8ffc&csf=1&web=1&e=wYfiOv)
 
 ### ToDO
 

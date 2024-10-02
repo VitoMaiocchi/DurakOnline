@@ -23,8 +23,8 @@ Before you start working each time, always pull the latest changes from the remo
 ```bash
 git pull origin main
 ```
-
 This will fetch and merge any new changes into your local `main` branch.
+
 ---
 > **Note:** While you can just use `git pull`, it defaults to pulling from the current branch's configured remote (usually `origin/main`). However, explicitly specifying `origin main` ensures you're pulling from the correct remote (`origin`) and branch (`main`). This is especially important when working with multiple remotes or branches, as it avoids accidental pulls from the wrong location.
 

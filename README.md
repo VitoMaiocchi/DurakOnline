@@ -1,4 +1,152 @@
+
+# Git
+
+To ensure smooth collaboration and avoid any repository mishaps, here's a clear Git workflow guide for our Durak project. Everyone works on their local machine, and we will use branches to isolate changes and avoid conflicts.
+
+#### 1. **Cloning the Repository**
+
+When you first start working on the project, you need to clone the repository to your local machine.
+
+```bash
+git clone https://gitlab.ethz.ch/durak/durak.git
+cd durak
+```
+
+This will create a local copy of the repository. Make sure you navigate into the repository folder to start working.
+
+---
+
+#### 2. **Before Starting Work: Pull Latest Changes**
+
+Before you start working each time, always pull the latest changes from the remote repository. This ensures your local copy is up to date with any changes made by others.
+
+```bash
+git pull origin main
+```
+
+This will fetch and merge any new changes into your local `main` branch.
+---
+> **Note:** While you can just use `git pull`, it defaults to pulling from the current branch's configured remote (usually `origin/main`). However, explicitly specifying `origin main` ensures you're pulling from the correct remote (`origin`) and branch (`main`). This is especially important when working with multiple remotes or branches, as it avoids accidental pulls from the wrong location.
+
+
+---
+
+#### 3. **Creating a Branch for Your Work**
+
+Never work directly on the `main` branch. Instead, create a new branch for each feature or fix you're working on. This isolates your work from others.
+
+```bash
+git checkout -b feature/your-feature-name
+```
+
+Replace `your-feature-name` with a meaningful name related to your task, like `game-ui` or `bugfix-trump-rules`.
+
+---
+
+#### 4. **Making Changes and Committing**
+
+Now, you're ready to make changes to the code. Once you're happy with your changes, stage the files and commit them.
+
+1. Stage the files you've changed:
+
+```bash
+git add .
+```
+
+2. Commit your changes with a descriptive message:
+
+```bash
+git commit -m "Add new feature for card dealing logic"
+```
+
+Make sure your commit message is clear about what the changes are.
+
+---
+
+#### 5. **Pushing Your Changes**
+
+After committing your changes, you need to push your branch to the remote repository.
+
+```bash
+git push origin feature/your-feature-name
+```
+
+This will upload your branch to the remote repository, making it available for others to review.
+
+---
+> **Note:** `origin` refers to the default name of the remote repository where your code is stored. It points to the repository URL you cloned from. We use `origin` to specify that we want to push or pull changes to/from this specific remote repository. It's important because it ensures you're working with the correct remote repository.
+---
+
+
+
+#### 6. **Creating a Merge Request**
+
+Once your feature or fix is complete, create a Merge Request (MR) on GitLab to merge your branch into the `main` branch.
+
+1. Go to the GitLab repository page.
+2. Navigate to "Merge Requests."
+3. Select "New Merge Request" and choose your feature branch as the source and `main` as the target.
+4. Fill out the description and submit the MR.
+
+Someone from the team will review your changes before they are merged into `main`.
+
+---
+
+#### 7. **Handling Merge Conflicts**
+
+If there are merge conflicts when merging your branch into `main`, Git will prompt you to resolve them. You can see which files have conflicts with:
+
+```bash
+git status
+```
+
+After resolving the conflicts in the indicated files:
+
+1. Stage the resolved files:
+```bash
+git add <filename>
+```
+
+2. Continue the merge process:
+
+```bash
+git commit
+```
+Finally, push the changes again:
+```bash
+git push origin feature/your-feature-name
+```
+---
+
+#### 8. **Final Steps After Merging**
+
+Once your changes are merged into the `main` branch, don't forget to update your local `main` branch to keep it in sync.
+
+```bash
+git checkout main git pull origin main
+```
+
+You can then delete your feature branch both locally and on the remote repository if you don't need it anymore.
+
+- Delete the branch locally:
+
+```bash
+git branch -d feature/your-feature-name
+```
+
+- Delete the branch remotely:
+
+```bash
+git push origin --delete feature/your-feature-name
+```
+---
+
+By following this workflow, we can collaborate effectively without running into issues like merge conflicts or overwriting each other's work.
+
+
+
 # Durak
+
 
 ## Description
 Implementation of the game Durak in the curriculum of Software Engineering.
@@ -64,11 +212,7 @@ whoever is first
 
 
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
 
 ## Add your files
 

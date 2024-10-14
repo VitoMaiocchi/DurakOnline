@@ -168,35 +168,31 @@ The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/
 - The very first card cannot be passed on.
 - 
 
-## SRS Durak project first deadline
+## SRS Durak project first deadline 11.10
 
 _link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/srs_durak.docx?d=w9ebff62a57a04528947512cd6dfb8ffc&csf=1&web=1&e=wYfiOv)
 
-### ToDO
+## SDS Durak project second deadline 25.10
 
-#### 1. Title page and table of content 
-whoever is first
+### ToDO:
 
-#### 2. Overall description 
-@twaldmann
+#### 1. Static modeling 
+##### 1.1 package common
+- classes: card, hand, player, discard pile, draw pile, game state, client request, server response
+- diagram for classes 
+##### 1.2 package server
+- classes: server network manager, player manager, game instance, game instance manager, request handler
+- diagram for classes
+#### 2. Sequence diagram
+##### 2.1 Sequence join game
+##### 2.2 sequence play card
+##### 2.3 sequence end of round
 
-#### 3. External interface and requirements 
-@eholenstein
-- User Interface
-- Communication Interface 
-
-#### 4. Systems requirements
-@norutz
-- 12 functional 
-
-#### 5. System scenarios
-@dpoluyanov
-- 4 scenarios 
+#### 3 Interface modeling
+##### 3.1 Interface client server
+- requests: join game, start game, play card, pass on, draw card, pick up cards(fold), req response, full state message
 
 
-#### 6. System constrains
-@twaldmann
-- 4 non-functional
 
 ## Server team
 

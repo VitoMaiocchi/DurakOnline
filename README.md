@@ -1,20 +1,26 @@
 ## Table of Contents
-1. [Git](#git) 
-    1.1 [Cloning the Repository](#cloning-the-repository)
 
-2. [Before Starting Work: Pull Latest Changes](#2-before-starting-work-pull-latest-changes)
-3. [Creating a Branch for Your Work](#3-creating-a-branch-for-your-work)
-4. [Making Changes and Committing](#4-making-changes-and-committing)
-5. [Pushing Your Changes](#5-pushing-your-changes)
-6. [Creating a Merge Request](#6-creating-a-merge-request)
-7. [Handling Merge Conflicts](#7-handling-merge-conflicts)
-8. [Final Steps After Merging](#8-final-steps-after-merging)
-9. [Durak Description](#durak)
-10. [Rules](#rules)
-11. [ToDo List](#todo)
+1. [Git](#git)
+   - [Cloning the Repository](#cloning-the-repository)
+   - [Before Starting Work: Pull Latest Changes](#before-starting-work-pull-latest-changes)
+   - [Creating a Branch for Your Work](#creating-a-branch-for-your-work)
+   - [Making Changes and Committing](#making-changes-and-committing)
+   - [Pushing Your Changes](#pushing-your-changes)
+   - [Creating a Merge Request](#creating-a-merge-request)
+   - [Handling Merge Conflicts](#handling-merge-conflicts)
+   - [Final Steps After Merging](#final-steps-after-merging)
+2. [Durak](#durak)
+   - [Description](#description)
+   - [Rules](#rules)
+   - [SRS Durak project first deadline](#srs-durak-project-first-deadline)
+   - [SDS Durak project second deadline](#sds-durak-project-second-deadline)
+   - [ToDo](#todo)
+
+---
 
 
 # Git
+<details> <summary>Click to expand Git section</summary>
 
 To ensure smooth collaboration and avoid any repository mishaps, here's a clear Git workflow guide for our Durak project. Everyone works on their local machine, and we will use branches to isolate changes and avoid conflicts.
 
@@ -158,16 +164,20 @@ git push origin --delete feature/your-feature-name
 
 By following this workflow, we can collaborate effectively without running into issues like merge conflicts or overwriting each other's work.
 
+</details>
 
 
 # Durak
-
+<details> <summary>Click to expand Durak section</summary>
 
 ## Description
 Implementation of the game Durak in the curriculum of Software Engineering.
 The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/Durak).
 
 ## Rules 
+
+<details> <summary>Click to expand Rules section</summary>
+
 - **There is no winner, only one loser, the durak**
 - You can only beat a card with another card of the same sign or trump.
 - A trump card of any rank beats any non-trump card
@@ -182,6 +192,7 @@ The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/
 - The very first battle can only be a maximum of 5 attacks.
 - The very first card cannot be passed on.
 - 
+</details>
 
 ## SRS Durak project first deadline 11.10
 
@@ -220,7 +231,7 @@ _link for the instructions_: [Software Design](https://lec.inf.ethz.ch/se/2024_A
 
 
 
-
+</details>
 
 
 

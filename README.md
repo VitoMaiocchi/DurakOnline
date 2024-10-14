@@ -1,3 +1,18 @@
+## Table of Contents
+1. [Git](#git) 
+    1.1 [Cloning the Repository](#cloning-the-repository)
+
+2. [Before Starting Work: Pull Latest Changes](#2-before-starting-work-pull-latest-changes)
+3. [Creating a Branch for Your Work](#3-creating-a-branch-for-your-work)
+4. [Making Changes and Committing](#4-making-changes-and-committing)
+5. [Pushing Your Changes](#5-pushing-your-changes)
+6. [Creating a Merge Request](#6-creating-a-merge-request)
+7. [Handling Merge Conflicts](#7-handling-merge-conflicts)
+8. [Final Steps After Merging](#8-final-steps-after-merging)
+9. [Durak Description](#durak)
+10. [Rules](#rules)
+11. [ToDo List](#todo)
+
 
 # Git
 

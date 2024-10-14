@@ -210,14 +210,19 @@ _link for the instructions_: [Software Design](https://lec.inf.ethz.ch/se/2024_A
 ##### 1.1 package common
 - classes: card, hand, player, discard pile, draw pile, game state, client request, server response
 - diagram for classes 
-##### 1.2 package server
+##### 1.2 package client 
+- classes: client network manager, response listener thread, image panel, connection panel, main game panel, input field, game window, game controller, durak
+- diagram of package client
+##### 1.3 package server
 - classes: server network manager, player manager, game instance, game instance manager, request handler
-- diagram for classes
-#### 2. Sequence diagram
+- diagram for classes 
+
+_(at least 2 diagrams for classes)_
+#### 2. Sequence diagram 
 ##### 2.1 Sequence join game
 ##### 2.2 sequence play card
 ##### 2.3 sequence end of round
-
+_(at least 3)_
 #### 3 Interface modeling
 ##### 3.1 Interface client server
 - requests: join game, start game, play card, pass on, draw card, pick up cards(fold), req response, full state message

@@ -1,20 +1,20 @@
 ## Table of Contents
 
 1. [Git](#git)
-   - [Cloning the Repository](#cloning-the-repository)
-   - [Before Starting Work: Pull Latest Changes](#before-starting-work-pull-latest-changes)
-   - [Creating a Branch for Your Work](#creating-a-branch-for-your-work)
-   - [Making Changes and Committing](#making-changes-and-committing)
-   - [Pushing Your Changes](#pushing-your-changes)
-   - [Creating a Merge Request](#creating-a-merge-request)
-   - [Handling Merge Conflicts](#handling-merge-conflicts)
-   - [Final Steps After Merging](#final-steps-after-merging)
+   - Cloning the Repository
+   - Before Starting Work: Pull Latest Changes
+   - Creating a Branch for Your Work
+   - Making Changes and Committing
+   - Pushing Your Changes
+   - Creating a Merge Request
+   - Handling Merge Conflicts
+   - Final Steps After Merging
 2. [Durak](#durak)
-   - [Description](#description)
-   - [Rules](#rules)
-   - [SRS Durak project first deadline](#srs-durak-project-first-deadline)
-   - [SDS Durak project second deadline](#sds-durak-project-second-deadline)
-   - [ToDo](#todo)
+   - Description
+   - Rules
+   - SRS Durak project first deadline
+   - SDS Durak project second deadline
+   - ToDo
 
 ---
 

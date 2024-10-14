@@ -173,6 +173,7 @@ The rules might differ to the ones on [wikipedia](https://en.wikipedia.org/wiki/
 _link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/srs_durak.docx?d=w9ebff62a57a04528947512cd6dfb8ffc&csf=1&web=1&e=wYfiOv)
 
 ## SDS Durak project second deadline 25.10
+_link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/sds_durak.docx?d=wee70dd9c8b994d2da4935af7b89b8c00&csf=1&web=1&e=7NLF7t)
 
 ### ToDO:
 

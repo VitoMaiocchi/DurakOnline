@@ -175,6 +175,9 @@ _link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:
 ## SDS Durak project second deadline 25.10
 _link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:/r/personal/dpoluyanov_ethz_ch/Documents/sds_durak.docx?d=wee70dd9c8b994d2da4935af7b89b8c00&csf=1&web=1&e=7NLF7t)
 
+_link for the instructions_: [Software Design](https://lec.inf.ethz.ch/se/2024_AS/project/book/phase2.html)
+
+**_Hint:_** check out the lecture document for theory, especially the slides for Modeling and Specification: [lecture page](https://lec.inf.ethz.ch/se/2024_AS/)
 ### ToDO:
 
 #### 1. Static modeling 

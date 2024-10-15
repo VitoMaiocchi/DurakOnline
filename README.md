@@ -262,9 +262,13 @@ _(at least 3)_
 
 
 ## Server team
-
+- Noah, Danil
 
 ## Client team
+- Vito, Eric
+
+## E-mail team
+- Thomas
 
 
 

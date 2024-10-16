@@ -1,7 +1,7 @@
-#include "glad/include/glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include "stb_image.h"
+#include <stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -53,7 +53,7 @@ int main() {
     compileImageShaders();
     //image = new Image("cards/png/ace_of_spades.png");
     //ImageNode imageNode("cards/png/ace_of_spades.png");
-    node.child = std::make_shared<ImageNode>("cards/png/ace_of_spades.png");
+    node.child = std::make_shared<ImageNode>("../cards/png/ace_of_spades.png");
     node.child->setClickEventCallback([](){
         std::cout << "KARTE AH CLICKED" << std::endl;
     });

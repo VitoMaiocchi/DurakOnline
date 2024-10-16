@@ -2,3 +2,4 @@
 
 # ignore .txt files
 *.txt 
+Networking/build/

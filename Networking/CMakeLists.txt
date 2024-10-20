@@ -10,8 +10,8 @@ include_directories(${PROJECT_SOURCE_DIR}/rapidjson/include)
 
 add_subdirectory(sockpp)
 
-set(SERVER_SRC server.cpp message.cpp network.cpp)
-set(CLIENT_SRC client.cpp message.cpp network.cpp)
+set(SERVER_SRC server.cpp message.cpp network_server.cpp)
+set(CLIENT_SRC client.cpp message.cpp network_client.cpp)
 
 #server
 add_executable(server ${SERVER_SRC})

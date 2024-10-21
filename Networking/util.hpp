@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <exception>
+#include <iostream>
 
 enum Suit {
     SUIT_CLUBS,

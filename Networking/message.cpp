@@ -1,4 +1,5 @@
 #include "message.hpp"
+#include "util.hpp"
 
 std::unique_ptr<Message> deserialiseMessage(std::string string) {
     rapidjson::Document document;
@@ -13,8 +14,11 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_TEST:
             message = std::make_unique<TestMessage>();
         break;
+        case MESSAGETYPE_CLIENT_DISCONNECT_EVENT:
+            message = std::make_unique<ClientDisconnectEvent>();
+        break;
         default:
-            //ERROR
+            std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
     }
 

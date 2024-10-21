@@ -24,8 +24,8 @@ namespace Network {
     std::thread client_acceptor;
 
     std::unordered_set<ClientID> active_clients;
-    std::map<ClientID, sockpp::socket> send_sockets;
-    std::map<ClientID, sockpp::socket> recive_sockets;
+    std::map<ClientID, sockpp::tcp_socket> send_sockets;
+    std::map<ClientID, sockpp::tcp_socket> recive_sockets;
 
     std::list<std::thread> threads;
     std::mutex message_queue_mut;
@@ -33,6 +33,7 @@ namespace Network {
 
     std::mutex close_con_mut;
     void closeConnection(ClientID client) {
+        std::cout << "CLOSE CONNECTION "<<client<<" IN" << std::endl;
         close_con_mut.lock();
         if(active_clients.find(client) == active_clients.end()) return;
         active_clients.erase(client);
@@ -42,6 +43,7 @@ namespace Network {
         message_queue.push(pair);
         message_queue_mut.unlock();
         close_con_mut.unlock();
+        std::cout << "CLOSE CONNECTION "<<client<<" OUT" << std::endl;
     }
 
     bool clientConnected(ClientID client, bool rec) {
@@ -58,7 +60,7 @@ namespace Network {
             //accept all incomming connections and get first message
             auto socket_res = acceptor.accept();
             if(socket_res.is_error()) continue;
-            sockpp::socket socket = socket_res.release();
+            sockpp::tcp_socket socket = socket_res.release();
             char buffer[BUFFER_SIZE];
             size_t n = 0;
             bool err = false;
@@ -88,11 +90,10 @@ namespace Network {
                     char buffer[BUFFER_SIZE];
                     while(clientConnected(client, true)) {
                         auto size = recive_sockets[client].recv(buffer, sizeof(buffer));
-                        if(size.is_error()) { //Network Error / client disconnect
+                        if(size.is_error() || size.value() == 0) { //Network Error / client disconnect
                             closeConnection(client);
                             continue;
                         }
-                        if(size.value() == 0) continue;
                         std::pair<ClientID, std::string> pair(client, std::string(buffer, size.value()));
                         message_queue_mut.lock();
                         message_queue.push(pair);
@@ -136,7 +137,6 @@ namespace Network {
                 message_queue.pop();
                 message_queue_mut.unlock();
                 id = pair.first;
-                std::cout << pair.second << std::endl;
                 return deserialiseMessage(pair.second);
             }
             message_queue_mut.unlock();

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <exception>
 
 enum Suit {
     SUIT_CLUBS,
@@ -31,3 +32,9 @@ struct Card {
     Card(Rank rank, Suit suit);
     std::string getFileName();
 };
+
+#define PRINT_DEBUG(msg) \
+    std::cout << "DEBUG: " << msg << " (" << __FILE__ << ":" << __LINE__ << ")" << std::endl
+
+#define THROW_ERROR(msg) \
+    throw std::runtime_error(std::string(msg) + " (" + __FILE__ + ":" + std::to_string(__LINE__) + ")")

@@ -52,3 +52,26 @@ void TestMessage::fromJson(const rapidjson::Value& obj) {
     y = obj["y"].GetInt();
     string = obj["string"].GetString();
 };
+
+//CLIENT DISCONNECT (dummy message only sent my networking therefore the content is empty)
+ClientDisconnectEvent::ClientDisconnectEvent() {
+    messageType = MESSAGETYPE_CLIENT_DISCONNECT_EVENT;
+}
+
+std::string ClientDisconnectEvent::toJson() const {
+    rapidjson::Document document;
+    document.SetObject();
+    auto allocator = document.GetAllocator();
+
+    rapidjson::Value content(rapidjson::kObjectType); //empty
+    document.AddMember("message_type", static_cast<uint>(messageType), allocator);
+    document.AddMember("content", content, allocator);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    document.Accept(writer);
+
+    return buffer.GetString();
+}
+
+void ClientDisconnectEvent::fromJson(const rapidjson::Value& obj) {}

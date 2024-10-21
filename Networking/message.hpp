@@ -17,12 +17,13 @@ enum MessageType { //nur so vorschlag mir chönds no us chäse han jetz eif gmac
     MESSAGETYPE_GAME_STATE_UPDATE,
     MESSAGETYPE_PLAYCARD_EVENT,
     MESSAGETYPE_PRESS_BUTTON_EVENT,
-    MESSAGETYPE_JOIN_EVEN
+    MESSAGETYPE_CLIENT_CONNECT_EVENT,
+    MESSAGETYPE_CLIENT_DISCONNECT_EVENT
 };
 
 struct Message {
     MessageType messageType;
-    virtual std::string toJson() const = 0;
+    virtual std::string toJson() const = 0; //TODO: da no getJsonContent für weniger code duplication
     virtual void fromJson(const rapidjson::Value& obj) = 0;
 };
 
@@ -34,6 +35,12 @@ struct TestMessage : public Message {
     std::string string;
 
     TestMessage();
+    std::string toJson() const;
+    void fromJson(const rapidjson::Value& obj);
+};
+
+struct ClientDisconnectEvent : public Message {
+    ClientDisconnectEvent();
     std::string toJson() const;
     void fromJson(const rapidjson::Value& obj);
 };

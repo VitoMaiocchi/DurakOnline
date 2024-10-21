@@ -10,7 +10,7 @@ namespace Network {
     //SERVER USE
     #ifdef NETWORKTYPE_SERVER
     void openSocket(uint port);
-    void sendMessage(std::unique_ptr<Message> &message, ClientID id);
+    bool sendMessage(std::unique_ptr<Message> &message, ClientID id); //returns false if client id not valid or disconnected
     std::unique_ptr<Message> reciveMessage(ClientID &id);
     #endif
 

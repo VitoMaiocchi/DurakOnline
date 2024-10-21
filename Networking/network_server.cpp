@@ -12,18 +12,17 @@
 #include <chrono>
 #include <map>
 #include <unordered_set>
+#include "util.hpp"
 
 #define BUFFER_SIZE 2048
 #define MESSAGE_TIME 25
 
 namespace Network {
 
-    //SERVER USE
-
     ClientID id_counter = 1;
     sockpp::tcp_acceptor acceptor;
     std::thread client_acceptor;
-    //std::vector<std::unique_ptr<sockpp::socket>> sockets;
+
     std::unordered_set<ClientID> active_clients;
     std::map<ClientID, sockpp::socket> send_sockets;
     std::map<ClientID, sockpp::socket> recive_sockets;
@@ -32,68 +31,101 @@ namespace Network {
     std::mutex message_queue_mut;
     std::queue< std::pair<ClientID, std::string> > message_queue;
 
+    std::mutex close_con_mut;
+    void closeConnection(ClientID client) {
+        close_con_mut.lock();
+        if(active_clients.find(client) == active_clients.end()) return;
+        active_clients.erase(client);
+
+        std::pair<ClientID, std::string> pair(client, ClientDisconnectEvent().toJson());
+        message_queue_mut.lock();
+        message_queue.push(pair);
+        message_queue_mut.unlock();
+        close_con_mut.unlock();
+    }
+
+    bool clientConnected(ClientID client, bool rec) {
+        if(active_clients.find(client) == active_clients.end()) return false;
+        if(rec && recive_sockets[client].is_open()) return true;
+        if(!rec && send_sockets[client].is_open()) return true;
+        
+        closeConnection(client);
+        return false;
+    }
+
     void acceptConnections() {
         while(acceptor) {
-            sockpp::socket socket = acceptor.accept().release_or_throw();
-
+            //accept all incomming connections and get first message
+            auto socket_res = acceptor.accept();
+            if(socket_res.is_error()) continue;
+            sockpp::socket socket = socket_res.release();
             char buffer[BUFFER_SIZE];
             size_t n = 0;
-            while (n == 0) n = socket.recv(buffer, sizeof(buffer)).value_or_throw();
+            bool err = false;
+            while (n == 0 && !err) {
+                auto n_res = socket.recv(buffer, sizeof(buffer));
+                if(n_res.is_error()) err = true;
+                else n = n_res.value();
+            }
+            if(err) continue;
             auto message = std::string(buffer, n);
             
+            //open recive connection and hand out ClientID
             if(message == "request id") {
                 ClientID client = id_counter++;
                 socket.send(std::to_string(client));
                 recive_sockets[client] = std::move(socket);
-                std::cout << "open recive connection with " << client << std::endl;
             }
 
-            std::cout << "full message ["<<message<<"]" <<std::endl;
-            std::cout << "message ["<<message.substr(0,7)<<"]" <<std::endl;
+            //open send connection and finalize connection protocol
             if(message.substr(0,7) == "recive ") {
-                std::cout << "opening send connection with [" << message.substr(7) <<"]"<< std::endl;
                 ClientID client = std::stoi(message.substr(7));
                 send_sockets[client] = std::move(socket);
                 active_clients.insert(client);
-                std::cout << "open send connection with " << client << std::endl;
 
+                //create new recive connection thread
                 threads.push_back(std::thread([client]() {
-                    std::cout << "reciving connections for " << client << std::endl;
                     char buffer[BUFFER_SIZE];
-                    while(active_clients.find(client) != active_clients.end()) {
-                        size_t n = recive_sockets[client].recv(buffer, sizeof(buffer)).value_or_throw();
-                        if(n > 0) {
-                            std::cout << "message recived: [" << std::string(buffer, n) <<
-                                "] from client: " << client << std::endl;
-                            std::pair<ClientID, std::string> pair(client, std::string(buffer, n));
-                            message_queue_mut.lock();
-                            message_queue.push(pair);
-                            message_queue_mut.unlock();
+                    while(clientConnected(client, true)) {
+                        auto size = recive_sockets[client].recv(buffer, sizeof(buffer));
+                        if(size.is_error()) { //Network Error / client disconnect
+                            closeConnection(client);
+                            continue;
                         }
+                        if(size.value() == 0) continue;
+                        std::pair<ClientID, std::string> pair(client, std::string(buffer, size.value()));
+                        message_queue_mut.lock();
+                        message_queue.push(pair);
+                        message_queue_mut.unlock();
                     }
+                    //evtl da no recive sockets entry lösche (problematisch mit thread saftey)
                 }));
             }
         }
-        std::cout << "stopped accpeting connections" << std::endl;
     }
 
     void openSocket(uint port) {
         acceptor = sockpp::tcp_acceptor(port);
-        if(!acceptor) throw std::runtime_error("FAILED TO CREATE ACCEPTOR");
+        if(!acceptor) THROW_ERROR("FAILED TO CREATE ACCEPTOR");
         client_acceptor = std::thread(acceptConnections);
     }
 
     std::chrono::system_clock::time_point last_message;
-    void sendMessage(std::unique_ptr<Message> &message, ClientID id) {
-        if(active_clients.find(id) == active_clients.end()) throw std::runtime_error("CONNECTION CLOSED or INVALID CLINET ID");
-        
-        //TIME BUFFER
+    bool sendMessage(std::unique_ptr<Message> &message, ClientID id) {
+        if(!clientConnected(id, false)) return false;
+
+        //Message frequency limiter 
         auto now = std::chrono::system_clock::now();
         auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_message).count();
         if(delta < MESSAGE_TIME) std::this_thread::sleep_for(std::chrono::milliseconds(MESSAGE_TIME - delta));
         last_message = std::chrono::system_clock::now();
 
-        send_sockets[id].send(message->toJson());
+        auto res = send_sockets[id].send(message->toJson());
+        if(res.is_error() || res.value() == -1) {
+            closeConnection(id);
+            return false;
+        }
+        return true;
     }
 
     std::unique_ptr<Message> reciveMessage(ClientID &id) {
@@ -104,6 +136,7 @@ namespace Network {
                 message_queue.pop();
                 message_queue_mut.unlock();
                 id = pair.first;
+                std::cout << pair.second << std::endl;
                 return deserialiseMessage(pair.second);
             }
             message_queue_mut.unlock();

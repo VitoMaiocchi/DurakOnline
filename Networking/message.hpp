@@ -21,27 +21,32 @@ enum MessageType { //nur so vorschlag mir chönds no us chäse han jetz eif gmac
     MESSAGETYPE_CLIENT_DISCONNECT_EVENT
 };
 
+#define Allocator rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>
+
 struct Message {
     MessageType messageType;
-    virtual std::string toJson() const = 0; //TODO: da no getJsonContent für weniger code duplication
+    std::string toJson() const;
     virtual void fromJson(const rapidjson::Value& obj) = 0;
+
+    protected:
+    virtual void getContent(rapidjson::Value &content, Allocator &allocator) const = 0;
 };
 
 std::unique_ptr<Message> deserialiseMessage(std::string string);
 
 struct TestMessage : public Message {
+    TestMessage();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+
     int x;
     int y;
     std::string string;
-
-    TestMessage();
-    std::string toJson() const;
-    void fromJson(const rapidjson::Value& obj);
 };
 
 struct ClientDisconnectEvent : public Message {
     ClientDisconnectEvent();
-    std::string toJson() const;
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 };
 

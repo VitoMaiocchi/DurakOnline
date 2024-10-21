@@ -3,7 +3,6 @@
 
 std::unique_ptr<Message> deserialiseMessage(std::string string) {
     rapidjson::Document document;
-
     assert(!document.Parse(string.c_str()).HasParseError());
 
     MessageType type = static_cast<MessageType>(document["message_type"].GetInt());
@@ -26,21 +25,13 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
     return message;
 }
 
-//TEST MESSAGE
-TestMessage::TestMessage() {
-    messageType = MESSAGETYPE_TEST;
-}
-
-std::string TestMessage::toJson() const {
+std::string Message::toJson() const {
     rapidjson::Document document;
     document.SetObject();
     auto allocator = document.GetAllocator();
 
     rapidjson::Value content(rapidjson::kObjectType);
-    content.AddMember("x", x, allocator);
-    content.AddMember("y", y, allocator);
-    content.AddMember("string", rapidjson::Value(string.c_str(), allocator) , allocator);
-
+    getContent(content, allocator);
     document.AddMember("message_type", static_cast<uint>(messageType), allocator);
     document.AddMember("content", content, allocator);
 
@@ -49,6 +40,15 @@ std::string TestMessage::toJson() const {
     document.Accept(writer);
 
     return buffer.GetString();
+}
+
+//TEST MESSAGE
+TestMessage::TestMessage() {messageType = MESSAGETYPE_TEST;}
+
+void TestMessage::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    content.AddMember("x", x, allocator);
+    content.AddMember("y", y, allocator);
+    content.AddMember("string", rapidjson::Value(string.c_str(), allocator) , allocator);
 };
 
 void TestMessage::fromJson(const rapidjson::Value& obj) {
@@ -57,25 +57,8 @@ void TestMessage::fromJson(const rapidjson::Value& obj) {
     string = obj["string"].GetString();
 };
 
-//CLIENT DISCONNECT (dummy message only sent my networking therefore the content is empty)
-ClientDisconnectEvent::ClientDisconnectEvent() {
-    messageType = MESSAGETYPE_CLIENT_DISCONNECT_EVENT;
-}
 
-std::string ClientDisconnectEvent::toJson() const {
-    rapidjson::Document document;
-    document.SetObject();
-    auto allocator = document.GetAllocator();
-
-    rapidjson::Value content(rapidjson::kObjectType); //empty
-    document.AddMember("message_type", static_cast<uint>(messageType), allocator);
-    document.AddMember("content", content, allocator);
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    document.Accept(writer);
-
-    return buffer.GetString();
-}
-
+//CLIENT DISCONNECT (dummy message; only sent my networking therefore the content is empty)
+ClientDisconnectEvent::ClientDisconnectEvent() {messageType = MESSAGETYPE_CLIENT_DISCONNECT_EVENT;}
+void ClientDisconnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {}
 void ClientDisconnectEvent::fromJson(const rapidjson::Value& obj) {}

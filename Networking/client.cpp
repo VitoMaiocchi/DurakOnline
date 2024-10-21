@@ -19,6 +19,6 @@ int main() {
         std::unique_ptr<Message> awnser = Network::reciveMessage();
         TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
         std::cout   << "string: " << ret->string
-                    << "\n x: "<< ret->x << std::endl;
+                    << "\nx: "<< ret->x << std::endl;
     }
 }

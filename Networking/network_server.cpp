@@ -33,7 +33,6 @@ namespace Network {
 
     std::mutex close_con_mut;
     void closeConnection(ClientID client) {
-        std::cout << "CLOSE CONNECTION "<<client<<" IN" << std::endl;
         close_con_mut.lock();
         if(active_clients.find(client) == active_clients.end()) return;
         active_clients.erase(client);
@@ -43,7 +42,6 @@ namespace Network {
         message_queue.push(pair);
         message_queue_mut.unlock();
         close_con_mut.unlock();
-        std::cout << "CLOSE CONNECTION "<<client<<" OUT" << std::endl;
     }
 
     bool clientConnected(ClientID client, bool rec) {

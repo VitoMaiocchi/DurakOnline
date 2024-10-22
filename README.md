@@ -205,6 +205,25 @@ _link for the instructions_: [Software Design](https://lec.inf.ethz.ch/se/2024_A
 
 **_Hint:_** check out the lecture document for theory, especially the slides for Modeling and Specification: [lecture page](https://lec.inf.ethz.ch/se/2024_AS/)
 ### ToDO:
+- Interface Modeling: Json: je zwei 
+@vmaiocchi: copy paste and add the message types, then 
+1 & 7 @eholenstein
+2 & 3 @twaldmann
+4 & 5 @norutz
+6 & dummy event @vmaiocchi
+8 & 9 @dpoluyanov
+
+- Common package class diagram: @eholenstein
+- Composite Structure Diagram: @dpoluyanov
+- Scn 5 Diagram: @norutz
+- Table of Contents, and make everything pretty
+- Description for each attribute and member function of package common
+- Scn 1 Diagram: @dpoluyanov und @vmaiocchi
+- Scn2 Diagram: @twaldmann
+- Game class handle action, handle card: @twaldmann
+- Check package Server classes and attributes and member functions: @vmaiocchi
+
+
 
 #### 1. Static modeling 
 ##### 1.1 package common

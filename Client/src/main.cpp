@@ -21,16 +21,10 @@ BufferNode node;
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
-        // Get the cursor position
         glfwGetCursorPos(window, &xpos, &ypos);
-        xpos /= Window::width;
-        ypos /= Window::height;
-        ypos = 1 - ypos;
-        xpos *= Viewport::width;
-        ypos *= Viewport::height;
-        std::cout << "ViewPort: (" << Viewport::width << ", " << Viewport::height << ")\n";
-        std::cout << "Send MouseClickEvent: (" << xpos << ", " << ypos << ")\n";
-        node.sendClickEvent(xpos, (double)Viewport::height - ypos);
+        xpos = xpos / Window::width * Viewport::width;
+        ypos = (1 - ypos / Window::height) * Viewport::height;
+        node.sendClickEvent(xpos, ypos);
     }
 }
 
@@ -39,7 +33,6 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "Durak", NULL, NULL);
     if (window == NULL) {

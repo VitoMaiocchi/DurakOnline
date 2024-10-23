@@ -1,7 +1,7 @@
 #pragma once 
 
 #include "util.hpp"
-#include "image.hpp"
+#include "opengl.hpp"
 #include <string>
 #include <memory>
 #include <list>
@@ -41,7 +41,7 @@ class ImageNode : public LeafNode {
 
     private:
         void drawNew(Extends ext);
-        Image image;
+        OpenGL::Image image;
         uint width, height;
 };
 

@@ -14,7 +14,7 @@ class Node {
         virtual uint minHeight(uint width) = 0;
         virtual void drawPrevious() = 0;
 
-        void sendClickEvent(float x, float y);
+        virtual void sendClickEvent(float x, float y);
         void setClickEventCallback(std::function<void()> callback);
     protected:
         virtual void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) = 0;
@@ -37,6 +37,7 @@ class ImageNode : public LeafNode {
         ImageNode(std::string path);
         uint minWidth(uint height);
         uint minHeight(uint width);
+        void sendClickEvent(float x, float y) override;
 
     private:
         void drawNew(Extends ext);

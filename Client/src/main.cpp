@@ -11,6 +11,8 @@
 
 uint Viewport::height = 600;
 uint Viewport::width = 800;
+uint Window::height = 600;
+uint Window::width = 800;
 
 //Image* image;
 
@@ -21,8 +23,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         double xpos, ypos;
         // Get the cursor position
         glfwGetCursorPos(window, &xpos, &ypos);
-        std::cout << "Mouse clicked at: (" << xpos << ", " << ypos << ")\n";
-        node.sendClickEvent(xpos, Viewport::height - ypos);
+        xpos /= Window::width;
+        ypos /= Window::height;
+        ypos = 1 - ypos;
+        xpos *= Viewport::width;
+        ypos *= Viewport::height;
+        std::cout << "ViewPort: (" << Viewport::width << ", " << Viewport::height << ")\n";
+        std::cout << "Send MouseClickEvent: (" << xpos << ", " << ypos << ")\n";
+        node.sendClickEvent(xpos, (double)Viewport::height - ypos);
     }
 }
 
@@ -64,6 +72,11 @@ int main() {
         glViewport(0, 0, width, height);
         Viewport::height = height;
         Viewport::width = width;
+    });
+
+    glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+        Window::height = height;
+        Window::width = width;
     });
 
 

@@ -1,5 +1,6 @@
 #include "drawable.hpp"
 #include <cmath>
+#include <iostream>
 
 //NODE
 void Node::draw(Extends ext) {
@@ -56,6 +57,30 @@ uint ImageNode::minWidth(uint height) {
 uint ImageNode::minHeight(uint width) {
     return std::ceil( width/this->width * height );
 }
+
+
+void ImageNode::sendClickEvent(float x, float y) {
+    float h, w;
+    if( (float)last_ext.height / last_ext.width < (float)height / width ) { //height
+        h = last_ext.height;
+        w = (float) width * last_ext.height / height;
+    } else { //width
+        w = last_ext.width;
+        h = (float) height * last_ext.width / width;
+    }
+
+    Extends ext = {
+        last_ext.x + (last_ext.width - w)/2,
+        last_ext.y + (last_ext.height - h)/2,
+        w,
+        h
+    };
+
+    if(!ext.contains(x,y)) return;
+
+    clickEventCallback();
+}
+
 
 //BUFER NODE
 

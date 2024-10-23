@@ -211,64 +211,30 @@ _link for the instructions_: [Software Design](https://lec.inf.ethz.ch/se/2024_A
 2 & 3 @twaldmann
 4 & 5 @norutz
 6 & dummy event @vmaiocchi
-8 & 9 @dpoluyanov
+
 
 - Common package class diagram: @eholenstein
-- Composite Structure Diagram: @dpoluyanov
 - Scn 5 Diagram: @norutz
 - Table of Contents, and make everything pretty
 - Description for each attribute and member function of package common
-- Scn 1 Diagram: @dpoluyanov und @vmaiocchi
 - Scn2 Diagram: @twaldmann
 - Game class handle action, handle card: @twaldmann
 - Check package Server classes and attributes and member functions: @vmaiocchi
+- Scn 3&4 Diagram: @dpoluyanov 
 
 
 
 #### 1. Static modeling 
 ##### 1.1 package common
-- classes: card, hand, player, discard pile, draw pile, game state, client request, server response
-
-- classes laut Vito: card update, player update, client request, illegal move, state, message, 
-Base class Message(card update, player update, client request, illegal move, state update, card)
-
-server to client
-Card{
-
-};
-Player{
-   name()
-   amount()
-};
-GameState{
-
-};
-Options{
-
-};
-AllgemeineStates{
-
-};
-
-client to server
-
-
-
-
-
 
 
 - diagram for classes 
 ##### 1.2 package client 
-- classes: client network manager, response listener thread, image panel, connection panel, main game panel, input field, game window, game controller, durak
-- classes laut Vito: 
-- diagram of package client
+
 ##### 1.3 package server
-- classes: server network manager, player manager, game instance, game instance manager, request handler
-- classes laut Vito: 
+ 
 - diagram for classes 
 
-_(at least 2 diagrams for classes)_
 #### 2. Sequence diagram 
 ##### 2.1 Sequence join game
 ##### 2.2 sequence play card
@@ -276,17 +242,15 @@ _(at least 2 diagrams for classes)_
 _(at least 3)_
 #### 3 Interface modeling
 ##### 3.1 Interface client server
-- requests: join game, start game, play card, pass on, draw card, pick up cards(fold), req response, full state message
-
 
 
 ## Server team
-- Noah, Danil
+- Noah, Danil, Thomas
 
 ## Client team
 - Vito, Eric
 
-## E-mail team
+## Email team 
 - Thomas
 
 

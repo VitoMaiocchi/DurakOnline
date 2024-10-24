@@ -44,3 +44,28 @@ const char *rectangleFragmentShaderSource = "#version 330 core\n"
     "{\n"
     "   FragColor = color;"
     "}\n\0";
+
+const char* characterVertexShaderSource = 
+    "#version 420\n"
+    "layout (location = 0) in vec4 vertex;\n"
+    "out vec2 TexCoords;\n"
+
+    "uniform mat4 projection;\n"
+
+    "void main() {"
+        "gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);\n"
+        "TexCoords = vertex.zw;\n"
+    "}";
+
+const char *characterFragmentShaderSource = 
+    "#version 420\n"
+    "in vec2 TexCoords;\n"
+    "out vec4 color;\n"
+
+    "uniform sampler2D text;\n"
+    "uniform vec3 textColor;\n"
+
+    "void main() {"
+        "vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);\n"
+        "color = vec4(textColor, 1.0) * sampled;\n"
+    "}";

@@ -4,7 +4,6 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,8 +18,10 @@ uint Window::width = 800;
 namespace OpenGL {
     MasterNode* masterNode;
     GLFWwindow* window;
+    int success;
 
-    void compileImageShaders();
+    void compileShaders();
+    void deleteShaders();
 
     void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
@@ -43,8 +44,8 @@ namespace OpenGL {
         Window::width = width;
     }
 
-    /*
-    void compileShader(uint shader, char* &source) {
+    
+    void compileShader(uint shader, const char* &source) {
         char infoLog[512];
         glShaderSource(shader, 1, &source, NULL);
         glCompileShader(shader);
@@ -54,7 +55,7 @@ namespace OpenGL {
             std::cout << "Shader Compilation Error:\n" << infoLog << std::endl;
         }
     }
-    */
+    
 
     bool setup() {
         glfwInit();
@@ -84,7 +85,7 @@ namespace OpenGL {
         glfwSetWindowSizeCallback(window, window_size_callback);
         glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-        compileImageShaders();
+        compileShaders();
 
         masterNode = new MasterNode();
         return true;
@@ -124,22 +125,19 @@ namespace OpenGL {
         -1.0f, -1.0f, 0.0f,    0.0f, 1.0f
     };
 
-    int success;
-
-    unsigned int imageVertexShader;
-    unsigned int imageFragmentShader;
     unsigned int VAO;
 
+    //Image Shaders
+    uint imageShaderProgram;
+    unsigned int imageVertexShader;
+    unsigned int imageFragmentShader;
+
+    uint rectangleShaderProgram;
+    unsigned int rectangleVertexShader;
+    unsigned int rectangleFragmentShader;
+    
 
     Image::Image(std::string path) {
-        //create shader program
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, imageVertexShader);
-        glAttachShader(shaderProgram, imageFragmentShader);
-        glLinkProgram(shaderProgram);
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-        if (!success) std::cout << "SHADER LINKING ERROR" << std::endl;
-
         //texture
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -162,16 +160,14 @@ namespace OpenGL {
 
     void Image::draw(float x, float y, float size, bool heightb, float layer) {
         glBindTexture(GL_TEXTURE_2D, texture);
-        glUseProgram(shaderProgram);
+        glUseProgram(imageShaderProgram);
 
         glm::mat4 trans = glm::mat4(1.0f);
         trans = glm::translate(trans, glm::vec3( 2.0f*x/Viewport::width -1.0f, 2.0f*y/Viewport::height -1.0f, layer));
         if(heightb) trans = glm::scale(trans, glm::vec3(size/height*width/Viewport::width, size/Viewport::height, 1.0));
         else trans = glm::scale(trans, glm::vec3(size/Viewport::width, size/width*height/Viewport::height, 1.0));
-        //trans = glm::translate(trans, glm::vec3(x/Viewport::width - 1.0f, y/Viewport::height -1.0f, 0.0f));
 
-
-        unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
+        unsigned int transformLoc = glGetUniformLocation(imageShaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -182,27 +178,46 @@ namespace OpenGL {
         height = this->height;
     }
 
-    void compileImageShaders() {
-        char infoLog[512];
-        // vertex shader
-        imageVertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(imageVertexShader, 1, &vertexShaderSource, NULL);
-        glCompileShader(imageVertexShader);
-        glGetShaderiv(imageVertexShader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(imageVertexShader, 512, NULL, infoLog);
-            std::cout << "VertexShader Compilation Error:\n" << infoLog << std::endl;
-        }
 
-        // fragment shader
+    //Rectangle
+
+    Rectangle::Rectangle(float r, float g, float b) {
+        color = glm::vec4(r, g, b, 1.0f);
+    }
+
+    void Rectangle::draw(Extends ext) {
+        glUseProgram(rectangleShaderProgram);
+
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(
+            (2*ext.x - ext.width)/Viewport::width, 
+            1 - (2*ext.y + ext.height)/Viewport::height, 
+        ext.layer));
+        trans = glm::scale(trans, glm::vec3(ext.width/Viewport::width, ext.height/Viewport::height, 1.0));
+        unsigned int transformLoc = glGetUniformLocation(rectangleShaderProgram, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        uint colorLoc = glGetUniformLocation(rectangleShaderProgram, "color");
+        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+    void compileShaders() {
+        char infoLog[512];
+
+        // compile image shaders
+        imageVertexShader = glCreateShader(GL_VERTEX_SHADER);
         imageFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(imageFragmentShader, 1, &fragmentShaderSource, NULL);
-        glCompileShader(imageFragmentShader);
-        glGetShaderiv(imageFragmentShader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(imageFragmentShader, 512, NULL, infoLog);
-            std::cout << "FragmentShader Compilation Error:\n" << infoLog << std::endl;
-        }
+        compileShader(imageVertexShader, imageVertexShaderSource);
+        compileShader(imageFragmentShader, imageFragmentShaderSource);
+
+        //compile rectangle shaders
+        rectangleVertexShader = glCreateShader(GL_VERTEX_SHADER);
+        rectangleFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        compileShader(rectangleVertexShader, rectangleVertexShaderSource);
+        compileShader(rectangleFragmentShader, rectangleFragmentShaderSource);
 
         //Vertex Array 
         unsigned int VBO;
@@ -221,9 +236,24 @@ namespace OpenGL {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0); 
         glBindVertexArray(0); 
+
+        //create shader program
+        imageShaderProgram = glCreateProgram();
+        glAttachShader(imageShaderProgram, imageVertexShader);
+        glAttachShader(imageShaderProgram, imageFragmentShader);
+        glLinkProgram(imageShaderProgram);
+        glGetProgramiv(imageShaderProgram, GL_LINK_STATUS, &success);
+        if (!success) std::cout << "SHADER LINKING ERROR" << std::endl;
+
+        rectangleShaderProgram = glCreateProgram();
+        glAttachShader(rectangleShaderProgram, rectangleVertexShader);
+        glAttachShader(rectangleShaderProgram, rectangleFragmentShader);
+        glLinkProgram(rectangleShaderProgram);
+        glGetProgramiv(rectangleShaderProgram, GL_LINK_STATUS, &success);
+        if (!success) std::cout << "SHADER LINKING ERROR" << std::endl;
     }
 
-    void deleteImageShaders() {
+    void deleteShaders() {
 
         /*
         DAS MUSS NO IRGENDWO ANE

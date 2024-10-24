@@ -45,6 +45,19 @@ class ImageNode : public LeafNode {
         uint width, height;
 };
 
+class RectangleNode : public LeafNode {
+    public:
+        RectangleNode(float r, float g, float b);
+        uint minWidth(uint height);
+        uint minHeight(uint width);
+
+    private:
+        void drawNew(Extends ext);
+        OpenGL::Rectangle rect;
+        float r, g, b;
+};
+
+
 //BIS JETZT NUR BUFFERTYPE ABSOLUTE IMPLEMENTIERT: 
 //will ich bin lazy und ich machs nur wenns öpper brucht
 enum BufferType {

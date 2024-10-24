@@ -81,6 +81,13 @@ void ImageNode::sendClickEvent(float x, float y) {
     clickEventCallback();
 }
 
+RectangleNode::RectangleNode(float r, float g, float b) : rect(r, g, b) {}
+uint RectangleNode::minWidth(uint height) {return 0;}
+uint RectangleNode::minHeight(uint width) {return 0;}
+void RectangleNode::drawNew(Extends ext) {
+    rect.draw(ext);
+}
+
 
 //BUFER NODE
 

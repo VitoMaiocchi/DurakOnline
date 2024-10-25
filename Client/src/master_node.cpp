@@ -17,7 +17,7 @@ MasterNode::MasterNode() {
 
     node = std::make_shared<BufferNode>();
     node->child = std::make_shared<ImageNode>("../cards/png/ace_of_spades.png");
-    node->setBufferSize(BUFFERTYPE_ABSOLUTE, 50);
+    node->setBufferSize(BUFFERTYPE_HIGHT_RELATIVE, 0.5);
     node->child->setClickEventCallback([]() {
         std::cout << "Clicked on Ace of Spades" << std::endl;
     });

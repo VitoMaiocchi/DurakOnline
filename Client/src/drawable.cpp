@@ -111,34 +111,34 @@ void BufferNode::drawNew(Extends ext) {
     child->draw(ext);
 }
 
-uint BufferNode::minWidth(uint height) {
+    uint BufferNode::minWidth(uint height) {
+        if(!child) return 0;
+        uint childminWidth = child->minWidth(height);
+        switch (bufferType) {
+            case BUFFERTYPE_ABSOLUTE: {
+                return childminWidth + 2*bufferSize;
+            }
+            case BUFFERTYPE_HIGHT_RELATIVE: {
+                return childminWidth;
+            }
+            case BUFFERTYPE_WIDTH_RELATIVE: {
+                return childminWidth + 2*std::ceil(bufferSize*childminWidth);
+            }
+        }
+    }
+
+uint BufferNode::minHeight(uint width) {
     if(!child) return 0;
-    uint childminHeight = child->minWidth(height);
+    uint childminHeight = child->minHeight(width);
     switch (bufferType) {
         case BUFFERTYPE_ABSOLUTE: {
             return childminHeight + 2*bufferSize;
         }
         case BUFFERTYPE_HIGHT_RELATIVE: {
-            return childminHeight + 2*std::ceil(bufferSize*height);
-        }
-        case BUFFERTYPE_WIDTH_RELATIVE: {
             return childminHeight + 2*std::ceil(bufferSize*childminHeight);
         }
-    }
-}
-
-uint BufferNode::minHeight(uint width) {
-    if(!child) return 0;
-    uint childminWidth = child->minHeight(width);
-    switch (bufferType) {
-        case BUFFERTYPE_ABSOLUTE: {
-            return childminWidth + 2*bufferSize;
-        }
-        case BUFFERTYPE_HIGHT_RELATIVE: {
-            return childminWidth + 2*std::ceil(bufferSize*childminWidth);
-        }
         case BUFFERTYPE_WIDTH_RELATIVE: {
-            return childminWidth + 2*std::ceil(bufferSize*width);
+            return childminHeight;
         }
     }
 }

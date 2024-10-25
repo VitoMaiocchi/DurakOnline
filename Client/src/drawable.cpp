@@ -23,7 +23,7 @@ void Node::setClickEventCallback(std::function<void()> callback) {
     clickEventCallback = callback;
 }
 
-//LEAF / TREE NODES
+//LEAF /TREE NODES
 void TreeNode::drawPrevious() {
     callForAllChildren([](std::shared_ptr<Node> child){
         child->drawPrevious();
@@ -90,7 +90,6 @@ void RectangleNode::drawNew(Extends ext) {
 
 
 //BUFER NODE
-
 BufferNode::BufferNode() {
     bufferType = BUFFERTYPE_ABSOLUTE;
     bufferSize = 0;

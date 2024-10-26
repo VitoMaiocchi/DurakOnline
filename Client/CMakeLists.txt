@@ -5,29 +5,31 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #GLAD
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/glad/include)
-add_library(glad STATIC glad/src/glad.c)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/glad/include)
+add_library(glad STATIC libs/glad/src/glad.c)
 
 #GLFW
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/glfw/include)
-add_subdirectory(glfw)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/glfw/include)
+add_subdirectory(libs/glfw)
 include_directories(${GLFW_INCLUDE_DIRS})
 
 #STB
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/stb)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/libs/stb)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/freetype/include)
-#add_subdirectory(freetype)
+#FreeType
 find_package(Freetype REQUIRED)
 
 #OpenGL
 set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(OpenGL REQUIRED)
 
+#Networking
+include_directories(${CMAKE_SOURCE_DIR}/Networking/include)
+include_directories(${CMAKE_SOURCE_DIR}/Networking/rapidjson/include)
 
 # Add executable
 file(GLOB SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_executable(DurakClient ${SOURCES})
 
 # Link libraries
-target_link_libraries(DurakClient glad glfw ${OPENGL_LIBRARIES} Freetype::Freetype)
+target_link_libraries(DurakClient glad glfw ${OPENGL_LIBRARIES} Freetype::Freetype durak_networking)

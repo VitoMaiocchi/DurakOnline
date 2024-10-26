@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <Networking/util.hpp>
 
 bool master_node_exists = false;
 
@@ -16,14 +17,14 @@ MasterNode::MasterNode() {
     master_node_exists = true;
 
     node = std::make_shared<BufferNode>();
-    node->child = std::make_shared<ImageNode>("../cards/png/ace_of_spades.png");
+    node->child = std::make_shared<ImageNode>(Card(RANK_ACE, SUIT_SPADES).getFileName());
     node->setBufferSize(BUFFERTYPE_HIGHT_RELATIVE, 0.5);
     node->child->setClickEventCallback([]() {
         std::cout << "Clicked on Ace of Spades" << std::endl;
     });
 
     node2 = std::make_shared<BufferNode>();
-    node2->child = std::make_shared<ImageNode>("../cards/png/queen_of_diamonds2.png");
+    node2->child = std::make_shared<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName());
     node2->setBufferSize(BUFFERTYPE_ABSOLUTE, 50);
     node2->child->setClickEventCallback([]() {
         std::cout << "Clicked on Queen of Diamonds" << std::endl;

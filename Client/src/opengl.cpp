@@ -16,7 +16,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#define FONT_PATH "../fonts/OpenSans-Regular.ttf"
+#define FONT_PATH "../Client/resources/fonts/OpenSans-Regular.ttf"
 
 
 uint Viewport::height = 600;

@@ -7,9 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #define STB_IMAGE_IMPLEMENTATION
-#define STB_TRUETYPE_IMPLEMENTATION
 #include <stb_image.h>
-#include <stb_truetype.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -28,9 +26,6 @@ namespace OpenGL {
     MasterNode* masterNode;
     GLFWwindow* window;
     int success;
-
-    void compileShaders();
-    void deleteShaders();
 
     void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
@@ -53,7 +48,6 @@ namespace OpenGL {
         Window::width = width;
     }
 
-    
     void compileShader(uint shader, const char* &source) {
         char infoLog[512];
         glShaderSource(shader, 1, &source, NULL);
@@ -61,14 +55,52 @@ namespace OpenGL {
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 512, NULL, infoLog);
-            std::cout << "Shader Compilation Error:\n" << infoLog << std::endl;
+            std::cout << "OpenGL: Shader Compilation Error:\n" << infoLog << std::endl;
         }
     }
 
+    struct Shader {
+        uint shader_program;
+        uint fragment_shader;
+        uint vertex_shader;
+
+        Shader(const char* &vertex_source, const char* &fragment_source) {
+            vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+            fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+            compileShader(vertex_shader, vertex_source);
+            compileShader(fragment_shader, fragment_source);
+
+            shader_program = glCreateProgram();
+            glAttachShader(shader_program, vertex_shader);
+            glAttachShader(shader_program, fragment_shader);
+            glLinkProgram(shader_program);
+            glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+            if (!success) std::cout << "OpenGL: Shader Linking Error" << std::endl;
+        }
+
+        ~Shader() {       
+            glDeleteShader(fragment_shader);
+            glDeleteShader(vertex_shader);
+            glDeleteProgram(shader_program);
+        }
+    };
+
+    Shader* imageShader;
+    Shader* rectangleShader;
+    Shader* characterShader;
+    unsigned int VAO;
+
+    const float vertices[] = {
+        -1.0f,  1.0f, 0.0f,    0.0f, 0.0f,
+        1.0f,  1.0f, 0.0f,     1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,     1.0f, 1.0f,
+        -1.0f,  1.0f, 0.0f,    0.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,     1.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f,    0.0f, 1.0f
+    };
+    
+
     //FREE TYPE
-
-    void renderText(uint shader, std::string text, float x, float y, float scale, glm::vec3 color);
-
     /// Holds all state information relevant to a character as loaded using FreeType
     struct Character {
         unsigned int TextureID; // ID handle of the glyph texture
@@ -79,25 +111,14 @@ namespace OpenGL {
 
     std::map<GLchar, Character> Characters;
     unsigned int ftVAO, ftVBO;
-    uint characterShaderProgram;
 
     void setupFreeType() {
-        uint characterVertexShader = glCreateShader(GL_VERTEX_SHADER);
-        uint characterFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        compileShader(characterVertexShader, characterVertexShaderSource);
-        compileShader(characterFragmentShader, characterFragmentShaderSource);
-
-        characterShaderProgram = glCreateProgram();
-        glAttachShader(characterShaderProgram, characterVertexShader);
-        glAttachShader(characterShaderProgram, characterFragmentShader);
-        glLinkProgram(characterShaderProgram);
-        glGetProgramiv(characterShaderProgram, GL_LINK_STATUS, &success);
-        if (!success) std::cout << "SHADER LINKING ERROR" << std::endl;
+        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
 
 
         glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        glUseProgram(characterShaderProgram);
-        glUniformMatrix4fv(glGetUniformLocation(characterShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUseProgram(characterShader->shader_program);
+        glUniformMatrix4fv(glGetUniformLocation(characterShader->shader_program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
             // FreeType
         // --------
@@ -183,10 +204,10 @@ namespace OpenGL {
         glBindVertexArray(0);
     }
 
-    void RenderText(uint shader, std::string text, float x, float y, float scale, glm::vec3 color) {
+    void RenderText(std::string text, float x, float y, float scale, glm::vec3 color) {
         // activate corresponding render state	
-        glUseProgram(characterShaderProgram);
-        glUniform3f(glGetUniformLocation(shader, "textColor"), color.x, color.y, color.z);
+        glUseProgram(characterShader->shader_program);
+        glUniform3f(glGetUniformLocation(characterShader->shader_program, "textColor"), color.x, color.y, color.z);
         glActiveTexture(GL_TEXTURE0);
         glBindVertexArray(ftVAO);
 
@@ -256,7 +277,29 @@ namespace OpenGL {
         glfwSetWindowSizeCallback(window, window_size_callback);
         glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-        compileShaders();
+        //Compile Shaders
+        imageShader = new Shader(imageVertexShaderSource, imageFragmentShaderSource);
+        rectangleShader = new Shader(rectangleVertexShaderSource, rectangleFragmentShaderSource);
+
+        //Create Vertex Array
+        //Vertex Array 
+        unsigned int VBO;
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        // position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // texture coordinate attribute
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        glBindVertexArray(0); 
+
         setupFreeType();
 
         masterNode = new MasterNode();
@@ -271,8 +314,8 @@ namespace OpenGL {
             Extends viewport_ext = {0, 0, Viewport::width, Viewport::height, 0};
             masterNode->draw(viewport_ext);
 
-            RenderText(characterShaderProgram, "I want mommy I want Milk", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-            RenderText(characterShaderProgram, "I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+            RenderText("I want mommy I want Milk", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+            RenderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
 
             glfwSwapBuffers(window);
             glfwPollEvents();    
@@ -285,33 +328,18 @@ namespace OpenGL {
 
     void cleanup() {
         delete masterNode;
+        delete imageShader;
+        delete rectangleShader;
+        delete characterShader;
+
+        //glDeleteVertexArrays(1, &VAO);
+        //glDeleteBuffers(1, &VBO);
+
         glfwTerminate();
     };
 
 
     //IMAGE
-
-    const float vertices[] = {
-        -1.0f,  1.0f, 0.0f,    0.0f, 0.0f,
-        1.0f,  1.0f, 0.0f,     1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,     1.0f, 1.0f,
-        -1.0f,  1.0f, 0.0f,    0.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,     1.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f,    0.0f, 1.0f
-    };
-
-    unsigned int VAO;
-
-    //Image Shaders
-    uint imageShaderProgram;
-    unsigned int imageVertexShader;
-    unsigned int imageFragmentShader;
-
-    uint rectangleShaderProgram;
-    unsigned int rectangleVertexShader;
-    unsigned int rectangleFragmentShader;
-    
-
     Image::Image(std::string path) {
         //texture
         glGenTextures(1, &texture);
@@ -335,14 +363,14 @@ namespace OpenGL {
 
     void Image::draw(float x, float y, float size, bool heightb, float layer) {
         glBindTexture(GL_TEXTURE_2D, texture);
-        glUseProgram(imageShaderProgram);
+        glUseProgram(imageShader->shader_program);
 
         glm::mat4 trans = glm::mat4(1.0f);
         trans = glm::translate(trans, glm::vec3( 2.0f*x/Viewport::width -1.0f, 2.0f*y/Viewport::height -1.0f, layer));
         if(heightb) trans = glm::scale(trans, glm::vec3(size/height*width/Viewport::width, size/Viewport::height, 1.0));
         else trans = glm::scale(trans, glm::vec3(size/Viewport::width, size/width*height/Viewport::height, 1.0));
 
-        unsigned int transformLoc = glGetUniformLocation(imageShaderProgram, "transform");
+        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -361,7 +389,7 @@ namespace OpenGL {
     }
 
     void Rectangle::draw(Extends ext) {
-        glUseProgram(rectangleShaderProgram);
+        glUseProgram(rectangleShader->shader_program);
 
         glm::mat4 trans = glm::mat4(1.0f);
         trans = glm::translate(trans, glm::vec3(
@@ -369,75 +397,14 @@ namespace OpenGL {
             1 - (2*ext.y + ext.height)/Viewport::height, 
         ext.layer));
         trans = glm::scale(trans, glm::vec3(ext.width/Viewport::width, ext.height/Viewport::height, 1.0));
-        unsigned int transformLoc = glGetUniformLocation(rectangleShaderProgram, "transform");
+        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
-        uint colorLoc = glGetUniformLocation(rectangleShaderProgram, "color");
+        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
         glUniform4fv(colorLoc, 1, glm::value_ptr(color));
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-    void compileShaders() {
-        char infoLog[512];
-
-        // compile image shaders
-        imageVertexShader = glCreateShader(GL_VERTEX_SHADER);
-        imageFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        compileShader(imageVertexShader, imageVertexShaderSource);
-        compileShader(imageFragmentShader, imageFragmentShaderSource);
-
-        //compile rectangle shaders
-        rectangleVertexShader = glCreateShader(GL_VERTEX_SHADER);
-        rectangleFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        compileShader(rectangleVertexShader, rectangleVertexShaderSource);
-        compileShader(rectangleFragmentShader, rectangleFragmentShaderSource);
-
-        //Vertex Array 
-        unsigned int VBO;
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        // texture attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0); 
-        glBindVertexArray(0); 
-
-        //create shader program
-        imageShaderProgram = glCreateProgram();
-        glAttachShader(imageShaderProgram, imageVertexShader);
-        glAttachShader(imageShaderProgram, imageFragmentShader);
-        glLinkProgram(imageShaderProgram);
-        glGetProgramiv(imageShaderProgram, GL_LINK_STATUS, &success);
-        if (!success) std::cout << "SHADER LINKING ERROR" << std::endl;
-
-        rectangleShaderProgram = glCreateProgram();
-        glAttachShader(rectangleShaderProgram, rectangleVertexShader);
-        glAttachShader(rectangleShaderProgram, rectangleFragmentShader);
-        glLinkProgram(rectangleShaderProgram);
-        glGetProgramiv(rectangleShaderProgram, GL_LINK_STATUS, &success);
-        if (!success) std::cout << "SHADER LINKING ERROR" << std::endl;
-    }
-
-    void deleteShaders() {
-
-        /*
-        DAS MUSS NO IRGENDWO ANE
-            glDeleteVertexArrays(1, &VAO);
-            glDeleteBuffers(1, &VBO);
-            glDeleteProgram(shaderProgram);
-        */
-
-        glDeleteShader(imageVertexShader);
-        glDeleteShader(imageFragmentShader);
-    }
 }

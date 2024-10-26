@@ -13,7 +13,7 @@ namespace OpenGL {
     class Image {
         public:
             Image(std::string path);
-            void draw(float x, float y, float size, bool height, float layer);
+            void draw(Extends ext);
             void getDimensions(uint &width, uint &height);
 
         private:

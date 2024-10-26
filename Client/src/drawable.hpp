@@ -41,6 +41,7 @@ class ImageNode : public LeafNode {
 
     private:
         void drawNew(Extends ext);
+        Extends getCompactExtends(Extends ext);
         OpenGL::Image image;
         uint width, height;
 };

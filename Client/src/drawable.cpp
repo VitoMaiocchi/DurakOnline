@@ -45,9 +45,7 @@ ImageNode::ImageNode(std::string path) : image(path) {
 }
 
 void ImageNode::drawNew(Extends ext) {
-    bool heightb = (float)ext.height / ext.width < (float)height / width;
-    float size = heightb ? ext.height : ext.width;
-    image.draw(ext.x + ext.width/2.0f, ext.y + ext.height/2.0f, size, heightb, ext.layer);
+    image.draw(getCompactExtends(ext));
 }
 
 uint ImageNode::minWidth(uint height) {
@@ -60,6 +58,11 @@ uint ImageNode::minHeight(uint width) {
 
 
 void ImageNode::sendClickEvent(float x, float y) {
+    if(!getCompactExtends(last_ext).contains(x,y)) return;
+    clickEventCallback();
+}
+
+Extends ImageNode::getCompactExtends(Extends ext) {
     float h, w;
     if( (float)last_ext.height / last_ext.width < (float)height / width ) { //height
         h = last_ext.height;
@@ -69,16 +72,12 @@ void ImageNode::sendClickEvent(float x, float y) {
         h = (float) height * last_ext.width / width;
     }
 
-    Extends ext = {
+    return {
         last_ext.x + (last_ext.width - w)/2,
         last_ext.y + (last_ext.height - h)/2,
         w,
         h
     };
-
-    if(!ext.contains(x,y)) return;
-
-    clickEventCallback();
 }
 
 RectangleNode::RectangleNode(float r, float g, float b) : rect(r, g, b) {}

@@ -5,13 +5,13 @@ just stored in const strings
 */
 
 const char *imageVertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 0) in vec2 aPos;\n"
     "layout (location = 1) in vec2 aTexCoord;\n"
     "out vec2 TexCoord;\n"
     "uniform mat4 transform;"
     "void main()\n"
     "{\n"
-    "   gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   gl_Position = transform * vec4(aPos.x, aPos.y, 1.0, 1.0);\n"
     "   TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
     "}\0";
 
@@ -26,13 +26,13 @@ const char *imageFragmentShaderSource = "#version 330 core\n"
 
 
 const char *rectangleVertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 0) in vec2 aPos;\n"
     "layout (location = 1) in vec2 aTexCoord;\n"
     "out vec2 TexCoord;\n"
     "uniform mat4 transform;"
     "void main()\n"
     "{\n"
-    "   gl_Position = transform * vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   gl_Position = transform * vec4(aPos.x, aPos.y, 1.0, 1.0);\n"
     "   TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
     "}\0";
 
@@ -47,14 +47,15 @@ const char *rectangleFragmentShaderSource = "#version 330 core\n"
 
 const char* characterVertexShaderSource = 
     "#version 420\n"
-    "layout (location = 0) in vec4 vertex;\n"
+    "layout (location = 0) in vec2 aPos;\n"
+    "layout (location = 1) in vec2 aTexCoord;\n"
     "out vec2 TexCoords;\n"
 
     "uniform mat4 projection;\n"
 
     "void main() {"
-        "gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);\n"
-        "TexCoords = vertex.zw;\n"
+        "gl_Position = projection * vec4(aPos, 0.0, 1.0);\n"
+        "TexCoords = aTexCoord;\n"
     "}";
 
 const char *characterFragmentShaderSource = 

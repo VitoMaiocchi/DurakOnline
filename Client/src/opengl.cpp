@@ -12,9 +12,12 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <exception>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#define FONT_PATH "../fonts/OpenSans-Regular.ttf"
 
 
 uint Viewport::height = 600;
@@ -91,12 +94,12 @@ namespace OpenGL {
     unsigned int VAO;
 
     const float vertices[] = {
-        -1.0f,  1.0f, 0.0f,    0.0f, 0.0f,
-        1.0f,  1.0f, 0.0f,     1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,     1.0f, 1.0f,
-        -1.0f,  1.0f, 0.0f,    0.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,     1.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f,    0.0f, 1.0f
+        0.0f,  1.0f,   0.0f, 0.0f,
+        1.0f,  1.0f,   1.0f, 0.0f,
+        1.0f,  0.0f,   1.0f, 1.0f,
+        0.0f,  1.0f,   0.0f, 0.0f,
+        1.0f,  0.0f,   1.0f, 1.0f,
+        0.0f,  0.0f,   0.0f, 1.0f
     };
     
 
@@ -110,108 +113,69 @@ namespace OpenGL {
     };
 
     std::map<GLchar, Character> Characters;
-    unsigned int ftVAO, ftVBO;
 
-    void setupFreeType() {
-        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
-
-
-        glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        glUseProgram(characterShader->shader_program);
-        glUniformMatrix4fv(glGetUniformLocation(characterShader->shader_program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
-            // FreeType
-        // --------
+    void generateCharacterTextures() {
         FT_Library ft;
-        // All functions return a value different than 0 whenever an error occurred
-        if (FT_Init_FreeType(&ft))
-        {
-            std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-            return ;
-        }
+        if (FT_Init_FreeType(&ft)) throw std::runtime_error("FreeType: init error");
 
-        // find path to font
-        std::string font_name = "../fonts/OpenSans-Regular.ttf";
-        
-        // load font as face
         FT_Face face;
-        if (FT_New_Face(ft, font_name.c_str(), 0, &face)) {
-            std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-            return;
-        }
-        else {
-            // set size to load glyphs as
-            FT_Set_Pixel_Sizes(face, 0, 48);
+        if (FT_New_Face(ft, FONT_PATH, 0, &face)) throw std::runtime_error(std::string("FreeType: failed to load font: ")+FONT_PATH);
 
-            // disable byte-alignment restriction
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        // set size to load glyphs as
+        FT_Set_Pixel_Sizes(face, 0, 48);
 
-            // load first 128 characters of ASCII set
-            for (unsigned char c = 0; c < 128; c++)
-            {
-                // Load character glyph 
-                if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-                {
-                    std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-                    continue;
-                }
-                // generate texture
-                unsigned int texture;
-                glGenTextures(1, &texture);
-                glBindTexture(GL_TEXTURE_2D, texture);
-                glTexImage2D(
-                    GL_TEXTURE_2D,
-                    0,
-                    GL_RED,
-                    face->glyph->bitmap.width,
-                    face->glyph->bitmap.rows,
-                    0,
-                    GL_RED,
-                    GL_UNSIGNED_BYTE,
-                    face->glyph->bitmap.buffer
-                );
-                // set texture options
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                // now store character for later use
-                Character character = {
-                    texture,
-                    glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                    glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                    static_cast<unsigned int>(face->glyph->advance.x)
-                };
-                Characters.insert(std::pair<char, Character>(c, character));
-            }
-            glBindTexture(GL_TEXTURE_2D, 0);
+        // disable byte-alignment restriction
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        // load first 128 characters of ASCII set
+        for (unsigned char c = 0; c < 128; c++) {
+            // Load character glyph 
+            if (FT_Load_Char(face, c, FT_LOAD_RENDER)) throw std::runtime_error("FreeType: failed to load char");
+
+            // generate texture
+            unsigned int texture;
+            glGenTextures(1, &texture);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RED,
+                face->glyph->bitmap.width,
+                face->glyph->bitmap.rows,
+                0,
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                face->glyph->bitmap.buffer
+            );
+            // set texture options
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            // now store character for later use
+            Character character = {
+                texture,
+                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+                static_cast<unsigned int>(face->glyph->advance.x)
+            };
+            Characters.insert(std::pair<char, Character>(c, character));
         }
+        glBindTexture(GL_TEXTURE_2D, 0);
+
         // destroy FreeType once we're finished
         FT_Done_Face(face);
         FT_Done_FreeType(ft);
-
-        
-        // configure VAO/VBO for texture quads
-        // -----------------------------------
-        glGenVertexArrays(1, &ftVAO);
-        glGenBuffers(1, &ftVBO);
-        glBindVertexArray(ftVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, ftVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
     }
 
-    void RenderText(std::string text, float x, float y, float scale, glm::vec3 color) {
-        // activate corresponding render state	
+    void renderText(std::string text, float x, float y, float scale, glm::vec3 color) {
         glUseProgram(characterShader->shader_program);
         glUniform3f(glGetUniformLocation(characterShader->shader_program, "textColor"), color.x, color.y, color.z);
         glActiveTexture(GL_TEXTURE0);
-        glBindVertexArray(ftVAO);
 
-        // iterate through all characters
+        glm::mat4 base_transform = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+
+        // character iterator
         std::string::const_iterator c;
         for (c = text.begin(); c != text.end(); c++) 
         {
@@ -222,25 +186,16 @@ namespace OpenGL {
 
             float w = ch.Size.x * scale;
             float h = ch.Size.y * scale;
-            // update VBO for each character
-            float vertices[6][4] = {
-                { xpos,     ypos + h,   0.0f, 0.0f },            
-                { xpos,     ypos,       0.0f, 1.0f },
-                { xpos + w, ypos,       1.0f, 1.0f },
 
-                { xpos,     ypos + h,   0.0f, 0.0f },
-                { xpos + w, ypos,       1.0f, 1.0f },
-                { xpos + w, ypos + h,   1.0f, 0.0f }           
-            };
-            // render glyph texture over quad
+            glm::mat4 transform = glm::translate(base_transform, glm::vec3(xpos, ypos, 0.0f));
+            transform = glm::scale(transform, glm::vec3(w, h, 1.0f));
+            glUniformMatrix4fv(glGetUniformLocation(characterShader->shader_program, "projection"), 1, GL_FALSE, glm::value_ptr(transform));
+            
             glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-            // update content of VBO memory
-            glBindBuffer(GL_ARRAY_BUFFER, ftVBO);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
 
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            // render quad
+            glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 6);
+
             // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
             x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
         }
@@ -280,6 +235,7 @@ namespace OpenGL {
         //Compile Shaders
         imageShader = new Shader(imageVertexShaderSource, imageFragmentShaderSource);
         rectangleShader = new Shader(rectangleVertexShaderSource, rectangleFragmentShaderSource);
+        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
 
         //Create Vertex Array
         //Vertex Array 
@@ -291,16 +247,16 @@ namespace OpenGL {
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(0);
         // texture coordinate attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
         glEnableVertexAttribArray(1);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0); 
         glBindVertexArray(0); 
 
-        setupFreeType();
+        generateCharacterTextures();
 
         masterNode = new MasterNode();
         return true;
@@ -314,8 +270,8 @@ namespace OpenGL {
             Extends viewport_ext = {0, 0, Viewport::width, Viewport::height, 0};
             masterNode->draw(viewport_ext);
 
-            RenderText("I want mommy I want Milk", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-            RenderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+            renderText("I want mommy I want Milk", 10.0f, 10.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+            renderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
 
             glfwSwapBuffers(window);
             glfwPollEvents();    
@@ -361,14 +317,13 @@ namespace OpenGL {
         stbi_image_free(data);
     }
 
-    void Image::draw(float x, float y, float size, bool heightb, float layer) {
+    void Image::draw(Extends ext) {
         glBindTexture(GL_TEXTURE_2D, texture);
         glUseProgram(imageShader->shader_program);
 
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3( 2.0f*x/Viewport::width -1.0f, 2.0f*y/Viewport::height -1.0f, layer));
-        if(heightb) trans = glm::scale(trans, glm::vec3(size/height*width/Viewport::width, size/Viewport::height, 1.0));
-        else trans = glm::scale(trans, glm::vec3(size/Viewport::width, size/width*height/Viewport::height, 1.0));
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
 
         unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
@@ -391,12 +346,10 @@ namespace OpenGL {
     void Rectangle::draw(Extends ext) {
         glUseProgram(rectangleShader->shader_program);
 
-        glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(
-            (2*ext.x - ext.width)/Viewport::width, 
-            1 - (2*ext.y + ext.height)/Viewport::height, 
-        ext.layer));
-        trans = glm::scale(trans, glm::vec3(ext.width/Viewport::width, ext.height/Viewport::height, 1.0));
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
+
         unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 

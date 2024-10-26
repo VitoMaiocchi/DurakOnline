@@ -124,6 +124,7 @@ void BufferNode::drawNew(Extends ext) {
                 return childminWidth + 2*std::ceil(bufferSize*childminWidth);
             }
         }
+        return 0;
     }
 
 uint BufferNode::minHeight(uint width) {
@@ -140,6 +141,7 @@ uint BufferNode::minHeight(uint width) {
             return childminHeight;
         }
     }
+    return 0;
 }
 
 void BufferNode::setBufferSize(BufferType buffer_type, float buffer_size) {
@@ -157,11 +159,11 @@ void LinearStackNode::drawNew(Extends ext) {
 }
 
 uint LinearStackNode::minWidth(uint height) {
-
+    return 0;
 }
 
 uint LinearStackNode::minHeight(uint width) {
-
+    return 0;
 }
 
 void LinearStackNode::setStackType(StackDirection stack_direction, StackType stack_type) {

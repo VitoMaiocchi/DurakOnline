@@ -75,7 +75,7 @@ namespace OpenGL {
             glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            Extends viewport_ext = {0, 0, Viewport::width, Viewport::height, 0};
+            Extends viewport_ext = {0, 0, static_cast<float>(Viewport::width), static_cast<float>(Viewport::height), 0};
             masterNode->draw(viewport_ext);
 
             renderText("I want mommy I want Milk", 10.0f, 10.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));

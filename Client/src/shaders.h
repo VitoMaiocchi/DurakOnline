@@ -4,7 +4,8 @@ to keep things simple the shader code is
 just stored in const strings
 */
 
-const char *imageVertexShaderSource = "#version 330 core\n"
+const char *imageVertexShaderSource = 
+    "#version 330 core\n"
     "layout (location = 0) in vec2 aPos;\n"
     "layout (location = 1) in vec2 aTexCoord;\n"
     "out vec2 TexCoord;\n"
@@ -15,7 +16,8 @@ const char *imageVertexShaderSource = "#version 330 core\n"
     "   TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
     "}\0";
 
-const char *imageFragmentShaderSource = "#version 330 core\n"
+const char *imageFragmentShaderSource = 
+    "#version 330 core\n"
     "out vec4 FragColor;\n"
     "in vec2 TexCoord;\n"
     "uniform sampler2D texture1;\n"
@@ -25,7 +27,8 @@ const char *imageFragmentShaderSource = "#version 330 core\n"
     "}\n\0";
 
 
-const char *rectangleVertexShaderSource = "#version 330 core\n"
+const char *rectangleVertexShaderSource = 
+    "#version 330 core\n"
     "layout (location = 0) in vec2 aPos;\n"
     "layout (location = 1) in vec2 aTexCoord;\n"
     "out vec2 TexCoord;\n"
@@ -36,7 +39,8 @@ const char *rectangleVertexShaderSource = "#version 330 core\n"
     "   TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
     "}\0";
 
-const char *rectangleFragmentShaderSource = "#version 330 core\n"
+const char *rectangleFragmentShaderSource = 
+    "#version 330 core\n"
     "out vec4 FragColor;\n"
     "in vec2 TexCoord;\n"
     "uniform vec4 color;\n"
@@ -46,20 +50,20 @@ const char *rectangleFragmentShaderSource = "#version 330 core\n"
     "}\n\0";
 
 const char* characterVertexShaderSource = 
-    "#version 420\n"
+    "#version 330 core\n"
     "layout (location = 0) in vec2 aPos;\n"
     "layout (location = 1) in vec2 aTexCoord;\n"
     "out vec2 TexCoords;\n"
 
-    "uniform mat4 projection;\n"
+    "uniform mat4 transform;\n"
 
     "void main() {"
-        "gl_Position = projection * vec4(aPos, 0.0, 1.0);\n"
+        "gl_Position = transform * vec4(aPos, 0.0, 1.0);\n"
         "TexCoords = aTexCoord;\n"
     "}";
 
 const char *characterFragmentShaderSource = 
-    "#version 420\n"
+    "#version 330 core\n"
     "in vec2 TexCoords;\n"
     "out vec4 color;\n"
 

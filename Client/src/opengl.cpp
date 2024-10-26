@@ -13,7 +13,6 @@
 #include <string>
 #include <map>
 #include <exception>
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -28,7 +27,131 @@ uint Window::width = 800;
 namespace OpenGL {
     MasterNode* masterNode;
     GLFWwindow* window;
+
+    struct Texture {
+        uint gl_texture;
+        int width;
+        int height;
+    };
+
+    struct Shader {
+        uint shader_program;
+        uint fragment_shader;
+        uint vertex_shader;
+        Shader(const char* &vertex_source, const char* &fragment_source);
+        ~Shader();
+    };
+
+    Shader* imageShader;
+    Shader* rectangleShader;
+    Shader* characterShader;
+    unsigned int VAO;
     int success;
+
+    bool setupWindow();
+    void setupVertexArray();
+    void generateCharacterTextures();
+    void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
+
+    //General Setup
+
+    bool setup() {
+        if(!setupWindow()) return false;
+
+        //Compile Shaders
+        imageShader = new Shader(imageVertexShaderSource, imageFragmentShaderSource);
+        rectangleShader = new Shader(rectangleVertexShaderSource, rectangleFragmentShaderSource);
+        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
+
+        setupVertexArray();
+        generateCharacterTextures();
+
+        masterNode = new MasterNode();
+        return true;
+    }
+    
+    void startMainLoop() {
+        while(!glfwWindowShouldClose(window)) {
+            glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            Extends viewport_ext = {0, 0, Viewport::width, Viewport::height, 0};
+            masterNode->draw(viewport_ext);
+
+            renderText("I want mommy I want Milk", 10.0f, 10.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
+            renderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+
+            glfwSwapBuffers(window);
+            glfwPollEvents();    
+        }
+    }
+
+    void cleanup() {
+        delete masterNode;
+        delete imageShader;
+        delete rectangleShader;
+        delete characterShader;
+
+        glDeleteVertexArrays(1, &VAO);
+        //glDeleteBuffers(1, &VBO);
+
+        glfwTerminate();
+    };
+
+    void closeWindow() {
+        glfwSetWindowShouldClose(window, true);
+    }
+
+    //IMAGE
+    Texture* getTexture(std::string path);
+
+    Image::Image(std::string path) {
+        texture = getTexture(path);
+    }
+
+    void Image::draw(Extends ext) {
+        glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
+        glUseProgram(imageShader->shader_program);
+
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
+
+        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    };
+
+    void Image::getDimensions(uint &width, uint &height) {
+        width = texture->width;
+        height = texture->height;
+    }
+
+
+    //Rectangle
+    Rectangle::Rectangle(float r, float g, float b) {
+        color = glm::vec4(r, g, b, 1.0f);
+    }
+
+    void Rectangle::draw(Extends ext) {
+        glUseProgram(rectangleShader->shader_program);
+
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
+
+        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
+        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+    //Window Setup
 
     void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
@@ -51,6 +174,38 @@ namespace OpenGL {
         Window::width = width;
     }
 
+    bool setupWindow() {
+        glfwInit();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+        window = glfwCreateWindow(Window::width, Window::height, "Durak", NULL, NULL);
+        if (window == NULL) {
+            std::cout << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            return false;
+        }
+
+        glfwMakeContextCurrent(window);
+
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            std::cout << "Failed to initialize GLAD" << std::endl;
+            return false;
+        } 
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        
+        glViewport(0, 0, Viewport::height, Viewport::width);
+        glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
+        glfwSetWindowSizeCallback(window, window_size_callback);
+        glfwSetMouseButtonCallback(window, mouse_button_callback);
+        return true;
+    }
+
+    //Shaders
+
     void compileShader(uint shader, const char* &source) {
         char infoLog[512];
         glShaderSource(shader, 1, &source, NULL);
@@ -61,37 +216,29 @@ namespace OpenGL {
             std::cout << "OpenGL: Shader Compilation Error:\n" << infoLog << std::endl;
         }
     }
+    
+    Shader::Shader(const char* &vertex_source, const char* &fragment_source) {
+        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        compileShader(vertex_shader, vertex_source);
+        compileShader(fragment_shader, fragment_source);
 
-    struct Shader {
-        uint shader_program;
-        uint fragment_shader;
-        uint vertex_shader;
+        shader_program = glCreateProgram();
+        glAttachShader(shader_program, vertex_shader);
+        glAttachShader(shader_program, fragment_shader);
+        glLinkProgram(shader_program);
+        glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+        if (!success) std::cout << "OpenGL: Shader Linking Error" << std::endl;
+    }
 
-        Shader(const char* &vertex_source, const char* &fragment_source) {
-            vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-            fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-            compileShader(vertex_shader, vertex_source);
-            compileShader(fragment_shader, fragment_source);
+    Shader::~Shader() {       
+        glDeleteShader(fragment_shader);
+        glDeleteShader(vertex_shader);
+        glDeleteProgram(shader_program);
+    }
 
-            shader_program = glCreateProgram();
-            glAttachShader(shader_program, vertex_shader);
-            glAttachShader(shader_program, fragment_shader);
-            glLinkProgram(shader_program);
-            glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
-            if (!success) std::cout << "OpenGL: Shader Linking Error" << std::endl;
-        }
 
-        ~Shader() {       
-            glDeleteShader(fragment_shader);
-            glDeleteShader(vertex_shader);
-            glDeleteProgram(shader_program);
-        }
-    };
-
-    Shader* imageShader;
-    Shader* rectangleShader;
-    Shader* characterShader;
-    unsigned int VAO;
+    //Vertex Array
 
     const float vertices[] = {
         0.0f,  1.0f,   0.0f, 0.0f,
@@ -101,10 +248,31 @@ namespace OpenGL {
         1.0f,  0.0f,   1.0f, 1.0f,
         0.0f,  0.0f,   0.0f, 1.0f
     };
+
+    void setupVertexArray() {
+        //Create Vertex Array
+        //Vertex Array 
+        unsigned int VBO;
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        // position attribute
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // texture coordinate attribute
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        glBindVertexArray(0); 
+    }
     
 
-    //FREE TYPE
-    /// Holds all state information relevant to a character as loaded using FreeType
+    //FREE TYPE (TEXT)
+
     struct Character {
         unsigned int TextureID; // ID handle of the glyph texture
         glm::ivec2   Size;      // Size of glyph
@@ -189,7 +357,7 @@ namespace OpenGL {
 
             glm::mat4 transform = glm::translate(base_transform, glm::vec3(xpos, ypos, 0.0f));
             transform = glm::scale(transform, glm::vec3(w, h, 1.0f));
-            glUniformMatrix4fv(glGetUniformLocation(characterShader->shader_program, "projection"), 1, GL_FALSE, glm::value_ptr(transform));
+            glUniformMatrix4fv(glGetUniformLocation(characterShader->shader_program, "transform"), 1, GL_FALSE, glm::value_ptr(transform));
             
             glBindTexture(GL_TEXTURE_2D, ch.TextureID);
 
@@ -202,162 +370,36 @@ namespace OpenGL {
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    
 
-    bool setup() {
-        glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //Texture creator
+    std::map<std::string, Texture> textures;
 
-        window = glfwCreateWindow(Window::width, Window::height, "Durak", NULL, NULL);
-        if (window == NULL) {
-            std::cout << "Failed to create GLFW window" << std::endl;
-            glfwTerminate();
-            return false;
-        }
-
-        glfwMakeContextCurrent(window);
-
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            std::cout << "Failed to initialize GLAD" << std::endl;
-            return false;
-        } 
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    Texture* getTexture(std::string path) {
+        auto i = textures.find(path);
+        if(i != textures.end()) return &i->second;
         
-        glViewport(0, 0, Viewport::height, Viewport::width);
-        glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
-        glfwSetWindowSizeCallback(window, window_size_callback);
-        glfwSetMouseButtonCallback(window, mouse_button_callback);
+        //load new texture
+        Texture tex; 
 
-        //Compile Shaders
-        imageShader = new Shader(imageVertexShaderSource, imageFragmentShaderSource);
-        rectangleShader = new Shader(rectangleVertexShaderSource, rectangleFragmentShaderSource);
-        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
-
-        //Create Vertex Array
-        //Vertex Array 
-        unsigned int VBO;
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        // position attribute
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        // texture coordinate attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0); 
-        glBindVertexArray(0); 
-
-        generateCharacterTextures();
-
-        masterNode = new MasterNode();
-        return true;
-    }
-    
-    void startMainLoop() {
-        while(!glfwWindowShouldClose(window)) {
-            glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            Extends viewport_ext = {0, 0, Viewport::width, Viewport::height, 0};
-            masterNode->draw(viewport_ext);
-
-            renderText("I want mommy I want Milk", 10.0f, 10.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-            renderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
-
-            glfwSwapBuffers(window);
-            glfwPollEvents();    
-        }
-    }
-
-    void closeWindow() {
-        glfwSetWindowShouldClose(window, true);
-    }
-
-    void cleanup() {
-        delete masterNode;
-        delete imageShader;
-        delete rectangleShader;
-        delete characterShader;
-
-        //glDeleteVertexArrays(1, &VAO);
-        //glDeleteBuffers(1, &VBO);
-
-        glfwTerminate();
-    };
-
-
-    //IMAGE
-    Image::Image(std::string path) {
-        //texture
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glGenTextures(1, &tex.gl_texture);
+        glBindTexture(GL_TEXTURE_2D, tex.gl_texture);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        //das isch nöd optimal (da sött mer identischi texture recykliere)
         int nrChannels;
-        unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+        unsigned char *data = stbi_load(path.c_str(), &tex.width, &tex.height, &nrChannels, 0);
 
         if (data){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
-        } else std::cout << "FAILED TO LOAD TEXTURE: "<< path << std::endl;
+        } else throw std::runtime_error("OpenGL: error loading the following texture: "+path);
         
         stbi_image_free(data);
-    }
 
-    void Image::draw(Extends ext) {
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glUseProgram(imageShader->shader_program);
-
-        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
-        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
-
-        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    };
-
-    void Image::getDimensions(uint &width, uint &height) {
-        width = this->width;
-        height = this->height;
-    }
-
-
-    //Rectangle
-
-    Rectangle::Rectangle(float r, float g, float b) {
-        color = glm::vec4(r, g, b, 1.0f);
-    }
-
-    void Rectangle::draw(Extends ext) {
-        glUseProgram(rectangleShader->shader_program);
-
-        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
-        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
-
-        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
-        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        textures[path] = tex;
+        return &textures[path];
     }
 
 }

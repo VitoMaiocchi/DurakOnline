@@ -10,6 +10,8 @@ namespace OpenGL {
     void cleanup();
     void closeWindow();
 
+    struct Texture;
+
     class Image {
         public:
             Image(std::string path);
@@ -17,9 +19,7 @@ namespace OpenGL {
             void getDimensions(uint &width, uint &height);
 
         private:
-            int shaderProgram;
-            unsigned int texture;
-            int height, width;
+            Texture* texture;
     };
 
     class Rectangle {

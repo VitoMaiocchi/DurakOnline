@@ -204,44 +204,9 @@ _link for the word document_: [word document](https://ethz-my.sharepoint.com/:w:
 _link for the instructions_: [Software Design](https://lec.inf.ethz.ch/se/2024_AS/project/book/phase2.html)
 
 **_Hint:_** check out the lecture document for theory, especially the slides for Modeling and Specification: [lecture page](https://lec.inf.ethz.ch/se/2024_AS/)
-### ToDO:
-- Interface Modeling: Json: je zwei 
-@vmaiocchi: copy paste and add the message types, then 
-1 & 7 @eholenstein
-2 & 3 @twaldmann
-4 & 5 @norutz
-6 & dummy event @vmaiocchi
+### ToDO;
 
 
-- Common package class diagram: @eholenstein
-- Scn 5 Diagram: @norutz
-- Table of Contents, and make everything pretty
-- Description for each attribute and member function of package common
-- Scn2 Diagram: @twaldmann
-- Game class handle action, handle card: @twaldmann
-- Check package Server classes and attributes and member functions: @vmaiocchi
-- Scn 3&4 Diagram: @dpoluyanov 
-
-
-
-#### 1. Static modeling 
-##### 1.1 package common
-
-
-- diagram for classes 
-##### 1.2 package client 
-
-##### 1.3 package server
- 
-- diagram for classes 
-
-#### 2. Sequence diagram 
-##### 2.1 Sequence join game
-##### 2.2 sequence play card
-##### 2.3 sequence end of round
-_(at least 3)_
-#### 3 Interface modeling
-##### 3.1 Interface client server
 
 
 ## Server team

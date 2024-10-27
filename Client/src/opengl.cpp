@@ -23,6 +23,7 @@ uint Viewport::height = 600;
 uint Viewport::width = 800;
 uint Window::height = 600;
 uint Window::width = 800;
+float Viewport::global_scalefactor = 1000;
 
 namespace OpenGL {
     MasterNode* masterNode;
@@ -75,8 +76,7 @@ namespace OpenGL {
             glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            Extends viewport_ext = {0, 0, static_cast<float>(Viewport::width), static_cast<float>(Viewport::height), 0};
-            masterNode->draw(viewport_ext);
+            masterNode->draw();
 
             renderText("I want mommy I want Milk", 10.0f, 10.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
             renderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
@@ -167,6 +167,11 @@ namespace OpenGL {
         glViewport(0, 0, width, height);
         Viewport::height = height;
         Viewport::width = width;
+
+        Viewport::global_scalefactor = width / 1000.0f; //das chammer no besser mache
+
+        Extends viewport_ext = {0, 0, static_cast<float>(width), static_cast<float>(height), 0};
+        masterNode->updateExtends(viewport_ext);
     }
 
     void window_size_callback(GLFWwindow* window, int width, int height) {

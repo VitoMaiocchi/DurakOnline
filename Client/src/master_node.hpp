@@ -7,9 +7,8 @@
 class MasterNode : public TreeNode {
     public:
         MasterNode();
-        uint minWidth(uint height);
-        uint minHeight(uint width);
+        void updateExtends(Extends ext);
+        Extends getCompactExtends(Extends ext);
     private:
         void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
-        void drawNew(Extends ext);
 };

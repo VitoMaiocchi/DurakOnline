@@ -9,39 +9,37 @@
 
 class Node {
     public:
-        void draw(Extends ext);
-        virtual uint minWidth(uint height) = 0;
-        virtual uint minHeight(uint width) = 0;
-        virtual void drawPrevious() = 0;
+        virtual void draw() = 0;
+        virtual void updateExtends(Extends ext) = 0;
+        virtual Extends getCompactExtends(Extends ext) = 0;
 
-        virtual void sendClickEvent(float x, float y);
+        void sendClickEvent(float x, float y);
         void setClickEventCallback(std::function<void()> callback);
     protected:
         virtual void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) = 0;
-        virtual void drawNew(Extends ext) = 0;
-        Extends last_ext = {0,0,0,0,0};
+        Extends extends = {0,0,0,0,0};
         std::function<void()> clickEventCallback = [](){/*nothing*/};
 };
 
 class TreeNode : public Node {
-    void drawPrevious();
+    public:
+    void draw();
 };
 
 class LeafNode : public Node {
-    void drawPrevious();
+    public:
+    void updateExtends(Extends ext);
+    protected:
     void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
 };
 
 class ImageNode : public LeafNode {
     public:
         ImageNode(std::string path);
-        uint minWidth(uint height);
-        uint minHeight(uint width);
-        void sendClickEvent(float x, float y) override;
+        Extends getCompactExtends(Extends ext);
+        void draw();
 
     private:
-        void drawNew(Extends ext);
-        Extends getCompactExtends(Extends ext);
         OpenGL::Image image;
         uint width, height;
 };
@@ -49,36 +47,33 @@ class ImageNode : public LeafNode {
 class RectangleNode : public LeafNode {
     public:
         RectangleNode(float r, float g, float b);
-        uint minWidth(uint height);
-        uint minHeight(uint width);
+        Extends getCompactExtends(Extends ext);
+        void draw();
 
     private:
-        void drawNew(Extends ext);
         OpenGL::Rectangle rect;
         float r, g, b;
 };
 
 
-//BIS JETZT NUR BUFFERTYPE ABSOLUTE IMPLEMENTIERT: 
-//will ich bin lazy und ich machs nur wenns öpper brucht
 enum BufferType {
-    BUFFERTYPE_ABSOLUTE,        //absolute pixel amount
-    BUFFERTYPE_HIGHT_RELATIVE,  //float zwüsche 0.0 und 1.0
-    BUFFERTYPE_WIDTH_RELATIVE   //float zwüsche 0.0 und 1.0
+    BUFFERTYPE_ABSOLUTE,
+    BUFFERTYPE_RELATIVE
 };
 
 class BufferNode : public TreeNode {
     public:
         BufferNode();
-        uint minWidth(uint height);
-        uint minHeight(uint width);
+        void updateExtends(Extends ext);
+        Extends getCompactExtends(Extends ext);
         void setBufferSize(BufferType buffer_type, float buffer_size);
 
         std::shared_ptr<Node> child;
 
     private:
         void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
-        void drawNew(Extends ext);
+        float getBufferSize();
+        Extends getCompactChildExt(Extends ext);
         BufferType bufferType;
         float bufferSize;
 };
@@ -95,15 +90,14 @@ enum StackType {
 
 class LinearStackNode : public TreeNode {
     public:
-        uint minWidth(uint height);
-        uint minHeight(uint width);
+        void updateExtends(Extends ext);
+        Extends getCompactExtends(Extends ext);
         void setStackType(StackDirection stack_direction, StackType stack_type);
 
         std::list<std::shared_ptr<Node>> children;
     
     private:
         void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
-        void drawNew(Extends ext);
         StackDirection stackDirection = STACKDIRECTION_HORIZONTAL;
         StackType stackType = STACKTYPE_COMPACT;
 };

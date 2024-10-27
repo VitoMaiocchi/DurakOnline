@@ -18,7 +18,7 @@ MasterNode::MasterNode() {
 
     node = std::make_shared<BufferNode>();
     node->child = std::make_shared<ImageNode>(Card(RANK_ACE, SUIT_SPADES).getFileName());
-    node->setBufferSize(BUFFERTYPE_HIGHT_RELATIVE, 0.5);
+    node->setBufferSize(BUFFERTYPE_RELATIVE, 50);
     node->child->setClickEventCallback([]() {
         std::cout << "Clicked on Ace of Spades" << std::endl;
     });
@@ -41,14 +41,16 @@ void MasterNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> f
     function(node2);
 }
 
-void MasterNode::drawNew(Extends ext) {
+void MasterNode::updateExtends(Extends ext) {
+    extends = ext;
     Extends ext1 = {ext.x, ext.y, ext.width/2, ext.height};
     Extends ext2 = {ext.x+ext.width/2, ext.y, ext.width/2, ext.height};
-    rect_node->draw(ext1);
-    rect_node2->draw(ext2);
-    node->draw(ext1);
-    node2->draw(ext2);
+    rect_node->updateExtends(ext1);
+    rect_node2->updateExtends(ext2);
+    node->updateExtends(ext1);
+    node2->updateExtends(ext2);
 }
 
-uint MasterNode::minWidth(uint height) {return 0;}
-uint MasterNode::minHeight(uint width) {return 0;}
+Extends MasterNode::getCompactExtends(Extends ext) {
+    return ext;
+}

@@ -76,3 +76,9 @@ void IllegalMoveNotify::getContent(rapidjson::Value &content, Allocator &allocat
 void IllegalMoveNotify::fromJson(const rapidjson::Value& obj){
     error = obj["error"].GetString();
 }
+
+
+CardUpdate::CardUpdate(){messageType = MESSAGETYPE_CARD_UPDATE;}
+
+void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const{}
+void CardUpdate::fromJson(const rapidjson::Value& obj){}

@@ -25,7 +25,7 @@ namespace Network {
     std::queue<std::string> message_queue;
     std::thread recive_thread;
 
-    void openConnection(std::string ip, uint port) {
+    ClientID openConnection(std::string ip, uint port) {
         std::cout << "opening connection..." << std::endl;
         if(!send_connector.connect(sockpp::inet_address(ip, port)))
             throw std::runtime_error("FAILED TO OPEN CONNECTION");
@@ -49,6 +49,7 @@ namespace Network {
             }
         });
         std::cout << "connection established" << std::endl;
+        return client_id;
     }
 
 

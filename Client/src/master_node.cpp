@@ -54,3 +54,7 @@ void MasterNode::updateExtends(Extends ext) {
 Extends MasterNode::getCompactExtends(Extends ext) {
     return ext;
 }
+
+void handleMessage(std::unique_ptr<Message> message) {
+
+}

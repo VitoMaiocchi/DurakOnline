@@ -6,9 +6,10 @@
 
 namespace OpenGL {
     bool setup();
-    void startMainLoop();
+    void drawFrame();
     void cleanup();
     void closeWindow();
+    bool windowShouldClose();
 
     struct Texture;
 

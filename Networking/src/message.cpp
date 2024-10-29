@@ -139,7 +139,7 @@ void CardUpdate::fromJson(const rapidjson::Value& obj){
         middle_cards[slot] = card;
     }
 
-    const rapidjson::Value& handJson = ob["hand"];
+    const rapidjson::Value& handJson = obj["hand"];
     hand.clear(); // so that we only store the latest data
     for(rapidjson::SizeType i = 0; i < handJson.Size(); ++i){
         hand.push_back(handJson[i].GetUint());
@@ -147,3 +147,35 @@ void CardUpdate::fromJson(const rapidjson::Value& obj){
 }
 
 
+//PLAYER UPDATE
+PlayerUpdate::PlayerUpdate() {messageType = MESSAGETYPE_TEST;}
+
+void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    
+    rapidjson::Value playerNamesJson(rapidjson::kObjectType);
+    for(const auto& [key, value] : player_names){
+        playerNamesJson.AddMember(
+            rapidjson::Value(std::to_string(key).c_str(), allocator), //the player id to a string
+            rapidjson::Value(value.c_str(), allocator), //the player name also as string
+            allocator
+        );
+    }
+    content.AddMember("player_names", playerNamesJson, allocator);
+
+    content.AddMember("number_players", number_players, allocator);
+    content.AddMember("durak", durak, allocator);
+};
+
+void TestMessage::fromJson(const rapidjson::Value& obj) {
+    
+    //player names back to map, 
+    const rapidjson::Value& playerNamesJson = obj["player_names"];
+    for(auto itr = playerNamesJson.MemberBegin(); itr != playerNamesJson.MemberEnd(); ++itr){
+        unsigned int key = std::stoi(itr->name.GetString()); //the player id
+        std::string s = itr->value.GetString(); //the player name
+        player_names[key] = s;
+    }
+    number_players = obj["number_players"].GetUint();
+    durak = obj["durak"].GetUint();
+    // string = obj["string"].GetString();
+};

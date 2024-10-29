@@ -68,11 +68,11 @@ struct CardUpdate : public Message{
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
     
-    std::map<unsigned int, unsigned int> opponentCards; //Map ClientID to card count 
-    unsigned int drawPileCards; 
-    unsigned int trumpCard; //the one that is on the bottom of the pile, can also be NULL
-    unsigned int trumpSuit;
-    std::map<unsigned int, unsigned int> middleCards; //map of slot to card
+    std::map<unsigned int, unsigned int> opponent_cards; //Map ClientID to card count 
+    unsigned int draw_pile_cards; 
+    unsigned int trump_card; //the one that is on the bottom of the pile, can also be NULL
+    unsigned int trump_suit;
+    std::map<unsigned int, unsigned int> middle_cards; //map of slot to card
     std::vector<unsigned int> hand; //list of cards in hand
 };
 

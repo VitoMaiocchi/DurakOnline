@@ -53,6 +53,7 @@ struct ClientDisconnectEvent : public Message {
     void fromJson(const rapidjson::Value& obj);
 };
 
+// send an error message to the player that the move was illegal
 struct IllegalMoveNotify : public Message {
     IllegalMoveNotify();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
@@ -61,15 +62,26 @@ struct IllegalMoveNotify : public Message {
     std::string error;
 };
 
+// tcard updates to the server and from the server to the client
 struct CardUpdate : public Message{
     CardUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
     
     std::map<unsigned int, unsigned int> opponentCards; //Map ClientID to card count 
-    unsigned int drawPileCards;
+    unsigned int drawPileCards; 
     unsigned int trumpCard; //the one that is on the bottom of the pile, can also be NULL
     unsigned int trumpSuit;
     std::map<unsigned int, unsigned int> middleCards; //map of slot to card
     std::vector<unsigned int> hand; //list of cards in hand
+};
+
+
+struct PlayerUpdate : public Message {
+    PlayerUpdate();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+    std::map<unsigned int, std::string> player_names;
+    unsigned int number_players;
+    unsigned int durak;
 };

@@ -17,7 +17,7 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
             message = std::make_unique<ClientDisconnectEvent>();
         break;
         case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-            message = std::make_unique<IlligalMoveNotify>();
+            message = std::make_unique<IllegalMoveNotify>();
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;

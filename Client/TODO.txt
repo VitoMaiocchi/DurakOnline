@@ -1,0 +1,9 @@
+VITO:
+    - OpenGL: Text
+ERIC:
+    - StackNode implementation (lueg mal obs gaht)
+
+
+Das gaht erst wenn message.hpp ferig isch:
+ - basic message handling master_node
+ - game_node

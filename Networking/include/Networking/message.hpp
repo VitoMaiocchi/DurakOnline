@@ -33,6 +33,8 @@ struct Message {
     virtual void getContent(rapidjson::Value &content, Allocator &allocator) const = 0;
 };
 
+#define MessagePtr std::unique_ptr<Message>;
+
 std::unique_ptr<Message> deserialiseMessage(std::string string);
 
 struct TestMessage : public Message {

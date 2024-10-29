@@ -3,6 +3,8 @@
 #include <Networking/message.hpp>
 #include "drawable.hpp"
 
+extern uint clientID;
+
 //ONLY ONE MASTER NODE CAN EXIST
 //IT IS CREATED BY opengl.cpp 
 class MasterNode : public TreeNode {

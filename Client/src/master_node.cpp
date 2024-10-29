@@ -56,5 +56,29 @@ Extends MasterNode::getCompactExtends(Extends ext) {
 }
 
 void handleMessage(std::unique_ptr<Message> message) {
-
+    //sobald message.hpp fertig isch chömmer da je nach message handle 
+    //oder zu game_node witer ge
+    switch (message->messageType) {
+        case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
+            //erst mal nüt
+        break;
+        case MESSAGETYPE_CARD_UPDATE:
+            //gaht zu game
+        break;
+        case MESSAGETYPE_PLAYER_UPDATE:
+            //bö ka
+        break;
+        case MESSAGETYPE_BATTLE_STATE_UPDATE:
+            //gaht zu game
+        break;
+        case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
+            //gaht zu game falls grad nöd lobby isch
+        break;
+        case MESSAGETYPE_GAME_STATE_UPDATE:
+            //wird da ghandled
+        break;
+        default:
+            //print debug warning: unknown message type
+        break;
+    }
 }

@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
@@ -56,4 +57,17 @@ struct IllegalMoveNotify : public Message {
     void fromJson(const rapidjson::Value& obj);
 
     std::string error;
+};
+
+struct CardUpdate : public Message{
+    CardUpdate();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+    
+    std::map<unsigned int, unsigned int> opponentCards; //Map ClientID to card count 
+    unsigned int drawPileCards;
+    unsigned int trumpCard; //the one that is on the bottom of the pile, can also be NULL
+    unsigned int trumpSuit;
+    std::map<unsigned int, unsigned int> middleCards; //map of slot to card
+    std::vector<unsigned int> hand; //list of cards in hand
 };

@@ -63,17 +63,15 @@ namespace Network {
     }
 
     std::unique_ptr<Message> reciveMessage() {
-        while(true) {
-            message_queue_mut.lock();
-            if(!message_queue.empty()) {
-                auto m = message_queue.front();
-                message_queue.pop();
-                message_queue_mut.unlock();
-                return deserialiseMessage(m);
-            }
+        message_queue_mut.lock();
+        if(!message_queue.empty()) {
+            auto m = message_queue.front();
+            message_queue.pop();
             message_queue_mut.unlock();
-            std::this_thread::sleep_for(std::chrono::milliseconds(MESSAGE_TIME));
+            return deserialiseMessage(m);
         }
+        message_queue_mut.unlock();
+        return nullptr;
     }
     
 }

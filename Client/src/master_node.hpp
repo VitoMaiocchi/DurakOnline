@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Networking/message.hpp>
 #include "drawable.hpp"
 
 //ONLY ONE MASTER NODE CAN EXIST
@@ -12,3 +13,5 @@ class MasterNode : public TreeNode {
     private:
         void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
 };
+
+void handleMessage(std::unique_ptr<Message> message);

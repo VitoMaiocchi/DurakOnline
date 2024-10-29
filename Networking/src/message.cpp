@@ -16,6 +16,8 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_CLIENT_DISCONNECT_EVENT:
             message = std::make_unique<ClientDisconnectEvent>();
         break;
+        case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
+            message = std::make_unique<IlligalMoveNotify>();
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -62,3 +64,15 @@ void TestMessage::fromJson(const rapidjson::Value& obj) {
 ClientDisconnectEvent::ClientDisconnectEvent() {messageType = MESSAGETYPE_CLIENT_DISCONNECT_EVENT;}
 void ClientDisconnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {}
 void ClientDisconnectEvent::fromJson(const rapidjson::Value& obj) {}
+
+
+//ILLEGAL MOVE NOTIFY
+IllegalMoveNotify::IllegalMoveNotify(){messageType = MESSAGETYPE_ILLEGAL_MOVE_NOTIFY;}
+
+void IllegalMoveNotify::getContent(rapidjson::Value &content, Allocator &allocator) const{
+    content.AddMember("error", rapidjson::Value(error.c_str(), allocator), allocator);
+}
+
+void IllegalMoveNotify::fromJson(const rapidjson::Value& obj){
+    error = obj["error"].GetString();
+}

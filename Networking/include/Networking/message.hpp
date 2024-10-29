@@ -50,3 +50,10 @@ struct ClientDisconnectEvent : public Message {
     void fromJson(const rapidjson::Value& obj);
 };
 
+struct IllegalMoveNotify : public Message {
+    IllegalMoveNotify();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+
+    std::string error;
+};

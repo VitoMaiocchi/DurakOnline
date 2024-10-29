@@ -77,8 +77,73 @@ void IllegalMoveNotify::fromJson(const rapidjson::Value& obj){
     error = obj["error"].GetString();
 }
 
-
+// CARD UPDATE
 CardUpdate::CardUpdate(){messageType = MESSAGETYPE_CARD_UPDATE;}
 
-void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const{}
-void CardUpdate::fromJson(const rapidjson::Value& obj){}
+void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const{
+    
+    //add opponent_cards which is a std::map
+    // we iterate through the pairs and add each key-value pair
+    //as a member of JSON
+    rapidjson::Value opponentCardsJson(rapidjson::kObjectType);
+    for(const auto &pair : opponent_cards){
+        opponentCardsJson.AddMember(
+            //player id (key) as string
+            rapidjson::Value(std::to_string(pair.first).c_str(), allocator),
+            pair.second, //count
+            allocator
+        );
+    }
+    content.AddMember("opponent_cards", opponentCardsJson, allocator);
+
+    content.AddMember("draw_pile_cards", draw_pile_cards, allocator);
+    content.AddMember("trump_card", trump_card, allocator);
+    content.AddMember("trump_suit", trump_suit, allocator);
+
+    rapidjson::Value middleCardJson(rapidjson::kObjectType);
+    for(const auto &pair : middle_cards){
+        middleCardJson.AddMember(
+            // the slot as the key, as string
+            rapidjson::Value(std::to_string(pair.first).c_str(), allocator),
+            pair.second, //card
+            allocator
+        );
+    }
+    content.AddMember("middle_cards", middleCardJson, allocator);
+
+    //adds the vector hand to json 
+    rapidjson::Value handJson(rapidjson::kArrayType);
+    for(const auto card : hand){
+        handJson.PushBack(card, allocator);
+    }
+    content.AddMember("hand", handJson, allocator);
+}
+void CardUpdate::fromJson(const rapidjson::Value& obj){
+    //turning opponent cards back to map
+    const rapidjson::Value& opponentCardsJson = obj["opponent_cards"];
+    for(auto itr = opponentCardsJson.MemberBegin(); itr != opponentCardsJson.MemberEnd(); ++itr){
+        unsigned int cliend_id = std::stoi(itr->name.GetString());
+        unsigned int card_count = itr->value.GetUint();
+        opponent_cards[cliend_id] = card_count;
+    }
+
+    draw_pile_cards= obj["draw_pile_cards"].GetUint();
+    trump_card = obj["trump_card"].GetUint();
+    trump_suit = obj["trump_suit"].GetUint();
+
+    //middlecards back to map
+    const  rapidjson::Value& middleCardJson = obj["middle_cards"];
+    for(auto itr = middleCardJson.MemberBegin(); itr != middleCardJson.MemberEnd(); ++itr){
+        unsigned int slot = std::stoi(itr->name.GetString());
+        unsigned int card = itr->value.GetUint();
+        middle_cards[slot] = card;
+    }
+
+    const rapidjson::Value& handJson = ob["hand"];
+    hand.clear(); // so that we only store the latest data
+    for(rapidjson::SizeType i = 0; i < handJson.Size(); ++i){
+        hand.push_back(handJson[i].GetUint());
+    }
+}
+
+

@@ -3,8 +3,9 @@
 #include <string>
 #include <memory>
 #include <Networking/message.hpp>
-#define uint unsigned int
-#define ClientID uint
+
+typedef unsigned int uint;
+typedef uint ClientID;
 
 namespace Network {
     //SERVER USE

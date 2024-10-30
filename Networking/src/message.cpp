@@ -172,3 +172,7 @@ void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) c
     content.AddMember("number_players", number_players, allocator);
     content.AddMember("durak", durak, allocator);
 };
+
+void PlayerUpdate::fromJson(const rapidjson::Value& obj) {
+    //TODO
+}

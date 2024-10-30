@@ -40,13 +40,13 @@ int main() {
     std::string scumsg = cardupdatemesg->toJson();
 
     std::unique_ptr<Message> answercumsg = deserialiseMessage(scumsg);
-    IllegalMoveNotify* return_cumsg = dynamic_cast<CardUpdate*>(answercumsg.get());
-    std::cout << "opponent_cards: " << return_cumsg->opponent_cards 
+    CardUpdate* return_cumsg = dynamic_cast<CardUpdate*>(answercumsg.get());
+    std::cout //<< "opponent_cards: " << return_cumsg->opponent_cards    das chammer nöd eif so printe
               << "\ndraw_pile_cards: " << return_cumsg->draw_pile_cards
               << "\ntrump_card: " << return_cumsg->trump_card
               << "\ntrump_suit: " << return_cumsg->trump_suit
-              << "\nmiddle_cards: "<< return_cumsg->middle_cards
-              << "\nhand: " << return_cumsg->hand << std::endl;
+              //<< "\nmiddle_cards: "<< return_cumsg->middle_cards
+              /*<< "\nhand: " << return_cumsg->hand */<< std::endl;
 
 
 

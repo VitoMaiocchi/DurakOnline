@@ -185,3 +185,38 @@ void PlayerUpdate::fromJson(const rapidjson::Value& obj) {
     player_count = obj["player_count"].GetUint();
     durak = obj["durak"].GetUint();
 };
+
+//BATTLE STATE UPDATE
+BattleStateUpdate::BattleStateUpdate() {messageType = MESSAGETYPE_BATTLE_STATE_UPDATE;}
+
+void BattleStateUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    
+    //defender
+    content.AddMember("defender", defender, allocator);
+
+    //attacker
+    rapidjson::Value attackersJson(rapidjson::kArrayType);
+    for(const auto p : attackers){
+        attackersJson.PushBack(p, allocator);
+    }
+    content.AddMember("attackers", attackersJson, allocator);
+
+    //idle
+    rapidjson::Value idleJson(rapidjson::kArrayType);
+    for(const auto p : idle){
+        idleJson.PushBack(p, allocator);
+    }
+    content.AddMember("idle", idleJson, allocator);
+};
+
+void BattleStateUpdate::fromJson(const rapidjson::Value& obj) {
+    //defender
+    defender = obj["defender"].GetUint();
+    //attackers
+    const rapidjson::Value& attackersJson = obj["attackers"];
+    attackers.clear();
+    for(rapidjson::SizeType i = 0; i < attackersJson.Size(); ++i){
+        attackers.push_back(attackersJson[i].GetUint());
+    }
+    //idle
+};

@@ -104,7 +104,7 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
     content.AddMember("opponent_cards", opponentCardsJson, allocator);
 
     content.AddMember("draw_pile_cards", draw_pile_cards, allocator);
-    content.AddMember("trump_card", trump_card, allocator);
+    content.AddMember("trump_card", trump_card.toInt(), allocator);
     content.AddMember("trump_suit", trump_suit, allocator);
 
     rapidjson::Value middleCardJson(rapidjson::kObjectType);
@@ -112,7 +112,7 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
         middleCardJson.AddMember(
             // the slot as the key, as string
             rapidjson::StringRef(std::to_string(pair.first).c_str()),
-            rapidjson::Value(pair.second).Move(), //card
+            rapidjson::Value(pair.second.toInt()).Move(), //card
             allocator
         );
     }
@@ -121,7 +121,7 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
     //adds the vector hand to json 
     rapidjson::Value handJson(rapidjson::kArrayType);
     for(const auto card : hand){
-        handJson.PushBack(card, allocator);
+        handJson.PushBack(card.toInt(), allocator);
     }
     content.AddMember("hand", handJson, allocator);
 }

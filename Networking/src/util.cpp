@@ -1,6 +1,23 @@
 #include <Networking/util.hpp>
 
+Card::Card() {
+    rank = RANK_ACE;
+    suit = SUIT_SPADES;
+}
+
 Card::Card(Rank rank, Suit suit) : rank(rank), suit(suit) {}
+
+Card::Card(uint i) {
+    //TODO
+}
+
+const uint Card::toInt() const {
+    //TODO
+}
+
+bool Card::operator==(const Card& other) const {
+    //TODO
+}
 
 std::string Card::getFileName() {
     std::string s;

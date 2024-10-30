@@ -2,11 +2,12 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 #include <map>
+#include <list>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
+#include <Networking/util.hpp>
 
 enum MessageType { //nur so vorschlag mir chönds no us chäse han jetz eif gmacht wi uf dem white board
     MESSAGETYPE_TEST, //NUR FÜR TEST GRÜND DI CHÖMMER NACHER WEG NEH
@@ -22,7 +23,7 @@ enum MessageType { //nur so vorschlag mir chönds no us chäse han jetz eif gmac
     MESSAGETYPE_CLIENT_DISCONNECT_EVENT
 };
 
-#define Allocator rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator>
+typedef rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> Allocator;
 
 struct Message {
     MessageType messageType;
@@ -68,12 +69,12 @@ struct CardUpdate : public Message{
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
     
-    std::map<unsigned int, unsigned int> opponent_cards; //Map ClientID to card count 
+    std::map<ClientID, unsigned int> opponent_cards; //Map ClientID to card count 
     unsigned int draw_pile_cards; 
-    unsigned int trump_card; //the one that is on the bottom of the pile, can also be NULL
-    unsigned int trump_suit;
-    std::map<unsigned int, unsigned int> middle_cards; //map of slot to card
-    std::vector<unsigned int> hand; //list of cards in hand
+    Card trump_card; //the one that is on the bottom of the pile, can also be NULL
+    Suit trump_suit;
+    std::map<CardSlot, Card> middle_cards; //map of slot to card
+    std::list<Card> hand; //list of cards in hand
 };
 
 // provides an update on the players in the game
@@ -82,9 +83,9 @@ struct PlayerUpdate : public Message {
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::map<unsigned int, std::string> player_names;
-    unsigned int number_players; 
-    unsigned int durak; // the playerid of the loser/durak
+    std::map<ClientID, std::string> player_names;
+    unsigned int player_count; 
+    ClientID durak; // the playerid of the loser/durak
 };
 
 // contains the meta battle state info
@@ -93,9 +94,9 @@ struct BattleStateUpdate : public Message {
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    unsigned int defender; //there is only one defender
-    std::vector<unsigned int> attackers; //list of attackers
-    std::vector<unsigned int> idle; //list of observers/spectators
+    ClientID defender; //there is only one defender
+    std::list<ClientID> attackers; //list of attackers
+    std::list<ClientID> idle; //list of observers/spectators
 };
 
 
@@ -113,14 +114,13 @@ struct AvailableActionUpdate : public Message{
 
 // update about the meta game state
 // lobby, game, spectator, game over, Durak screen
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/* every state needs to be given a specific number so that everyone uses the same numbers*/
+
 struct GameStateUpdate : public Message {
     GameStateUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    unsigned int state; 
+    GameState state; 
 };
 
 //informs server that a player is trying to play a card -> specific slot?
@@ -129,20 +129,19 @@ struct PlayCardEvent : public Message {
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::vector<unsigned int> card; // can be multiple if multiple cards are played at once, max 4
-    unsigned int slot; //place of the card
+    std::list<Card> cards; // can be multiple if multiple cards are played at once, max 4
+    CardSlot slot; //place of the card
 };
 
 //info about which client action was performed
-// cardclick, battlefieldclick, buttonclickDone, buttonclickPassOn, buttonclickPickUp
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-/* every action needs to be given a specific number so that everyone uses the same numbers*/
+// buttonclickDone, buttonclickPassOn, buttonclickPickUp
+// cardclick, battlefieldclick bruchts nöd das isch client side
 struct ClientActionEvent : public Message {
     ClientActionEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    unsigned int action;
+    ClientAction action;
 };
 
 //info about the player

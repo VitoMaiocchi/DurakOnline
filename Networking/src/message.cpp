@@ -174,5 +174,14 @@ void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) c
 };
 
 void PlayerUpdate::fromJson(const rapidjson::Value& obj) {
-    //TODO
-}
+    
+    const rapidjson::Value& playerNamesJson = obj["player_names"];
+    for(auto itr = playerNamesJson.MemberBegin(); itr != playerNamesJson.MemberEnd(); ++itr){
+        unsigned int key = std::stoi(itr->name.GetString());
+        std::string value = itr->value.GetString();
+        player_names[key] = value;
+    }
+
+    number_players = obj["number_players"].GetUint();
+    durak = obj["durak"].GetUint();
+};

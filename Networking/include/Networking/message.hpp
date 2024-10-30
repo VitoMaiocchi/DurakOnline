@@ -129,7 +129,7 @@ struct PlayCardEvent : public Message {
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::vector<Card> card; // can be multiple if multiple cards are played at once, max 4
+    std::vector<unsigned int> card; // can be multiple if multiple cards are played at once, max 4
     unsigned int slot; //place of the card
 };
 

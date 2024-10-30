@@ -18,6 +18,13 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         break;
         case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
             message = std::make_unique<IllegalMoveNotify>();
+        break;
+        case MESSAGETYPE_CARD_UPDATE:
+            message = std::make_unique<CardUpdate>();
+        break;
+        case MESSAGETYPE_PLAYER_UPDATE:
+            message = std::make_unique<PlayerUpdate>();
+        break;
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -89,8 +96,8 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
     for(const auto &pair : opponent_cards){
         opponentCardsJson.AddMember(
             //player id (key) as string
-            rapidjson::Value(std::to_string(pair.first).c_str(), allocator),
-            pair.second, //count
+            rapidjson::StringRef(std::to_string(pair.first).c_str()),
+            rapidjson::Value(pair.second).Move(), //count
             allocator
         );
     }
@@ -104,8 +111,8 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
     for(const auto &pair : middle_cards){
         middleCardJson.AddMember(
             // the slot as the key, as string
-            rapidjson::Value(std::to_string(pair.first).c_str(), allocator),
-            pair.second, //card
+            rapidjson::StringRef(std::to_string(pair.first).c_str()),
+            rapidjson::Value(pair.second).Move(), //card
             allocator
         );
     }
@@ -164,18 +171,4 @@ void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) c
 
     content.AddMember("number_players", number_players, allocator);
     content.AddMember("durak", durak, allocator);
-};
-
-void TestMessage::fromJson(const rapidjson::Value& obj) {
-    
-    //player names back to map, 
-    const rapidjson::Value& playerNamesJson = obj["player_names"];
-    for(auto itr = playerNamesJson.MemberBegin(); itr != playerNamesJson.MemberEnd(); ++itr){
-        unsigned int key = std::stoi(itr->name.GetString()); //the player id
-        std::string s = itr->value.GetString(); //the player name
-        player_names[key] = s;
-    }
-    number_players = obj["number_players"].GetUint();
-    durak = obj["durak"].GetUint();
-    // string = obj["string"].GetString();
 };

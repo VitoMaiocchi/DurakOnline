@@ -182,6 +182,6 @@ void PlayerUpdate::fromJson(const rapidjson::Value& obj) {
         player_names[key] = value;
     }
 
-    number_players = obj["number_players"].GetUint();
+    player_count = obj["player_count"].GetUint();
     durak = obj["durak"].GetUint();
 };

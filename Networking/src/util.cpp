@@ -9,14 +9,16 @@ Card::Card(Rank rank, Suit suit) : rank(rank), suit(suit) {}
 
 Card::Card(uint i) {
     //TODO
+    rank = RANK_ACE;
+    suit = SUIT_SPADES;
 }
 
 const uint Card::toInt() const {
-    //TODO
+    return 0; //TODO
 }
 
 bool Card::operator==(const Card& other) const {
-    //TODO
+    return false; //TODO
 }
 
 std::string Card::getFileName() {

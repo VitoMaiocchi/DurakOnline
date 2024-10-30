@@ -136,14 +136,14 @@ void CardUpdate::fromJson(const rapidjson::Value& obj){
 
     draw_pile_cards= obj["draw_pile_cards"].GetUint();
     trump_card = obj["trump_card"].GetUint();
-    trump_suit = obj["trump_suit"].GetUint();
+    trump_suit = static_cast<Suit>(obj["trump_suit"].GetUint());
 
     //middlecards back to map
     const  rapidjson::Value& middleCardJson = obj["middle_cards"];
     for(auto itr = middleCardJson.MemberBegin(); itr != middleCardJson.MemberEnd(); ++itr){
         unsigned int slot = std::stoi(itr->name.GetString());
         unsigned int card = itr->value.GetUint();
-        middle_cards[slot] = card;
+        middle_cards[static_cast<CardSlot>(slot)] = card;
     }
 
     const rapidjson::Value& handJson = obj["hand"];
@@ -169,7 +169,7 @@ void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) c
     }
     content.AddMember("player_names", playerNamesJson, allocator);
 
-    content.AddMember("number_players", number_players, allocator);
+    content.AddMember("player_count", player_count, allocator);
     content.AddMember("durak", durak, allocator);
 };
 

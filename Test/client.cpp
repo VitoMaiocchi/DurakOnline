@@ -26,24 +26,24 @@ int main() {
     card_message.opponent_cards[3] = 7; //player 3 has 7
     card_message.draw_pile_cards = 5; //5 cards on the pile
     card_message.trump_card = 10; // trump card = 10
-    card_message.trump_suit = 2; //trump suit is spades or whatever 
-    card_message.middle_cards[2] = 9; //on slot 2 the card 9
-    card_message.middle_cards[1] = 6; //on slot 2 the card 6
+    card_message.trump_suit = SUIT_HEARTS; //trump suit is spades or whatever 
+    card_message.middle_cards[CARDSLOT_2] = 9; //on slot 2 the card 9
+    card_message.middle_cards[CARDSLOT_6] = 6; //on slot 2 the card 6
     //hand vector with 5 cards
-    card_message.hand[0] = 21; 
-    card_message.hand[1] = 22;
-    card_message.hand[2] = 23;
-    card_message.hand[3] = 24;
-    card_message.hand[4] = 25;
+    card_message.hand.push_front(21);
+    card_message.hand.push_front(31);
+    card_message.hand.push_front(25);
+    card_message.hand.push_front(24);
 
     std::unique_ptr<Message> cardupdatemesg = std::make_unique<CardUpdate>(card_message);
     std::string scumsg = cardupdatemesg->toJson();
 
     std::unique_ptr<Message> answercumsg = deserialiseMessage(scumsg);
     CardUpdate* return_cumsg = dynamic_cast<CardUpdate*>(answercumsg.get());
+    //es wirds da nöd identisch use cho wil card.toInt nonig implementiert isch
     std::cout //<< "opponent_cards: " << return_cumsg->opponent_cards    das chammer nöd eif so printe
               << "\ndraw_pile_cards: " << return_cumsg->draw_pile_cards
-              << "\ntrump_card: " << return_cumsg->trump_card
+              << "\ntrump_card: " << return_cumsg->trump_card.toInt()
               << "\ntrump_suit: " << return_cumsg->trump_suit
               //<< "\nmiddle_cards: "<< return_cumsg->middle_cards
               /*<< "\nhand: " << return_cumsg->hand */<< std::endl;

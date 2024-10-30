@@ -5,6 +5,9 @@
 
 #define CLIENT_RES_DIR "../Client/resources"
 
+typedef unsigned int uint;
+typedef uint ClientID;
+
 enum Suit {
     SUIT_CLUBS,
     SUIT_SPADES,

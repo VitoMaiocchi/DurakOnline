@@ -4,6 +4,7 @@
 #include <cassert>
 #include <iostream>
 #include <Networking/util.hpp>
+#include <Networking/message.hpp>
 
 bool master_node_exists = false;
 

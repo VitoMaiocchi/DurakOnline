@@ -1,6 +1,7 @@
 #pragma once
 
 #include "drawable.hpp"
+#include <Networking/message.hpp>
 
 class GameNode : public TreeNode {
     public:
@@ -8,14 +9,10 @@ class GameNode : public TreeNode {
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 
-        /*
-        Da chömmer den so züg ane tue wi:
-        handleCardUpdate
-        handleBattlestate update
-        etc
-
-        gaht halt erst wenn message.hpp fertig isch
-        */
+        //message handling
+        void handleCardUpdate(CardUpdate update);
+        void handleBattleStateUpdate(BattleStateUpdate update);
+        void handleAvailableActionUpdate(AvailableActionUpdate update);
     private:
         void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
 };

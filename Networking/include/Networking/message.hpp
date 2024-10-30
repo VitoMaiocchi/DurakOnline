@@ -9,7 +9,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <Networking/util.hpp>
 
-enum MessageType { //nur so vorschlag mir chönds no us chäse han jetz eif gmacht wi uf dem white board
+enum MessageType {
     MESSAGETYPE_TEST, //NUR FÜR TEST GRÜND DI CHÖMMER NACHER WEG NEH
     MESSAGETYPE_ILLEGAL_MOVE_NOTIFY,
     MESSAGETYPE_CARD_UPDATE,

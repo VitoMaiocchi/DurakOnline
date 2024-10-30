@@ -19,3 +19,15 @@ void GameNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> fun
 Extends GameNode::getCompactExtends(Extends ext) {
     return ext;
 }
+
+void GameNode::handleCardUpdate(CardUpdate update) {
+    //TODO
+}
+
+void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
+    //TODO
+}
+
+void GameNode::handleAvailableActionUpdate(AvailableActionUpdate update) {
+    //TODO
+}

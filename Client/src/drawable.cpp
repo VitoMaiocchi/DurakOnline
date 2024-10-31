@@ -30,17 +30,7 @@ void LeafNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> fu
     //do nothing
 }
 
-//IMAGE NODE
-
-ImageNode::ImageNode(std::string path) : image(path) {
-    image.getDimensions(width, height);
-}
-
-void ImageNode::draw() {
-    image.draw(extends);
-}
-
-Extends ImageNode::getCompactExtends(Extends ext) {
+Extends computeCompactExtends(Extends ext, float height, float width) {
     float h, w;
     if( (float)ext.height / ext.width < (float)height / width ) { //height
         h = ext.height;
@@ -58,12 +48,46 @@ Extends ImageNode::getCompactExtends(Extends ext) {
     };
 }
 
+//IMAGE NODE
+
+ImageNode::ImageNode(std::string path) : image(path) {
+    image.getDimensions(width, height);
+}
+
+void ImageNode::draw() {
+    image.draw(extends);
+}
+
+Extends ImageNode::getCompactExtends(Extends ext) {
+    return computeCompactExtends(ext, height, width);
+}
+
 RectangleNode::RectangleNode(float r, float g, float b) : rect(r, g, b) {}
 Extends RectangleNode::getCompactExtends(Extends ext) {
     return ext;
 }
 void RectangleNode::draw() {
     rect.draw(extends);
+}
+
+//TEXT NODE
+TextNode::TextNode(std::string text, float r, float g, float b) : text(text, r, g, b) {}
+void TextNode::updateContent(std::string text) {
+    this->text.text = text;
+}
+
+Extends TextNode::getCompactExtends(Extends ext) {
+    float width, height;
+    text.getSize(width, height);
+    return computeCompactExtends(ext, height, width);
+}
+
+void TextNode::draw() { //TEXT SIZE MAX
+    float width, height;
+    text.getSize(width, height);
+    Extends ext = computeCompactExtends(extends, height, width);
+    float scale_factor = ext.width / width;
+    text.draw(extends.x - ext.width/2.0f, extends.y, scale_factor);
 }
 
 

@@ -17,6 +17,7 @@ std::unique_ptr<Node> node;
 std::unique_ptr<Node> node2;
 std::unique_ptr<Node> rect_node;
 std::unique_ptr<Node> rect_node2;
+std::unique_ptr<Node> text_node;
 
 std::unique_ptr<Node> game_node;
 
@@ -40,6 +41,8 @@ MasterNode::MasterNode() {
 
     rect_node = std::make_unique<RectangleNode>(0, 0, 0);
     rect_node2 = std::make_unique<RectangleNode>(1.0, 0, 0);
+
+    text_node = std::make_unique<TextNode>("De eric het aids", 0.2, 1.0, 0.8);
 }
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
@@ -47,6 +50,7 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
     function(rect_node2);
     function(node);
     function(node2);
+    function(text_node);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);
@@ -62,6 +66,7 @@ void MasterNode::updateExtends(Extends ext) {
     rect_node2->updateExtends(ext2);
     node->updateExtends(ext1);
     node2->updateExtends(ext2);
+    text_node->updateExtends(ext2);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);

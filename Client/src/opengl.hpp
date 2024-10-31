@@ -26,8 +26,20 @@ namespace OpenGL {
     class Rectangle {
         public:
             Rectangle(float r, float g, float b);
+            Rectangle(glm::vec3 color);
+            Rectangle(glm::vec4 color);
             void draw(Extends ext);
         private:
             glm::vec4 color;
+    };
+
+    class Text {
+        public:
+            Text(std::string text, float r, float g, float b);
+            Text(std::string text, glm::vec3 color);
+            void draw(float x, float y, float scale_factor);
+            void getSize(float &width, float &height);
+            std::string text;
+            glm::vec3 color;
     };
 }

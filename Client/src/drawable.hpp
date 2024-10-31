@@ -55,6 +55,23 @@ class RectangleNode : public LeafNode {
         float r, g, b;
 };
 
+enum TextSize {
+    TEXTSIZE_MAX, //BIS JETZT GIZ NUR DAS
+    TEXTSIZE_SMALL,
+    TEXTSIZE_MEDIUM,
+    TEXTSIZE_LARGE
+};
+
+class TextNode : public LeafNode {
+    public:
+        TextNode(std::string text, float r, float g, float b);
+        void updateContent(std::string text);
+        Extends getCompactExtends(Extends ext);
+        void draw();
+    private:
+        OpenGL::Text text;
+};
+
 
 enum BufferType {
     BUFFERTYPE_ABSOLUTE,

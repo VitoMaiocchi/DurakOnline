@@ -220,3 +220,62 @@ void BattleStateUpdate::fromJson(const rapidjson::Value& obj) {
     }
     //idle
 };
+
+
+
+//TODO:
+//hans nur leer ane gmacht will süsch de linker ufmuggt
+AvailableActionUpdate::AvailableActionUpdate() {
+
+}
+void AvailableActionUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+
+}
+void AvailableActionUpdate::fromJson(const rapidjson::Value& obj) {
+    
+}
+
+
+GameStateUpdate::GameStateUpdate() {
+
+}
+void GameStateUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+
+}
+void GameStateUpdate::fromJson(const rapidjson::Value& obj) {
+
+}
+
+
+
+PlayCardEvent::PlayCardEvent() {
+
+}
+void PlayCardEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
+
+}
+void PlayCardEvent::fromJson(const rapidjson::Value& obj) {
+
+}
+
+
+ClientActionEvent::ClientActionEvent() {
+
+}
+void ClientActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
+
+}
+void ClientActionEvent::fromJson(const rapidjson::Value& obj) {
+
+}
+
+ClientConnectEvent::ClientConnectEvent() {
+
+}
+void ClientConnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
+
+}
+void ClientConnectEvent::fromJson(const rapidjson::Value& obj) {
+
+}
+

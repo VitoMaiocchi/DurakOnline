@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <Networking/message.hpp>
 #include "drawable.hpp"
 
@@ -13,13 +14,13 @@ class MasterNode : public TreeNode {
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
     private:
-        void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };
 
 void handleMessage(std::unique_ptr<Message> message);
 
 namespace GlobalState {
     //all state information from the server is stored here
-    GameState game_state = GAMESTATE_NONE;
-    std::list<Player> players;
+    extern GameState game_state;
+    extern std::vector<Player> players;
 }

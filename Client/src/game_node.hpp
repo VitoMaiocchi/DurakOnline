@@ -6,6 +6,7 @@
 class GameNode : public TreeNode {
     public:
         GameNode();
+        virtual ~GameNode() = default;
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 
@@ -15,5 +16,5 @@ class GameNode : public TreeNode {
         void handleAvailableActionUpdate(AvailableActionUpdate update);
         void playerUpdateNotify();
     private:
-        void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };

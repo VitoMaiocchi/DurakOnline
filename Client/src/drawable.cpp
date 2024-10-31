@@ -7,7 +7,7 @@
 void Node::sendClickEvent(float x, float y) {
     if(!extends.contains(x,y)) return;
     clickEventCallback();
-    callForAllChildren([x,y](std::shared_ptr<Node> child){
+    callForAllChildren([x,y](std::unique_ptr<Node>& child){
         child->sendClickEvent(x,y);
     });
 }
@@ -17,7 +17,7 @@ void Node::setClickEventCallback(std::function<void()> callback) {
 
 //LEAF /TREE NODES
 void TreeNode::draw() {
-    callForAllChildren([](std::shared_ptr<Node> child){
+    callForAllChildren([](std::unique_ptr<Node>& child){
         child->draw();
     });
 }
@@ -26,7 +26,7 @@ void LeafNode::updateExtends(Extends ext) {
     extends = getCompactExtends(ext);
 }
 
-void LeafNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
+void LeafNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //do nothing
 }
 
@@ -117,7 +117,7 @@ void BufferNode::setBufferSize(BufferType buffer_type, float buffer_size) {
     bufferSize = buffer_size;
 }
 
-void BufferNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
+void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(child);
 }
 
@@ -135,6 +135,6 @@ void LinearStackNode::setStackType(StackDirection stack_direction, StackType sta
     stackType = stack_type;
 }
 
-void LinearStackNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
-    for(auto child : children) function(child);
+void LinearStackNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+    for(auto& child : children) function(child);
 }

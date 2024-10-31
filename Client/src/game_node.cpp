@@ -13,7 +13,7 @@ void GameNode::updateExtends(Extends ext) {
     //TODO
 }
 
-void GameNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
+void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //TODO
 }
 

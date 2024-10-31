@@ -16,7 +16,7 @@ class Node {
         void sendClickEvent(float x, float y);
         void setClickEventCallback(std::function<void()> callback);
     protected:
-        virtual void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) = 0;
+        virtual void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) = 0;
         Extends extends = {0,0,0,0,0};
         std::function<void()> clickEventCallback = [](){/*nothing*/};
 };
@@ -30,7 +30,7 @@ class LeafNode : public Node {
     public:
     void updateExtends(Extends ext);
     protected:
-    void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
+    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };
 
 class ImageNode : public LeafNode {
@@ -68,10 +68,10 @@ class BufferNode : public TreeNode {
         Extends getCompactExtends(Extends ext);
         void setBufferSize(BufferType buffer_type, float buffer_size);
 
-        std::shared_ptr<Node> child;
+        std::unique_ptr<Node> child;
 
     private:
-        void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         float getBufferSize();
         Extends getCompactChildExt(Extends ext);
         BufferType bufferType;
@@ -94,10 +94,10 @@ class LinearStackNode : public TreeNode {
         Extends getCompactExtends(Extends ext);
         void setStackType(StackDirection stack_direction, StackType stack_type);
 
-        std::list<std::shared_ptr<Node>> children;
+        std::list<std::unique_ptr<Node>> children;
     
     private:
-        void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         StackDirection stackDirection = STACKDIRECTION_HORIZONTAL;
         StackType stackType = STACKTYPE_COMPACT;
 };

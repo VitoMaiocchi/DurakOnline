@@ -3,7 +3,7 @@
 #include "opengl.hpp"
 #include "master_node.hpp"
 
-uint clientID = 0;
+ClientID clientID = 0;
 
 int main() {
    if(!OpenGL::setup()) return -1;

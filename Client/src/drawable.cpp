@@ -87,7 +87,7 @@ void TextNode::draw() { //TEXT SIZE MAX
     text.getSize(width, height);
     Extends ext = computeCompactExtends(extends, height, width);
     float scale_factor = ext.width / width;
-    text.draw(extends.x - ext.width/2.0f, extends.y, scale_factor);
+    text.draw(extends.x, extends.y, scale_factor);
 }
 
 

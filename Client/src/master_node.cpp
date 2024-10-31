@@ -66,7 +66,7 @@ void MasterNode::updateExtends(Extends ext) {
     rect_node2->updateExtends(ext2);
     node->updateExtends(ext1);
     node2->updateExtends(ext2);
-    text_node->updateExtends(ext2);
+    text_node->updateExtends(ext);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);

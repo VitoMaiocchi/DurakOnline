@@ -44,7 +44,9 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_BATTLE_STATE_UPDATE:
             message = std::make_unique<BattleStateUpdate>();
         break;
-        
+        case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
+            message = std::make_unique<AvailableActionUpdate>();
+        break;
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -264,5 +266,34 @@ void BattleStateUpdate::fromJson(const rapidjson::Value& obj) {
     idle.clear();
     for(rapidjson::SizeType i = 0; i < idleJson.Size(); ++i){
         idle.push_back(idleJson[i].GetUint());
+    }
+};
+
+
+// AVAILABLE MES
+AvailableActionUpdate::AvailableActionUpdate() {messageType = MESSAGETYPE_AVAILABLE_ACTION_UPDATE;}
+
+void AvailableActionUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    content.AddMember("pass_on", pass_on, allocator);
+    content.AddMember("ok", ok, allocator);
+    content.AddMember("pick_up", pick_up, allocator);
+};
+
+void AvailableActionUpdate::fromJson(const rapidjson::Value& obj) {
+    if(obj.HasMember("pass_on") && obj["pass_on"].IsBool()){
+        pass_on = obj["pass_on"].GetBool();
+    }else{
+        std::cerr << "Error: 'pass_on' is missing or not boolean." <<std::endl;
+    }
+
+    if(obj.HasMember("ok") && obj["ok"].IsBool()){
+        ok = obj["ok"].GetBool();
+    }else{
+        std::cerr << "Error: 'ok' is missing or not boolean." <<std::endl;
+    }
+    if(obj.HasMember("pick_up") && obj["pick_up"].IsBool()){
+        pick_up = obj["pick_up"].GetBool();
+    }else{
+        std::cerr << "Error: 'pick_up' is missing or not boolean." <<std::endl;
     }
 };

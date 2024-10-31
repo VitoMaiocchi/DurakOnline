@@ -100,6 +100,22 @@ int main() {
     }
     std::cout << "---------------------------------------------------" << std::endl;
     
+    /*testing available action update message*/
+    AvailableActionUpdate aa_message;
+    aa_message.pass_on = true;
+    aa_message.ok = false;
+    aa_message.pick_up = false;
+
+    std::unique_ptr<Message> aam = std::make_unique<AvailableActionUpdate>(aa_message);
+    std::string string_aa = aam->toJson();
+
+    std::unique_ptr<Message> answer_aa = deserialiseMessage(string_aa);
+    AvailableActionUpdate* return_aa = dynamic_cast<AvailableActionUpdate*>(answer_aa.get());
+    std::cout << "pass on: " << return_aa->pass_on 
+              << "\nok: "      << return_aa->ok
+              << "\npick up: " << return_aa->pick_up << std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
 
 
     TestMessage message;

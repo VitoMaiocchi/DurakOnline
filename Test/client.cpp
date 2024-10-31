@@ -49,23 +49,58 @@ int main() {
     //           //<< "\nmiddle_cards: "<< return_cumsg->middle_cards
     //           /*<< "\nhand: " << return_cumsg->hand */<< std::endl;
   
+    std::cout << "---------------------------------------------------" << std::endl;
 
     /*testing player update message*/
-    // PlayerUpdate player_message;
-    // player_message.player_names[0] = "Noah";
-    // player_message.player_names[1] = "Boah";
-    // player_message.player_count = 2;
-    // player_message.durak = 0;
+    PlayerUpdate player_message;
+    player_message.player_names[0] = "Noah";
+    player_message.player_names[1] = "Boah";
+    player_message.player_count = 2;
+    player_message.durak = 0;
 
-    // std::unique_ptr<Message> plm = std::make_unique<PlayerUpdate>(player_message);
-    // std::string pl = plm->toJson();
+    std::unique_ptr<Message> plm = std::make_unique<PlayerUpdate>(player_message);
+    std::string pl = plm->toJson();
 
-    // std::unique_ptr<Message> solution = deserialiseMessage(pl);
-    // PlayerUpdate* return_plm = dynamic_cast<PlayerUpdate*>(solution.get());
-    // std::cout << "player_name id = 0: " << return_plm->player_names[0] 
-    //           << "\nplayer_name id = 1: " << return_plm->player_names[1]
-    //           << "\nplayer_count = " << return_plm->player_count
-    //           << "\ndurak = " << return_plm->durak << std::endl;
+    std::unique_ptr<Message> solution = deserialiseMessage(pl);
+
+    PlayerUpdate* return_plm = dynamic_cast<PlayerUpdate*>(solution.get());
+    std::cout << "player_name id = 0: " << return_plm->player_names[0] 
+              << "\nplayer_name id = 1: " << return_plm->player_names[1] 
+              << "\nplayer_count = " << return_plm->player_count
+              << "\ndurak = " << return_plm->durak << std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
+
+    BattleStateUpdate battle_message;
+    //total 5 players, playerid 1 is defending, id 0 and 2 are attacking, id 3 and 4 are idle
+    battle_message.defender = 1;
+    battle_message.attackers.push_back(0);
+    battle_message.attackers.push_back(2);
+    battle_message.idle.push_back(3);
+    battle_message.idle.push_back(4);
+
+    std::unique_ptr<Message> bam = std::make_unique<BattleStateUpdate>(battle_message);
+    std::string battlestr = bam->toJson();
+
+    std::unique_ptr<Message> bamsol = deserialiseMessage(battlestr);
+
+    BattleStateUpdate* return_bam = dynamic_cast<BattleStateUpdate*>(bamsol.get());
+    std::cout << "defender id: " << return_bam->defender
+              /*<< "\nattacker 1 id: " << return_bam->attackers[0] 
+              << "\nattacker 2 id: " << return_bam->attackers[1]
+              << "\nidle 1 id: " << return_bam->idle[0] 
+              << "\nidle 2 id: " << return_bam->idle[1] */<< std::endl;
+    std::cout << "Attackers: "<<std::endl;
+    for(auto att : return_bam->attackers){
+        std::cout << "id = " << att << std::endl;
+    }
+    std::cout << "Idle: " <<std::endl;
+    for(auto idlepl : return_bam->idle){
+        std::cout << "id = " << idlepl << std::endl;
+    }
+    std::cout << "---------------------------------------------------" << std::endl;
+    
+
 
     TestMessage message;
     message.x = 3;

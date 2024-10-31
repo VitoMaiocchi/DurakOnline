@@ -7,7 +7,7 @@
 void Node::sendClickEvent(float x, float y) {
     if(!extends.contains(x,y)) return;
     clickEventCallback();
-    callForAllChildren([x,y](std::shared_ptr<Node> child){
+    callForAllChildren([x,y](std::unique_ptr<Node>& child){
         child->sendClickEvent(x,y);
     });
 }
@@ -17,7 +17,7 @@ void Node::setClickEventCallback(std::function<void()> callback) {
 
 //LEAF /TREE NODES
 void TreeNode::draw() {
-    callForAllChildren([](std::shared_ptr<Node> child){
+    callForAllChildren([](std::unique_ptr<Node>& child){
         child->draw();
     });
 }
@@ -26,21 +26,11 @@ void LeafNode::updateExtends(Extends ext) {
     extends = getCompactExtends(ext);
 }
 
-void LeafNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
+void LeafNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //do nothing
 }
 
-//IMAGE NODE
-
-ImageNode::ImageNode(std::string path) : image(path) {
-    image.getDimensions(width, height);
-}
-
-void ImageNode::draw() {
-    image.draw(extends);
-}
-
-Extends ImageNode::getCompactExtends(Extends ext) {
+Extends computeCompactExtends(Extends ext, float height, float width) {
     float h, w;
     if( (float)ext.height / ext.width < (float)height / width ) { //height
         h = ext.height;
@@ -58,12 +48,46 @@ Extends ImageNode::getCompactExtends(Extends ext) {
     };
 }
 
+//IMAGE NODE
+
+ImageNode::ImageNode(std::string path) : image(path) {
+    image.getDimensions(width, height);
+}
+
+void ImageNode::draw() {
+    image.draw(extends);
+}
+
+Extends ImageNode::getCompactExtends(Extends ext) {
+    return computeCompactExtends(ext, height, width);
+}
+
 RectangleNode::RectangleNode(float r, float g, float b) : rect(r, g, b) {}
 Extends RectangleNode::getCompactExtends(Extends ext) {
     return ext;
 }
 void RectangleNode::draw() {
     rect.draw(extends);
+}
+
+//TEXT NODE
+TextNode::TextNode(std::string text, float r, float g, float b) : text(text, r, g, b) {}
+void TextNode::updateContent(std::string text) {
+    this->text.text = text;
+}
+
+Extends TextNode::getCompactExtends(Extends ext) {
+    float width, height;
+    text.getSize(width, height);
+    return computeCompactExtends(ext, height, width);
+}
+
+void TextNode::draw() { //TEXT SIZE MAX
+    float width, height;
+    text.getSize(width, height);
+    Extends ext = computeCompactExtends(extends, height, width);
+    float scale_factor = ext.width / width;
+    text.draw(extends.x, extends.y, scale_factor);
 }
 
 
@@ -117,7 +141,7 @@ void BufferNode::setBufferSize(BufferType buffer_type, float buffer_size) {
     bufferSize = buffer_size;
 }
 
-void BufferNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
+void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(child);
 }
 
@@ -135,6 +159,6 @@ void LinearStackNode::setStackType(StackDirection stack_direction, StackType sta
     stackType = stack_type;
 }
 
-void LinearStackNode::callForAllChildren(std::function<void(std::shared_ptr<Node>)> function) {
-    for(auto child : children) function(child);
+void LinearStackNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+    for(auto& child : children) function(child);
 }

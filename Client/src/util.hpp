@@ -1,6 +1,9 @@
 #pragma once 
 
 #include <string>
+#include <Networking/util.hpp>
+
+#define cast(type, ptr) dynamic_cast<type*>(ptr.get()) 
 
 struct Extends {
     float x;

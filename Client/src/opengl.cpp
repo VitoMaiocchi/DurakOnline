@@ -52,7 +52,6 @@ namespace OpenGL {
     bool setupWindow();
     void setupVertexArray();
     void generateCharacterTextures();
-    void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
 
     //General Setup
 
@@ -76,9 +75,6 @@ namespace OpenGL {
         glClear(GL_COLOR_BUFFER_BIT);
 
         masterNode->draw();
-
-        renderText("I want mommy I want Milk", 10.0f, 10.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-        renderText("I have crippeling depression", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
 
         glfwSwapBuffers(window);
         glfwPollEvents();    
@@ -132,9 +128,14 @@ namespace OpenGL {
 
 
     //Rectangle
-    Rectangle::Rectangle(float r, float g, float b) {
-        color = glm::vec4(r, g, b, 1.0f);
-    }
+    Rectangle::Rectangle(float r, float g, float b) :
+        color(glm::vec4(r, g, b, 1.0f)) {}
+
+    Rectangle::Rectangle(glm::vec3 color) :
+        color(glm::vec4(color.x, color.y, color.z, 1.0f)) {}
+
+    Rectangle::Rectangle(glm::vec4 color) :
+        color(color) {}
 
     void Rectangle::draw(Extends ext) {
         glUseProgram(rectangleShader->shader_program);
@@ -279,6 +280,22 @@ namespace OpenGL {
     
 
     //FREE TYPE (TEXT)
+    void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
+    void computeTextSize(std::string text, float scale, float &width, float &height);
+
+    Text::Text(std::string text, float r, float g, float b) :
+        text(text), color(glm::vec3(r,g,b)) {}
+    
+    Text::Text(std::string text, glm::vec3 color) :
+        text(text), color(color) {}
+
+    void Text::draw(float x, float y, float scale_factor) {
+        renderText(text, x, y, scale_factor, color);
+    }
+
+    void Text::getSize(float &width, float &height) {
+        computeTextSize(text, 1.0f, width, height);
+    }
 
     struct Character {
         unsigned int TextureID; // ID handle of the glyph texture
@@ -343,6 +360,19 @@ namespace OpenGL {
         FT_Done_FreeType(ft);
     }
 
+    void computeTextSize(std::string text, float scale, float &width, float &height) {
+        width = 0;
+        height = 0;
+        
+        std::string::const_iterator c;
+        for (c = text.begin(); c != text.end(); c++) {
+            Character ch = Characters[*c];
+            float h = ch.Size.y * scale;
+            if(height < h) height = h;
+            width += (ch.Advance >> 6) * scale;
+        }
+    };
+
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color) {
         glUseProgram(characterShader->shader_program);
         glUniform3f(glGetUniformLocation(characterShader->shader_program, "textColor"), color.x, color.y, color.z);
@@ -352,8 +382,7 @@ namespace OpenGL {
 
         // character iterator
         std::string::const_iterator c;
-        for (c = text.begin(); c != text.end(); c++) 
-        {
+        for (c = text.begin(); c != text.end(); c++) {
             Character ch = Characters[*c];
 
             float xpos = x + ch.Bearing.x * scale;

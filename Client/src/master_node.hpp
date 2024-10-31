@@ -3,7 +3,7 @@
 #include <Networking/message.hpp>
 #include "drawable.hpp"
 
-extern uint clientID;
+extern ClientID clientID; //client id of this client;
 
 //ONLY ONE MASTER NODE CAN EXIST
 //IT IS CREATED BY opengl.cpp 
@@ -17,3 +17,9 @@ class MasterNode : public TreeNode {
 };
 
 void handleMessage(std::unique_ptr<Message> message);
+
+namespace GlobalState {
+    //all state information from the server is stored here
+    GameState game_state = GAMESTATE_NONE;
+    std::list<Player> players;
+}

@@ -13,6 +13,7 @@ class GameNode : public TreeNode {
         void handleCardUpdate(CardUpdate update);
         void handleBattleStateUpdate(BattleStateUpdate update);
         void handleAvailableActionUpdate(AvailableActionUpdate update);
+        void playerUpdateNotify();
     private:
         void callForAllChildren(std::function<void(std::shared_ptr<Node>)> function);
 };

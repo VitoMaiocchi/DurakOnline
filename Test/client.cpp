@@ -71,6 +71,37 @@ int main() {
 
     std::cout << "---------------------------------------------------" << std::endl;
 
+    BattleStateUpdate battle_message;
+    //total 5 players, playerid 1 is defending, id 0 and 2 are attacking, id 3 and 4 are idle
+    battle_message.defender = 1;
+    battle_message.attackers.push_back(0);
+    battle_message.attackers.push_back(2);
+    battle_message.idle.push_back(3);
+    battle_message.idle.push_back(4);
+
+    std::unique_ptr<Message> bam = std::make_unique<BattleStateUpdate>(battle_message);
+    std::string battlestr = bam->toJson();
+
+    std::unique_ptr<Message> bamsol = deserialiseMessage(battlestr);
+
+    BattleStateUpdate* return_bam = dynamic_cast<BattleStateUpdate*>(bamsol.get());
+    std::cout << "defender id: " << return_bam->defender
+              /*<< "\nattacker 1 id: " << return_bam->attackers[0] 
+              << "\nattacker 2 id: " << return_bam->attackers[1]
+              << "\nidle 1 id: " << return_bam->idle[0] 
+              << "\nidle 2 id: " << return_bam->idle[1] */<< std::endl;
+    std::cout << "Attackers: "<<std::endl;
+    for(auto att : return_bam->attackers){
+        std::cout << "id = " << att << std::endl;
+    }
+    std::cout << "Idle: " <<std::endl;
+    for(auto idlepl : return_bam->idle){
+        std::cout << "id = " << idlepl << std::endl;
+    }
+    std::cout << "---------------------------------------------------" << std::endl;
+    
+
+
     TestMessage message;
     message.x = 3;
     message.y = 7;

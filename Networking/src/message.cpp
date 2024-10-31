@@ -41,6 +41,10 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_PLAYER_UPDATE:
             message = std::make_unique<PlayerUpdate>();
         break;
+        case MESSAGETYPE_BATTLE_STATE_UPDATE:
+            message = std::make_unique<BattleStateUpdate>();
+        break;
+        
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -256,4 +260,9 @@ void BattleStateUpdate::fromJson(const rapidjson::Value& obj) {
         attackers.push_back(attackersJson[i].GetUint());
     }
     //idle
+    const rapidjson::Value& idleJson = obj["idle"];
+    idle.clear();
+    for(rapidjson::SizeType i = 0; i < idleJson.Size(); ++i){
+        idle.push_back(idleJson[i].GetUint());
+    }
 };

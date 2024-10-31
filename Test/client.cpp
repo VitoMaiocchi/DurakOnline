@@ -9,6 +9,7 @@
 #include <string>
 
 int main() {
+    std::cout << "TEST MESSAGETYPE_ILLEGAL_MOVE_NOTIFY" << std::endl;
     /*testing illegal notify message*/
     IllegalMoveNotify err_message;
     err_message.error = "Illegal move";
@@ -18,8 +19,9 @@ int main() {
     std::unique_ptr<Message> answer = deserialiseMessage(s);
     IllegalMoveNotify* return_m = dynamic_cast<IllegalMoveNotify*>(answer.get());
     std::cout << "error: " << return_m->error << std::endl;
-     
-
+    
+    std::cout << "---------------------------------------------" <<std::endl;
+    std::cout << "TEST MESSAGETYPE_CARD_UPDATE" << std::endl;
     // /*testing card update message*/
     // CardUpdate card_message;
     // card_message.opponent_cards[1] =  3; //player with id=1 has 3 cards
@@ -50,7 +52,7 @@ int main() {
     //           /*<< "\nhand: " << return_cumsg->hand */<< std::endl;
   
     std::cout << "---------------------------------------------------" << std::endl;
-
+    std::cout << "TEST MESSAGETYPE_PLAYER_UPDATE" << std::endl;
     /*testing player update message*/
     PlayerUpdate player_message;
     player_message.player_names[0] = "Noah";
@@ -70,7 +72,7 @@ int main() {
               << "\ndurak = " << return_plm->durak << std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
-
+    std::cout << "TEST MESSAGETYPE_BATTLE_STATE_UPDATE" << std::endl;
     BattleStateUpdate battle_message;
     //total 5 players, playerid 1 is defending, id 0 and 2 are attacking, id 3 and 4 are idle
     battle_message.defender = 1;
@@ -99,7 +101,7 @@ int main() {
         std::cout << "id = " << idlepl << std::endl;
     }
     std::cout << "---------------------------------------------------" << std::endl;
-    
+    std::cout << "TEST MESSAGETYPE_AVAILABLE_ACTION_UPDATE" << std::endl;
     /*testing available action update message*/
     AvailableActionUpdate aa_message;
     aa_message.pass_on = true;
@@ -116,7 +118,19 @@ int main() {
               << "\npick up: " << return_aa->pick_up << std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "TEST MESSAGETYPE_GAME_STATE_UPDATE" << std::endl;
+    /*testing game state update message*/
+    GameStateUpdate gs_message;
+    gs_message.state = GAMESTATE_LOBBY;
 
+    std::unique_ptr<Message> gsm = std::make_unique<GameStateUpdate>(gs_message);
+    std::string string_gs = gsm->toJson();
+
+    std::unique_ptr<Message> answer_gs = deserialiseMessage(string_gs);
+    GameStateUpdate* return_gs = dynamic_cast<GameStateUpdate*>(answer_gs.get());
+    std::cout << "state: " << return_gs->state<< std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
 
     TestMessage message;
     message.x = 3;

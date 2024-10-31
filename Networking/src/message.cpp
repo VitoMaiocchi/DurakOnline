@@ -47,6 +47,9 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
             message = std::make_unique<AvailableActionUpdate>();
         break;
+        case MESSAGETYPE_GAME_STATE_UPDATE:
+            message = std::make_unique<GameStateUpdate>();
+        break;
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -296,16 +299,40 @@ void AvailableActionUpdate::fromJson(const rapidjson::Value& obj) {
         std::cerr << "Error: 'pick_up' is missing or not boolean." <<std::endl;
     }
 };
-
-
-GameStateUpdate::GameStateUpdate() {
-
+/* helper function to convert GameState into a string*/
+std::string gameStateToString(GameState state){
+    switch(state){
+        case GAMESTATE_LOBBY: return "lobby";
+        case GAMESTATE_GAME: return "game";
+        case GAMESTATE_SPECTATOR: return "spectator";
+        case GAMESTATE_GAME_OVER: return "game_over";
+        case GAMESTATE_DURAK_SCREEN: return "durak_screen";
+        case GAMESTATE_NONE: return "none";
+        default: return "unknown";
+    }
 }
-void GameStateUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+/* helper function to convert string back to GameState */
+GameState stringToGameState(const std::string &string){
+    if(string == "lobby") return GAMESTATE_LOBBY;
+    if(string == "game") return GAMESTATE_GAME;
+    if(string == "spectator") return GAMESTATE_SPECTATOR;
+    if(string == "game_over") return GAMESTATE_GAME_OVER;
+    if(string == "durak_screen") return GAMESTATE_DURAK_SCREEN;
+    if(string == "none") return GAMESTATE_NONE;
+    return GAMESTATE_NONE;
+}
 
+GameStateUpdate::GameStateUpdate() {messageType = MESSAGETYPE_GAME_STATE_UPDATE;}
+void GameStateUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    content.AddMember("state", rapidjson::Value(gameStateToString(state).c_str(), allocator), allocator);
 }
 void GameStateUpdate::fromJson(const rapidjson::Value& obj) {
-
+    if(obj.HasMember("state") && obj["state"].IsString()){
+        state = stringToGameState(obj["state"].GetString());
+    } else{
+        std::cerr << "Error: 'state' is missing or not in the string." << std::endl;
+        state = GAMESTATE_NONE;
+    }
 }
 
 

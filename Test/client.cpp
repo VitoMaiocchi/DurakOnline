@@ -49,23 +49,27 @@ int main() {
     //           //<< "\nmiddle_cards: "<< return_cumsg->middle_cards
     //           /*<< "\nhand: " << return_cumsg->hand */<< std::endl;
   
+    std::cout << "---------------------------------------------------" << std::endl;
 
     /*testing player update message*/
-    // PlayerUpdate player_message;
-    // player_message.player_names[0] = "Noah";
-    // player_message.player_names[1] = "Boah";
-    // player_message.player_count = 2;
-    // player_message.durak = 0;
+    PlayerUpdate player_message;
+    player_message.player_names[0] = "Noah";
+    player_message.player_names[1] = "Boah";
+    player_message.player_count = 2;
+    player_message.durak = 0;
 
-    // std::unique_ptr<Message> plm = std::make_unique<PlayerUpdate>(player_message);
-    // std::string pl = plm->toJson();
+    std::unique_ptr<Message> plm = std::make_unique<PlayerUpdate>(player_message);
+    std::string pl = plm->toJson();
 
-    // std::unique_ptr<Message> solution = deserialiseMessage(pl);
-    // PlayerUpdate* return_plm = dynamic_cast<PlayerUpdate*>(solution.get());
-    // std::cout << "player_name id = 0: " << return_plm->player_names[0] 
-    //           << "\nplayer_name id = 1: " << return_plm->player_names[1]
-    //           << "\nplayer_count = " << return_plm->player_count
-    //           << "\ndurak = " << return_plm->durak << std::endl;
+    std::unique_ptr<Message> solution = deserialiseMessage(pl);
+
+    PlayerUpdate* return_plm = dynamic_cast<PlayerUpdate*>(solution.get());
+    std::cout << "player_name id = 0: " << return_plm->player_names[0] 
+              << "\nplayer_name id = 1: " << return_plm->player_names[1] 
+              << "\nplayer_count = " << return_plm->player_count
+              << "\ndurak = " << return_plm->durak << std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
 
     TestMessage message;
     message.x = 3;

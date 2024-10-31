@@ -1,13 +1,29 @@
 #include <Networking/message.hpp>
 #include <Networking/util.hpp>
 
+#include <algorithm> // for std::all_of for debugging purposes
+
 std::unique_ptr<Message> deserialiseMessage(std::string string) {
     rapidjson::Document document;
-    assert(!document.Parse(string.c_str()).HasParseError());
+    // assert(!document.Parse(string.c_str()).HasParseError());
+    if(document.Parse(string.c_str()).HasParseError()){
+        std::cerr << "Error: JSON parsing failed." << std::endl;
+        return nullptr;
+    }
 
+    if (!document.HasMember("message_type") || !document["message_type"].IsInt()) {
+        std::cerr << "Error: 'message_type' is missing or not an integer." << std::endl;
+        return nullptr;
+    }
     MessageType type = static_cast<MessageType>(document["message_type"].GetInt());
+
+    if (!document.HasMember("content") || !document["content"].IsObject()) {
+        std::cerr << "Error: 'content' is missing or not an object." << std::endl;
+        return nullptr;
+    }
+
     rapidjson::Value &content = document["content"];
-    
+
     std::unique_ptr<Message> message;
     switch (type) {
         case MESSAGETYPE_TEST:
@@ -29,8 +45,12 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
     }
+    if(message){
+        message->fromJson(content);
+    } else{
+        std::cerr << "Error: message creation failed" << std::endl;
+    }
 
-    message->fromJson(content);
     return message;
 }
 
@@ -47,7 +67,7 @@ std::string Message::toJson() const {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     document.Accept(writer);
-
+    // std::cout << "yay, omg i did it"<< std::endl;
     return buffer.GetString();
 }
 
@@ -155,10 +175,10 @@ void CardUpdate::fromJson(const rapidjson::Value& obj){
 
 
 //PLAYER UPDATE
-PlayerUpdate::PlayerUpdate() {messageType = MESSAGETYPE_TEST;}
+PlayerUpdate::PlayerUpdate() {messageType = MESSAGETYPE_PLAYER_UPDATE;}
 
 void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
-    
+
     rapidjson::Value playerNamesJson(rapidjson::kObjectType);
     for(const auto& [key, value] : player_names){
         playerNamesJson.AddMember(
@@ -171,19 +191,36 @@ void PlayerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) c
 
     content.AddMember("player_count", player_count, allocator);
     content.AddMember("durak", durak, allocator);
+
 };
 
 void PlayerUpdate::fromJson(const rapidjson::Value& obj) {
-    
-    const rapidjson::Value& playerNamesJson = obj["player_names"];
-    for(auto itr = playerNamesJson.MemberBegin(); itr != playerNamesJson.MemberEnd(); ++itr){
-        unsigned int key = std::stoi(itr->name.GetString());
-        std::string value = itr->value.GetString();
-        player_names[key] = value;
+    if(obj.HasMember("player_names") && obj["player_names"].IsObject()){
+        const rapidjson::Value& playerNamesJson = obj["player_names"];
+        for(auto itr = playerNamesJson.MemberBegin(); itr != playerNamesJson.MemberEnd(); ++itr){
+            const std::string keyString = itr->name.GetString();
+            if(!keyString.empty() && std::all_of(keyString.begin(), keyString.end(), ::isdigit)){
+                unsigned int key = std::stoi(keyString);
+                player_names[key] = itr->value.GetString();
+            }else{
+                std::cerr << "invalid key in player_names: "<< keyString << std::endl;
+            }
+        }
+    } else{
+        std::cerr << "Error: 'player names' is missing or not an object" << std::endl;
+    }
+    if(obj.HasMember("player_count") && obj["player_count"].IsUint()){
+        player_count = obj["player_count"].GetUint();   
+    } else {
+        std::cerr << "Error: 'player count' is missing or not unsigned int" <<std::endl;
     }
 
-    player_count = obj["player_count"].GetUint();
-    durak = obj["durak"].GetUint();
+    if(obj.HasMember("durak") && obj["durak"].IsUint()){
+        durak = obj["durak"].GetUint();   
+    } else {
+        std::cerr << "Error: 'durak' is missing or not unsigned int" <<std::endl;
+    }
+
 };
 
 //BATTLE STATE UPDATE

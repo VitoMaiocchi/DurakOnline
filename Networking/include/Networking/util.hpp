@@ -67,6 +67,8 @@ enum GameState {
     GAMESTATE_DURAK_SCREEN,
     GAMESTATE_NONE
 };
+inline int ToInt(GameState state) { return static_cast<int>(state); }
+inline GameState FromInt(int value) { return static_cast<GameState>(value); }
 
 enum ClientAction {
     CLIENTACTION_OK,

@@ -121,14 +121,17 @@ int main() {
     std::cout << "TEST MESSAGETYPE_GAME_STATE_UPDATE" << std::endl;
     /*testing game state update message*/
     GameStateUpdate gs_message;
-    gs_message.state = GAMESTATE_LOBBY;
+    // gs_message.state = GAMESTATE_LOBBY; //state = 0
+    gs_message.state = GAMESTATE_DURAK_SCREEN; //state = 4
+
+    std::cout << "testing state: " << gs_message.state <<std::endl;
 
     std::unique_ptr<Message> gsm = std::make_unique<GameStateUpdate>(gs_message);
     std::string string_gs = gsm->toJson();
 
     std::unique_ptr<Message> answer_gs = deserialiseMessage(string_gs);
     GameStateUpdate* return_gs = dynamic_cast<GameStateUpdate*>(answer_gs.get());
-    std::cout << "state: " << return_gs->state<< std::endl;
+    std::cout << "returned state: " << return_gs->state<< std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
 

@@ -150,8 +150,13 @@ void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 }
 
 //LINEAR STACK NODE
+//TODO STACKTYPE
 void LinearStackNode::updateExtends(Extends ext) {
     float offset = 0.0f;
+    float totalWidth = 0.0f;
+    float totalHeight = 0.0f;
+    float ratioWidth = 0.0f;
+    float ratioHeight = 0.0f;
 
     for (auto& child : children) {
         Extends childExt = ext;
@@ -160,14 +165,41 @@ void LinearStackNode::updateExtends(Extends ext) {
             childExt.x += offset;
             childExt.width = child->getCompactExtends(ext).width;
             offset += childExt.width;
+            totalWidth += childExt.width;
+            totalHeight = std::max(totalHeight, childExt.height);
         } else {
             childExt.y += offset;
             childExt.height = child->getCompactExtends(ext).height;
             offset += childExt.height;
         }
-
         child->updateExtends(childExt);
     }
+    /*
+    ratioWidth = ext.width/totalWidth;
+    ratioHeight = ext.height/totalHeight;
+
+    float scale = std::min(ratioWidth,ratioHeight);
+
+    //if(scale >= 1) blabllbab
+
+    for (auto& child : children) {
+        Extends childExt = ext;
+
+        if (stackDirection == STACKDIRECTION_HORIZONTAL) {
+            childExt.x += offset;
+            childExt.width = child->getCompactExtends(ext).width;
+            childExt.height = child->getCompactExtends(ext).height;
+            childExt.width *= scale;
+            childExt.height *= scale;
+            offset += childExt.width;
+        } else {
+            childExt.y += offset;
+            childExt.height = child->getCompactExtends(ext).height;
+            offset += childExt.height;
+        }
+        child->updateExtends(childExt);
+    }
+    */
 
     if (stackDirection == STACKDIRECTION_HORIZONTAL) {
         this->extends.width = offset;
@@ -178,6 +210,7 @@ void LinearStackNode::updateExtends(Extends ext) {
     }
 }
 
+//TODO STACKTYPE
 Extends LinearStackNode::getCompactExtends(Extends ext) {
     float totalWidth = 0.0f;
     float totalHeight = 0.0f;
@@ -196,10 +229,10 @@ Extends LinearStackNode::getCompactExtends(Extends ext) {
         }
     }
 
-    float offsetX = ext.x + (ext.width - totalWidth) / 2;
-    float offsetY = ext.y + (ext.height - totalHeight) / 2;
+    float offsetX = ext.x + (ext.width - totalWidth)/2;
+    float offsetY = ext.y + (ext.height - totalHeight)/2;
 
-    return { offsetX, offsetY, totalWidth, totalHeight };
+    return {offsetX, offsetY, totalWidth, totalHeight};
 }
 
 void LinearStackNode::setStackType(StackDirection stack_direction, StackType stack_type) {

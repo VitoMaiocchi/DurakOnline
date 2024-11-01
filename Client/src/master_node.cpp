@@ -33,7 +33,6 @@ MasterNode::MasterNode() {
     cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
     cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
     cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
-    std::cerr << "MasterNode initialization complete." << std::endl;
 } 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
@@ -68,10 +67,11 @@ void MasterNode::updateExtends(Extends ext) {
     extends = ext;
     Extends ext1 = {ext.x, ext.y, ext.width/2, ext.height};
     Extends ext2 = {ext.x+ext.width/2, ext.y, ext.width/2, ext.height};
+    Extends ext3 = {0., 0., ext.width, ext.height};
     rect_node->updateExtends(ext1);
     rect_node2->updateExtends(ext2);
     text_node->updateExtends(ext);
-    stack_node1->updateExtends(ext);
+    stack_node1->updateExtends(ext3);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);

@@ -157,7 +157,29 @@ void LinearStackNode::updateExtends(Extends ext) {
     float totalHeight = 0.0f;
     float ratioWidth = 0.0f;
     float ratioHeight = 0.0f;
+    for (auto& child : children) {
+        totalWidth += child->getCompactExtends(ext).width;
+        totalHeight = std::max(totalHeight, child->getCompactExtends(ext).height);
+    }
 
+    ratioWidth = ext.width/totalWidth;
+    ratioHeight = ext.height/totalHeight;
+    float scale = std::min(ratioHeight, ratioWidth);
+
+    for (auto& child : children) {
+        Extends childExt = ext;
+
+        childExt.x += offset;
+        childExt.width = child->getCompactExtends(ext).width;
+        childExt.width *= scale;
+        childExt.height *= scale;
+        offset += childExt.width;
+
+
+        child->updateExtends(childExt);
+    }
+
+    /*
     for (auto& child : children) {
         Extends childExt = ext;
 
@@ -174,7 +196,7 @@ void LinearStackNode::updateExtends(Extends ext) {
         }
         child->updateExtends(childExt);
     }
-    /*
+    
     ratioWidth = ext.width/totalWidth;
     ratioHeight = ext.height/totalHeight;
 
@@ -200,14 +222,6 @@ void LinearStackNode::updateExtends(Extends ext) {
         child->updateExtends(childExt);
     }
     */
-
-    if (stackDirection == STACKDIRECTION_HORIZONTAL) {
-        this->extends.width = offset;
-        this->extends.height = ext.height;
-    } else {
-        this->extends.height = offset;
-        this->extends.width = ext.width;
-    }
 }
 
 //TODO STACKTYPE

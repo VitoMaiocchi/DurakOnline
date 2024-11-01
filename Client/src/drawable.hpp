@@ -110,10 +110,8 @@ class LinearStackNode : public TreeNode {
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
         void setStackType(StackDirection stack_direction, StackType stack_type);
-        void addChild(std::unique_ptr<Node> child);
 
         std::list<std::unique_ptr<Node>> children;
-    
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         StackDirection stackDirection = STACKDIRECTION_HORIZONTAL;

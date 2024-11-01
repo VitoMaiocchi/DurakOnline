@@ -13,8 +13,6 @@ bool master_node_exists = false;
 GameState GlobalState::game_state = GAMESTATE_NONE;
 std::vector<Player> GlobalState::players;
 
-//std::unique_ptr<Node> node;
-//std::unique_ptr<Node> node2;
 std::unique_ptr<Node> rect_node;
 std::unique_ptr<Node> rect_node2;
 std::unique_ptr<Node> text_node;
@@ -25,33 +23,6 @@ std::unique_ptr<Node> game_node;
 MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
     master_node_exists = true;
-    /*
-    // BufferNode for Ace of Spades
-    node = std::make_unique<BufferNode>();
-    auto bufferNode = cast(BufferNode, node);
-    if (bufferNode) {
-        bufferNode->child = std::make_unique<ImageNode>(Card(RANK_ACE, SUIT_SPADES).getFileName());
-        bufferNode->setBufferSize(BUFFERTYPE_RELATIVE, 50);
-        bufferNode->child->setClickEventCallback([]() {
-            std::cout << "Clicked on Ace of Spades" << std::endl;
-        });
-    } else {
-        std::cerr << "Failed to cast node to BufferNode" << std::endl;
-    }
-//
-    // BufferNode for Queen of Diamonds
-    node2 = std::make_unique<BufferNode>();
-    auto bufferNode2 = cast(BufferNode, node2);
-    if (bufferNode2) {
-        bufferNode2->child = std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName());
-        bufferNode2->setBufferSize(BUFFERTYPE_ABSOLUTE, 50);
-        bufferNode2->child->setClickEventCallback([]() {
-            std::cout << "Clicked on Queen of Diamonds" << std::endl;
-        });
-    } else {
-        std::cerr << "Failed to cast node2 to BufferNode" << std::endl;
-    }
-    */
     // RectangleNode and TextNode
     rect_node = std::make_unique<RectangleNode>(0, 0, 0);
     rect_node2 = std::make_unique<RectangleNode>(1.0, 0, 0);

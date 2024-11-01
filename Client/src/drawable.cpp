@@ -17,8 +17,12 @@ void Node::setClickEventCallback(std::function<void()> callback) {
 
 //LEAF /TREE NODES
 void TreeNode::draw() {
-    callForAllChildren([](std::unique_ptr<Node>& child){
-        child->draw();
+    callForAllChildren([](std::unique_ptr<Node>& child) {
+        if (child) {  // Ensure child is valid
+            child->draw();
+        } else {
+            std::cerr << "Warning: Attempted to draw a null child node." << std::endl;
+        }
     });
 }
 
@@ -147,16 +151,74 @@ void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 
 //LINEAR STACK NODE
 void LinearStackNode::updateExtends(Extends ext) {
-    //TODO
+    float offset = 0.0f;
+
+    for (auto& child : children) {
+        Extends childExt = ext;
+
+        if (stackDirection == STACKDIRECTION_HORIZONTAL) {
+            childExt.x += offset;
+            childExt.width = child->getCompactExtends(ext).width;
+            offset += childExt.width;
+        } else {
+            childExt.y += offset;
+            childExt.height = child->getCompactExtends(ext).height;
+            offset += childExt.height;
+        }
+
+        child->updateExtends(childExt);
+    }
+
+    if (stackDirection == STACKDIRECTION_HORIZONTAL) {
+        this->extends.width = offset;
+        this->extends.height = ext.height;
+    } else {
+        this->extends.height = offset;
+        this->extends.width = ext.width;
+    }
 }
 
 Extends LinearStackNode::getCompactExtends(Extends ext) {
-    return ext; //TODO
+    float totalWidth = 0.0f;
+    float totalHeight = 0.0f;
+
+    if (stackDirection == STACKDIRECTION_HORIZONTAL) {
+        // Sum up the width of each child's compact extent
+        for (const auto& child : children) {
+            Extends childExt = child->getCompactExtends(ext);
+            totalWidth += childExt.width;
+            totalHeight = std::max(totalHeight, childExt.height);
+        }
+    } else { // STACKDIRECTION_VERTICAL
+        // Sum up the height of each child's compact extent
+        for (const auto& child : children) {
+            Extends childExt = child->getCompactExtends(ext);
+            totalHeight += childExt.height;
+            totalWidth = std::max(totalWidth, childExt.width);
+        }
+    }
+
+    // Center the compact extents within the available space `ext`
+    float offsetX = ext.x + (ext.width - totalWidth) / 2;
+    float offsetY = ext.y + (ext.height - totalHeight) / 2;
+
+    // Return compact extent based on the calculated dimensions
+    return { offsetX, offsetY, totalWidth, totalHeight };
 }
 
 void LinearStackNode::setStackType(StackDirection stack_direction, StackType stack_type) {
     stackDirection = stack_direction;
     stackType = stack_type;
+}
+
+void LinearStackNode::addChild(std::unique_ptr<Node> child) {
+        if (!child) {
+        std::cerr << "Attempting to add a null child!" << std::endl;
+        return;
+    }
+    std::cerr << "Adding child to children list" << std::endl;
+    children.push_back(std::move(child));
+    std::cerr << "Child added successfully" << std::endl;
 }
 
 void LinearStackNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {

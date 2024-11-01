@@ -38,7 +38,7 @@ MasterNode::MasterNode() {
     } else {
         std::cerr << "Failed to cast node to BufferNode" << std::endl;
     }
-
+//
     // BufferNode for Queen of Diamonds
     node2 = std::make_unique<BufferNode>();
     auto bufferNode2 = cast(BufferNode, node2);

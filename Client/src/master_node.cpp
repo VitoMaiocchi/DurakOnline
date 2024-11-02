@@ -30,7 +30,7 @@ MasterNode::MasterNode() {
 
     // StackNode
     stack_node1 = std::make_unique<LinearStackNode>();
-    cast(LinearStackNode, stack_node1)->setStackType(STACKDIRECTION_HORIZONTAL, STACKTYPE_SPACED);
+    cast(LinearStackNode, stack_node1)->setStackType(STACKDIRECTION_VERTICAL, STACKTYPE_SPACED);
     cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
     cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
     cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));

@@ -206,7 +206,29 @@ void LinearStackNode::updateExtends(Extends ext) {
             ratioHeight = ext.height/totalHeight;
             scale = std::min(ratioHeight, ratioWidth);
 
-            offset = ((ext.height - totalHeight*scale)/2.);
+            if(stackType == STACKTYPE_SPACED){
+                divisor = children.size()+1;
+            }
+
+            offset_space = ((ext.height - totalHeight*scale)/divisor);
+            offset = offset_space;
+
+            for (auto& child : children) {
+                Extends childExt = ext;
+
+                childExt.y += offset;
+                childExt.height = child->getCompactExtends(ext).height;
+                childExt.x = (ext.width-childExt.width*scale)/2.;
+                childExt.width *= scale;
+                childExt.height *= scale;
+                offset += childExt.height;
+
+                if(stackType == STACKTYPE_SPACED){
+                    offset += offset_space;
+                }
+
+                child->updateExtends(childExt);
+            }
         break;
     }
 }

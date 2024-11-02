@@ -47,31 +47,14 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 }
 
 void MasterNode::updateExtends(Extends ext) {
-    if (rect_node) {
-        rect_node->updateExtends(ext);
-    } else {
-        std::cerr << "Warning: rect_node is null in updateExtends." << std::endl;
-    }
-
-    if (rect_node2) {
-        rect_node2->updateExtends(ext);
-    } else {
-        std::cerr << "Warning: rect_node2 is null in updateExtends." << std::endl;
-    }
-
-    if (text_node) {
-        text_node->updateExtends(ext);
-    } else {
-        std::cerr << "Warning: text_node is null in updateExtends." << std::endl;
-    }
     extends = ext;
     Extends ext1 = {ext.x, ext.y, ext.width/2, ext.height};
     Extends ext2 = {ext.x+ext.width/2, ext.y, ext.width/2, ext.height};
-    Extends ext3 = {0., 0., ext.width, ext.height};
+    Extends ext3 = {0, 0, ext.width, ext.height};
     rect_node->updateExtends(ext1);
     rect_node2->updateExtends(ext2);
     text_node->updateExtends(ext);
-    stack_node1->updateExtends(ext3);
+    stack_node1->updateExtends(extends);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);

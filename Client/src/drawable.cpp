@@ -166,11 +166,14 @@ void LinearStackNode::updateExtends(Extends ext) {
     ratioHeight = ext.height/totalHeight;
     float scale = std::min(ratioHeight, ratioWidth);
 
+    offset = std::abs((ext.width - totalWidth*scale)/2.);
+
     for (auto& child : children) {
         Extends childExt = ext;
 
         childExt.x += offset;
         childExt.width = child->getCompactExtends(ext).width;
+        childExt.y = (ext.height-childExt.height*scale)/2.;
         childExt.width *= scale;
         childExt.height *= scale;
         offset += childExt.width;
@@ -179,49 +182,8 @@ void LinearStackNode::updateExtends(Extends ext) {
         child->updateExtends(childExt);
     }
 
-    /*
-    for (auto& child : children) {
-        Extends childExt = ext;
-
-        if (stackDirection == STACKDIRECTION_HORIZONTAL) {
-            childExt.x += offset;
-            childExt.width = child->getCompactExtends(ext).width;
-            offset += childExt.width;
-            totalWidth += childExt.width;
-            totalHeight = std::max(totalHeight, childExt.height);
-        } else {
-            childExt.y += offset;
-            childExt.height = child->getCompactExtends(ext).height;
-            offset += childExt.height;
-        }
-        child->updateExtends(childExt);
-    }
-    
-    ratioWidth = ext.width/totalWidth;
-    ratioHeight = ext.height/totalHeight;
-
-    float scale = std::min(ratioWidth,ratioHeight);
-
-    //if(scale >= 1) blabllbab
-
-    for (auto& child : children) {
-        Extends childExt = ext;
-
-        if (stackDirection == STACKDIRECTION_HORIZONTAL) {
-            childExt.x += offset;
-            childExt.width = child->getCompactExtends(ext).width;
-            childExt.height = child->getCompactExtends(ext).height;
-            childExt.width *= scale;
-            childExt.height *= scale;
-            offset += childExt.width;
-        } else {
-            childExt.y += offset;
-            childExt.height = child->getCompactExtends(ext).height;
-            offset += childExt.height;
-        }
-        child->updateExtends(childExt);
-    }
-    */
+    //this->extends.x = (ext.width-totalWidth)/2.;
+    //this->extends.y = (ext.height-totalHeight)/2.;
 }
 
 //TODO STACKTYPE

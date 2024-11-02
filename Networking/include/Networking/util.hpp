@@ -67,8 +67,8 @@ enum GameState {
     GAMESTATE_DURAK_SCREEN,
     GAMESTATE_NONE
 };
-inline int ToInt(GameState state) { return static_cast<int>(state); }
-inline GameState FromInt(int value) { return static_cast<GameState>(value); }
+// inline int ToInt(GameState state) { return static_cast<int>(state); }
+// inline GameState FromInt(int value) { return static_cast<GameState>(value); }
 
 enum ClientAction {
     CLIENTACTION_OK,
@@ -81,3 +81,11 @@ enum ClientAction {
 
 #define THROW_ERROR(msg) \
     throw std::runtime_error(std::string(msg) + " (" + __FILE__ + ":" + std::to_string(__LINE__) + ")")
+
+
+// generic function to do enums to ints
+template<typename T>
+inline int ToInt(T value) {return static_cast<int>(value); }
+// generic function to do ints back to the correct enum
+template<typename T>
+inline T FromInt(int value) { return static_cast<T>(value); }

@@ -152,38 +152,63 @@ void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 //LINEAR STACK NODE
 //TODO STACKTYPE
 void LinearStackNode::updateExtends(Extends ext) {
+    float divisor = 2.0f;
     float offset = 0.0f;
+    float offset_space = 0.0f;
+    float scale = 0.0f;
     float totalWidth = 0.0f;
     float totalHeight = 0.0f;
     float ratioWidth = 0.0f;
     float ratioHeight = 0.0f;
-    for (auto& child : children) {
-        totalWidth += child->getCompactExtends(ext).width;
-        totalHeight = std::max(totalHeight, child->getCompactExtends(ext).height);
+
+    switch(stackDirection){
+        case(STACKDIRECTION_HORIZONTAL):
+            for (auto& child : children) {
+                totalWidth += child->getCompactExtends(ext).width;
+                totalHeight = std::max(totalHeight, child->getCompactExtends(ext).height);
+            }
+
+            ratioWidth = ext.width/totalWidth;
+            ratioHeight = ext.height/totalHeight;
+            scale = std::min(ratioHeight, ratioWidth);
+
+            if(stackType == STACKTYPE_SPACED){
+                divisor = children.size()+1;
+            }
+
+            offset_space = ((ext.width - totalWidth*scale)/divisor);
+            offset = offset_space;
+
+            for (auto& child : children) {
+                Extends childExt = ext;
+
+                childExt.x += offset;
+                childExt.width = child->getCompactExtends(ext).width;
+                childExt.y = (ext.height-childExt.height*scale)/2.;
+                childExt.width *= scale;
+                childExt.height *= scale;
+                offset += childExt.width;
+
+                if(stackType == STACKTYPE_SPACED){
+                    offset += offset_space;
+                }
+
+                child->updateExtends(childExt);
+            }
+        break;
+        case(STACKDIRECTION_VERTICAL):
+            for (auto& child : children) {
+                totalWidth = std::max(totalWidth, child->getCompactExtends(ext).width);
+                totalHeight += child->getCompactExtends(ext).height;
+            }
+
+            ratioWidth = ext.width/totalWidth;
+            ratioHeight = ext.height/totalHeight;
+            scale = std::min(ratioHeight, ratioWidth);
+
+            offset = ((ext.height - totalHeight*scale)/2.);
+        break;
     }
-
-    ratioWidth = ext.width/totalWidth;
-    ratioHeight = ext.height/totalHeight;
-    float scale = std::min(ratioHeight, ratioWidth);
-
-    offset = std::abs((ext.width - totalWidth*scale)/2.);
-
-    for (auto& child : children) {
-        Extends childExt = ext;
-
-        childExt.x += offset;
-        childExt.width = child->getCompactExtends(ext).width;
-        childExt.y = (ext.height-childExt.height*scale)/2.;
-        childExt.width *= scale;
-        childExt.height *= scale;
-        offset += childExt.width;
-
-
-        child->updateExtends(childExt);
-    }
-
-    //this->extends.x = (ext.width-totalWidth)/2.;
-    //this->extends.y = (ext.height-totalHeight)/2.;
 }
 
 //TODO STACKTYPE

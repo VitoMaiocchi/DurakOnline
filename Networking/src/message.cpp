@@ -50,6 +50,12 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_GAME_STATE_UPDATE:
             message = std::make_unique<GameStateUpdate>();
         break;
+        case MESSAGETYPE_PLAYCARD_EVENT:
+            std::cout << "not implemented yet" << std::endl;
+        break;
+        case MESSAGETYPE_CLIENT_ACTION_EVENT:
+            message = std::make_unique<ClientActionEvent>();
+        break;
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -306,7 +312,8 @@ void GameStateUpdate::getContent(rapidjson::Value &content, Allocator &allocator
 }
 void GameStateUpdate::fromJson(const rapidjson::Value& obj) {
     if(obj.HasMember("state") && obj["state"].IsInt()){
-        state = static_cast<GameState>(obj["state"].GetInt());
+        state = FromInt<GameState>(obj["state"].GetInt());
+
     } else{
         std::cerr << "Error: 'state' is missing or not in the string." << std::endl;
         state = GAMESTATE_NONE;
@@ -326,14 +333,18 @@ void PlayCardEvent::fromJson(const rapidjson::Value& obj) {
 }
 
 
-ClientActionEvent::ClientActionEvent() {
-
-}
+ClientActionEvent::ClientActionEvent() {messageType = MESSAGETYPE_CLIENT_ACTION_EVENT;}
 void ClientActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
-
+    content.AddMember("action", ToInt(action), allocator);
 }
 void ClientActionEvent::fromJson(const rapidjson::Value& obj) {
-
+    if(obj.HasMember("action") && obj["action"].IsInt()){
+        action = FromInt<ClientAction>(obj["action"].GetInt());
+    }
+    else{
+        std::cerr << "Error: 'action' is missing or not in the string." << std::endl;
+        action = CLIENTACTION_OK; //default action
+    }
 }
 
 ClientConnectEvent::ClientConnectEvent() {

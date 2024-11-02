@@ -134,6 +134,23 @@ int main() {
     std::cout << "returned state: " << return_gs->state<< std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "TEST MESSAGETYPE_PLAY_CARD_EVENT" << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "TEST MESSAGETYPE_CLIENT_ACTION_EVENT" << std::endl;
+    /*testing client action event message*/
+    ClientActionEvent cae_message;
+    cae_message.action = CLIENTACTION_PASS_ON; //action = 1
+
+    std::cout << "testing action: " << cae_message.action <<std::endl;
+
+    std::unique_ptr<Message> caem = std::make_unique<ClientActionEvent>(cae_message);
+    std::string string_cae = caem->toJson();
+
+    std::unique_ptr<Message> answer_cae = deserialiseMessage(string_cae);
+    ClientActionEvent* return_cae = dynamic_cast<ClientActionEvent*>(answer_cae.get());
+    std::cout << "returned action: " << return_cae->action<< std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
 
     TestMessage message;
     message.x = 3;

@@ -19,7 +19,8 @@ int main() {
     std::unique_ptr<Message> answer = deserialiseMessage(s);
     IllegalMoveNotify* return_m = dynamic_cast<IllegalMoveNotify*>(answer.get());
     std::cout << "error: " << return_m->error << std::endl;
-    
+
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------" <<std::endl;
     std::cout << "TEST MESSAGETYPE_CARD_UPDATE" << std::endl;
     // /*testing card update message*/
@@ -50,7 +51,7 @@ int main() {
     //           << "\ntrump_suit: " << return_cumsg->trump_suit
     //           //<< "\nmiddle_cards: "<< return_cumsg->middle_cards
     //           /*<< "\nhand: " << return_cumsg->hand */<< std::endl;
-  
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_PLAYER_UPDATE" << std::endl;
     /*testing player update message*/
@@ -71,6 +72,7 @@ int main() {
               << "\nplayer_count = " << return_plm->player_count
               << "\ndurak = " << return_plm->durak << std::endl;
 
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_BATTLE_STATE_UPDATE" << std::endl;
     BattleStateUpdate battle_message;
@@ -100,6 +102,8 @@ int main() {
     for(auto idlepl : return_bam->idle){
         std::cout << "id = " << idlepl << std::endl;
     }
+
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_AVAILABLE_ACTION_UPDATE" << std::endl;
     /*testing available action update message*/
@@ -118,6 +122,7 @@ int main() {
               << "\npick up: " << return_aa->pick_up << std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_GAME_STATE_UPDATE" << std::endl;
     /*testing game state update message*/
     GameStateUpdate gs_message;
@@ -134,7 +139,33 @@ int main() {
     std::cout << "returned state: " << return_gs->state<< std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_PLAY_CARD_EVENT" << std::endl;
+    /*testing play card event message*/
+    PlayCardEvent pce_message;
+    Card piqueQ;
+    piqueQ.suit = SUIT_SPADES;
+    piqueQ.rank = RANK_QUEEN;
+
+    pce_message.cards.push_back(piqueQ); 
+
+    pce_message.slot = CARDSLOT_1;
+
+    std::unique_ptr<Message> pcem = std::make_unique<PlayCardEvent>(pce_message);
+    std::string string_pce = pcem->toJson();
+
+    std::unique_ptr<Message> answer_pce = deserialiseMessage(string_pce);
+    PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(answer_pce.get());
+    // std::cout << "username: " << return_pce->username<< std::endl;
+
+    std::cout << "Cards: "<<std::endl;
+    for(auto card : return_pce->cards){
+        std::cout << "card suit = " << card.suit 
+                  << "\ncard rank = " << card.rank << std::endl;
+    }
+    std::cout << "card slot: " << return_pce->slot <<std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_CLIENT_ACTION_EVENT" << std::endl;
     /*testing client action event message*/
@@ -151,6 +182,25 @@ int main() {
     std::cout << "returned action: " << return_cae->action<< std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
+
+    std::cout << "TEST MESSAGETYPE_CLIENT_CONNECT_EVENT" << std::endl;
+    /*testing client action event message*/
+    ClientConnectEvent cce_message;
+    cce_message.username = "Ericberic"; //
+
+    // std::cout << "testing action: " << cae_message.action <<std::endl;
+
+    std::unique_ptr<Message> ccem = std::make_unique<ClientConnectEvent>(cce_message);
+    std::string string_cce = ccem->toJson();
+
+    std::unique_ptr<Message> answer_cce = deserialiseMessage(string_cce);
+    ClientConnectEvent* return_cce = dynamic_cast<ClientConnectEvent*>(answer_cce.get());
+    std::cout << "username: " << return_cce->username<< std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
+
 
     TestMessage message;
     message.x = 3;

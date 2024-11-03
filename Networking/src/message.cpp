@@ -51,10 +51,13 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
             message = std::make_unique<GameStateUpdate>();
         break;
         case MESSAGETYPE_PLAYCARD_EVENT:
-            std::cout << "not implemented yet" << std::endl;
+            message = std::make_unique<PlayCardEvent>();
         break;
         case MESSAGETYPE_CLIENT_ACTION_EVENT:
             message = std::make_unique<ClientActionEvent>();
+        break;
+        case MESSAGETYPE_CLIENT_CONNECT_EVENT:
+            message = std::make_unique<ClientConnectEvent>();
         break;
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
@@ -322,14 +325,39 @@ void GameStateUpdate::fromJson(const rapidjson::Value& obj) {
 
 
 
-PlayCardEvent::PlayCardEvent() {
-
-}
+PlayCardEvent::PlayCardEvent() {messageType = MESSAGETYPE_PLAYCARD_EVENT;}
 void PlayCardEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
-
+    rapidjson::Value cardsJson(rapidjson::kArrayType);
+    for(const auto card : cards){
+        cardsJson.PushBack(card.toInt(), allocator);
+    }
+    content.AddMember("cards", cardsJson, allocator);
+    content.AddMember("slot", ToInt(slot), allocator);
 }
 void PlayCardEvent::fromJson(const rapidjson::Value& obj) {
+    const rapidjson::Value& cardsJson = obj["cards"];
+    cards.clear();
+    for(rapidjson::SizeType i = 0; i < cardsJson.Size(); ++i){
+        cards.push_back(cardsJson[i].GetUint());
+    }
+    if(obj.HasMember("cards") && obj["cards"].IsArray()){
+        const rapidjson::Value& cardsJson = obj["cards"];
+        cards.clear();
+        for(rapidjson::SizeType i = 0; i < cardsJson.Size(); ++i){
+            uint cardInt = cardsJson[i].GetUint();
+            cards.emplace_back(cardInt);
+        }
+    }
+    else{
+        std::cerr << "Error: 'cards' are missing in play card event or not an array" << std::endl;
+    }
+    if(obj.HasMember("slot") && obj["slot"].IsInt()){
+        slot = FromInt<CardSlot>(obj["slot"].GetInt());
 
+    } else{
+        std::cerr << "Error: 'slot' is missing or not in the string." << std::endl;
+        slot = CARDSLOT_1; //default card slot
+    }
 }
 
 
@@ -347,14 +375,12 @@ void ClientActionEvent::fromJson(const rapidjson::Value& obj) {
     }
 }
 
-ClientConnectEvent::ClientConnectEvent() {
-
-}
+ClientConnectEvent::ClientConnectEvent() {messageType = MESSAGETYPE_CLIENT_CONNECT_EVENT;}
 void ClientConnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
-
+    content.AddMember("username", rapidjson::Value(username.c_str(), allocator), allocator);
 }
 void ClientConnectEvent::fromJson(const rapidjson::Value& obj) {
-
+    username = obj["username"].GetString();
 }
 
 

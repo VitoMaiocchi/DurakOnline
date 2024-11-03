@@ -16,11 +16,11 @@ enum Suit {
 };
 
 enum Rank {
-    RANK_TWO,
-    RANK_THREE,
-    RANK_FOUR,
-    RANK_FIVE,
-    RANK_SIX,
+    RANK_TWO, //0
+    RANK_THREE, //1
+    RANK_FOUR, //2
+    RANK_FIVE, //3
+    RANK_SIX, 
     RANK_SEVEN,
     RANK_EIGHT,
     RANK_NINE,

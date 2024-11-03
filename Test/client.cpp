@@ -146,10 +146,11 @@ int main() {
     Card piqueQ;
     piqueQ.suit = SUIT_SPADES;
     piqueQ.rank = RANK_QUEEN;
-
+    Card heartK(RANK_KING, SUIT_HEARTS);
     pce_message.cards.push_back(piqueQ); 
+    pce_message.cards.push_back(heartK);
 
-    pce_message.slot = CARDSLOT_1;
+    pce_message.slot = CARDSLOT_2_TOP;
 
     std::unique_ptr<Message> pcem = std::make_unique<PlayCardEvent>(pce_message);
     std::string string_pce = pcem->toJson();

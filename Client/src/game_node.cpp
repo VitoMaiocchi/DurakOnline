@@ -23,6 +23,38 @@ void drawCard(float x, float y, float height, Card card) {
     OpenGL::drawImage(card.getFileName(), ext);
 }
 
+
+void drawCards(Extends ext, std::list<Card> cards) {
+    uint N = cards.size();
+    if(N == 0) return;
+
+    const float card_width = ext.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
+    if(ext.width < card_width) {
+        //degenerate case 
+        //TODO: compact extends für master node und so 
+        return;
+    }
+
+    Extends image_ext = {
+        ext.x,
+        ext.y,
+        card_width,
+        ext.height,
+        0
+    };
+
+    float delta = (ext.width-card_width)/(N-1);
+    if(delta > card_width * 0.7) {
+        delta = card_width * 0.7;
+        const double w = card_width + delta * (N-1);
+        image_ext.x += (ext.width - w)/2;
+    }
+    for(Card card : cards) {
+        OpenGL::drawImage(card.getFileName(), image_ext);
+        image_ext.x += delta;
+    }
+}
+
 class HandNode : public LeafNode {
     private:
         std::list<Card> cards;
@@ -31,10 +63,14 @@ class HandNode : public LeafNode {
         Extends getCompactExtends(Extends ext) {return ext;}
 
         void draw() {
-            drawCard(extends.x + extends.width/2 - 150, extends.y + 150, 300.0f, Card(RANK_QUEEN, SUIT_DIAMONDS));
-            drawCard(extends.x + extends.width/2 - 50, extends.y + 150, 300.0f, Card(RANK_ACE, SUIT_SPADES));
-            drawCard(extends.x + extends.width/2 + 50, extends.y + 150, 300.0f, Card(RANK_ACE, SUIT_HEARTS));
-            drawCard(extends.x + extends.width/2 + 150, extends.y + 150, 300.0f, Card(RANK_JACK, SUIT_CLUBS));
+            Extends ext = {
+                extends.x + extends.width / 4,
+                extends.y,
+                extends.width / 2,
+                extends.height / 3,
+                0
+            };
+            drawCards(ext, cards);
         }
 
         void sendHoverEvent(float x, float y) override {

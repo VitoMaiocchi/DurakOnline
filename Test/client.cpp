@@ -121,14 +121,34 @@ int main() {
     std::cout << "TEST MESSAGETYPE_GAME_STATE_UPDATE" << std::endl;
     /*testing game state update message*/
     GameStateUpdate gs_message;
-    gs_message.state = GAMESTATE_LOBBY;
+    // gs_message.state = GAMESTATE_LOBBY; //state = 0
+    gs_message.state = GAMESTATE_DURAK_SCREEN; //state = 4
+
+    std::cout << "testing state: " << gs_message.state <<std::endl;
 
     std::unique_ptr<Message> gsm = std::make_unique<GameStateUpdate>(gs_message);
     std::string string_gs = gsm->toJson();
 
     std::unique_ptr<Message> answer_gs = deserialiseMessage(string_gs);
     GameStateUpdate* return_gs = dynamic_cast<GameStateUpdate*>(answer_gs.get());
-    std::cout << "state: " << return_gs->state<< std::endl;
+    std::cout << "returned state: " << return_gs->state<< std::endl;
+
+    std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "TEST MESSAGETYPE_PLAY_CARD_EVENT" << std::endl;
+    std::cout << "---------------------------------------------------" << std::endl;
+    std::cout << "TEST MESSAGETYPE_CLIENT_ACTION_EVENT" << std::endl;
+    /*testing client action event message*/
+    ClientActionEvent cae_message;
+    cae_message.action = CLIENTACTION_PASS_ON; //action = 1
+
+    std::cout << "testing action: " << cae_message.action <<std::endl;
+
+    std::unique_ptr<Message> caem = std::make_unique<ClientActionEvent>(cae_message);
+    std::string string_cae = caem->toJson();
+
+    std::unique_ptr<Message> answer_cae = deserialiseMessage(string_cae);
+    ClientActionEvent* return_cae = dynamic_cast<ClientActionEvent*>(answer_cae.get());
+    std::cout << "returned action: " << return_cae->action<< std::endl;
 
     std::cout << "---------------------------------------------------" << std::endl;
 

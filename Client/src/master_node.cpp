@@ -13,45 +13,34 @@ bool master_node_exists = false;
 GameState GlobalState::game_state = GAMESTATE_NONE;
 std::vector<Player> GlobalState::players;
 
-std::unique_ptr<Node> node;
-std::unique_ptr<Node> node2;
 std::unique_ptr<Node> rect_node;
 std::unique_ptr<Node> rect_node2;
 std::unique_ptr<Node> text_node;
+std::unique_ptr<Node> stack_node1;
 
 std::unique_ptr<Node> game_node;
 
 MasterNode::MasterNode() {
-    assert(!master_node_exists); //only one master node can exist
+    assert(!master_node_exists); // Only one master node can exist
     master_node_exists = true;
-
-    node = std::make_unique<BufferNode>();
-    cast(BufferNode, node)->child = std::make_unique<ImageNode>(Card(RANK_ACE, SUIT_SPADES).getFileName());
-    cast(BufferNode, node)->setBufferSize(BUFFERTYPE_RELATIVE, 50);
-    cast(BufferNode, node)->child->setClickEventCallback([]() {
-        std::cout << "Clicked on Ace of Spades" << std::endl;
-    });
-
-    node2 = std::make_unique<BufferNode>();
-    cast(BufferNode, node2)->child = std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName());
-    cast(BufferNode, node2)->setBufferSize(BUFFERTYPE_ABSOLUTE, 50);
-    cast(BufferNode, node2)->child->setClickEventCallback([]() {
-        std::cout << "Clicked on Queen of Diamonds" << std::endl;
-    });
-
+    // RectangleNode and TextNode
     rect_node = std::make_unique<RectangleNode>(0, 0, 0);
     rect_node2 = std::make_unique<RectangleNode>(1.0, 0, 0);
+    text_node = std::make_unique<TextNode>("Sample Text", 0.2, 1.0, 0.8);
 
-    text_node = std::make_unique<TextNode>("De eric het aids", 0.2, 1.0, 0.8);
-}
+    // StackNode
+    stack_node1 = std::make_unique<LinearStackNode>();
+    cast(LinearStackNode, stack_node1)->setStackType(STACKDIRECTION_VERTICAL, STACKTYPE_SPACED);
+    cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
+    cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
+    cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
+} 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(rect_node);
     function(rect_node2);
-    function(node);
-    function(node2);
     function(text_node);
-
+    function(stack_node1);
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);
         function(game_node);
@@ -62,11 +51,11 @@ void MasterNode::updateExtends(Extends ext) {
     extends = ext;
     Extends ext1 = {ext.x, ext.y, ext.width/2, ext.height};
     Extends ext2 = {ext.x+ext.width/2, ext.y, ext.width/2, ext.height};
+    Extends ext3 = {0, 0, ext.width, ext.height};
     rect_node->updateExtends(ext1);
     rect_node2->updateExtends(ext2);
-    node->updateExtends(ext1);
-    node2->updateExtends(ext2);
     text_node->updateExtends(ext);
+    stack_node1->updateExtends(extends);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);

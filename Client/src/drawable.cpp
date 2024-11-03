@@ -17,8 +17,12 @@ void Node::setClickEventCallback(std::function<void()> callback) {
 
 //LEAF /TREE NODES
 void TreeNode::draw() {
-    callForAllChildren([](std::unique_ptr<Node>& child){
-        child->draw();
+    callForAllChildren([](std::unique_ptr<Node>& child) {
+        if (child) {  // Ensure child is valid
+            child->draw();
+        } else {
+            std::cerr << "Warning: Attempted to draw a null child node." << std::endl;
+        }
     });
 }
 
@@ -146,12 +150,136 @@ void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 }
 
 //LINEAR STACK NODE
+//TODO STACKTYPE
 void LinearStackNode::updateExtends(Extends ext) {
-    //TODO
+    float divisor = 2.0f;
+    float offset = 0.0f;
+    float offset_space = 0.0f;
+    float scale = 0.0f;
+    float totalWidth = 0.0f;
+    float totalHeight = 0.0f;
+    float ratioWidth = 0.0f;
+    float ratioHeight = 0.0f;
+
+    switch(stackDirection){
+        case(STACKDIRECTION_HORIZONTAL):
+            for (auto& child : children) {
+                totalWidth += child->getCompactExtends(ext).width;
+                totalHeight = std::max(totalHeight, child->getCompactExtends(ext).height);
+            }
+
+            ratioWidth = ext.width/totalWidth;
+            ratioHeight = ext.height/totalHeight;
+            scale = std::min(ratioHeight, ratioWidth);
+
+            offset = ((ext.width - totalWidth*scale)/2);
+
+            if(stackType == STACKTYPE_SPACED){
+                offset_space = ((ext.width - totalWidth*scale)/(children.size()-1));
+                offset = 0.0;
+            }
+
+            for (auto& child : children) {
+                Extends childExt = ext;
+
+                childExt.x += offset;
+                childExt.width = child->getCompactExtends(ext).width;
+                childExt.y = (ext.height-childExt.height*scale)/2.;
+                childExt.width *= scale;
+                childExt.height *= scale;
+                offset += childExt.width;
+
+                if(stackType == STACKTYPE_SPACED){
+                    offset += offset_space;
+                }
+
+                child->updateExtends(childExt);
+            }
+        break;
+        case(STACKDIRECTION_VERTICAL):
+            for (auto& child : children) {
+                totalWidth = std::max(totalWidth, child->getCompactExtends(ext).width);
+                totalHeight += child->getCompactExtends(ext).height;
+            }
+
+            ratioWidth = ext.width/totalWidth;
+            ratioHeight = ext.height/totalHeight;
+            scale = std::min(ratioHeight, ratioWidth);
+
+            offset = ((ext.height - totalHeight*scale)/2);
+
+            if(stackType == STACKTYPE_SPACED){
+                offset_space = ((ext.height - totalHeight*scale)/(children.size()-1));
+                offset = 0.0;
+            }
+
+            for (auto& child : children) {
+                Extends childExt = ext;
+
+                childExt.y += offset;
+                childExt.height = child->getCompactExtends(ext).height;
+                childExt.x = (ext.width-childExt.width*scale)/2.;
+                childExt.width *= scale;
+                childExt.height *= scale;
+                offset += childExt.height;
+
+                if(stackType == STACKTYPE_SPACED){
+                    offset += offset_space;
+                }
+
+                child->updateExtends(childExt);
+            }
+        break;
+    }
 }
 
+//TODO STACKTYPE
 Extends LinearStackNode::getCompactExtends(Extends ext) {
-    return ext; //TODO
+    float totalWidth = 0.0f;
+    float totalHeight = 0.0f;
+    float compact_x = 0.0f;
+    float compact_y = 0.0f;
+
+    switch(stackType){
+        case(STACKTYPE_COMPACT):
+            if (stackDirection == STACKDIRECTION_HORIZONTAL) {
+                for (const auto& child : children) {
+                    Extends childExt = child->getCompactExtends(ext);
+                    totalWidth += childExt.width;
+                    totalHeight = std::max(totalHeight, childExt.height);
+                }
+            } else {
+                for (const auto& child : children) {
+                    Extends childExt = child->getCompactExtends(ext);
+                    totalHeight += childExt.height;
+                    totalWidth = std::max(totalWidth, childExt.width);
+                }
+            }
+            compact_x = ext.x + (ext.width - totalWidth)/2;
+            compact_y = ext.y + (ext.height - totalHeight)/2;
+        break;
+        case(STACKTYPE_SPACED):
+        if (stackDirection == STACKDIRECTION_HORIZONTAL) {
+            totalWidth = this->extends.width;
+            for (const auto& child : children) {
+                Extends childExt = child->getCompactExtends(ext);
+                totalHeight = std::max(totalHeight, childExt.height);
+            }
+            compact_x = this->extends.x;
+            compact_y = ext.y + (ext.height - totalHeight)/2;
+        } else {
+            totalHeight = this->extends.height;
+            for (const auto& child : children) {
+                Extends childExt = child->getCompactExtends(ext);
+                totalWidth = std::max(totalWidth, childExt.width);
+            }
+            compact_x = ext.x + (ext.width - totalWidth)/2;
+            compact_y = this->extends.y;
+        }
+        break;
+    }
+    
+    return {compact_x, compact_y, totalWidth, totalHeight};
 }
 
 void LinearStackNode::setStackType(StackDirection stack_direction, StackType stack_type) {

@@ -14,7 +14,7 @@ class Node {
         virtual Extends getCompactExtends(Extends ext) = 0;
 
         void sendClickEvent(float x, float y);
-        void sendHoverEvent(float x, float y);
+        virtual void sendHoverEvent(float x, float y);
         void setClickEventCallback(std::function<void(float, float)> callback);
         void setHoverEventCallback(std::function<void(float, float)> callback);
     protected:

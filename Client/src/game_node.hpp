@@ -2,6 +2,7 @@
 
 #include "drawable.hpp"
 #include <Networking/message.hpp>
+#include <memory>
 
 class GameNode : public TreeNode {
     public:
@@ -17,4 +18,5 @@ class GameNode : public TreeNode {
         void playerUpdateNotify();
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
+        std::unique_ptr<Node> handNode;
 };

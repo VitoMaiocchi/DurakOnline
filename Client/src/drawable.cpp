@@ -6,13 +6,24 @@
 //NODE
 void Node::sendClickEvent(float x, float y) {
     if(!extends.contains(x,y)) return;
-    clickEventCallback();
+    clickEventCallback(x,y);
     callForAllChildren([x,y](std::unique_ptr<Node>& child){
         child->sendClickEvent(x,y);
     });
 }
-void Node::setClickEventCallback(std::function<void()> callback) {
+void Node::setClickEventCallback(std::function<void(float, float)> callback) {
     clickEventCallback = callback;
+}
+
+void Node::sendHoverEvent(float x, float y) {
+    if(!extends.contains(x,y)) return;
+    hoverEventCallback(x,y);
+    callForAllChildren([x,y](std::unique_ptr<Node>& child){
+        child->sendHoverEvent(x,y);
+    });
+}
+void Node::setHoverEventCallback(std::function<void(float, float)> callback) {
+    hoverEventCallback = callback;
 }
 
 //LEAF /TREE NODES

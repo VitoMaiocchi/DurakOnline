@@ -182,6 +182,12 @@ namespace OpenGL {
         Window::width = width;
     }
 
+    static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+        xpos = xpos / Window::width * Viewport::width;
+        ypos = (1 - ypos / Window::height) * Viewport::height;
+        masterNode->sendHoverEvent(xpos, ypos);
+    }
+
     bool setupWindow() {
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -209,6 +215,7 @@ namespace OpenGL {
         glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
         glfwSetWindowSizeCallback(window, window_size_callback);
         glfwSetMouseButtonCallback(window, mouse_button_callback);
+        glfwSetCursorPosCallback(window, cursor_position_callback);
         return true;
     }
 

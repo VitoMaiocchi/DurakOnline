@@ -25,6 +25,9 @@ MasterNode::MasterNode() {
     master_node_exists = true;
     // RectangleNode and TextNode
     rect_node = std::make_unique<RectangleNode>(0, 0, 0);
+    rect_node->setHoverEventCallback([](float x, float y) {
+        std::cout << "HOVER EVENT  - x: " << x << "; y: " << y << std::endl;
+    });
     rect_node2 = std::make_unique<RectangleNode>(1.0, 0, 0);
     text_node = std::make_unique<TextNode>("Sample Text", 0.2, 1.0, 0.8);
 
@@ -41,6 +44,7 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
     function(rect_node2);
     function(text_node);
     function(stack_node1);
+
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);
         function(game_node);

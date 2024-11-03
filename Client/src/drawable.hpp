@@ -14,11 +14,14 @@ class Node {
         virtual Extends getCompactExtends(Extends ext) = 0;
 
         void sendClickEvent(float x, float y);
-        void setClickEventCallback(std::function<void()> callback);
+        void sendHoverEvent(float x, float y);
+        void setClickEventCallback(std::function<void(float, float)> callback);
+        void setHoverEventCallback(std::function<void(float, float)> callback);
     protected:
         virtual void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) = 0;
         Extends extends = {0,0,0,0,0};
-        std::function<void()> clickEventCallback = [](){/*nothing*/};
+        std::function<void(float, float)> clickEventCallback = [](float x, float y){/*nothing*/};
+        std::function<void(float, float)> hoverEventCallback = [](float x, float y){/*nothing*/};
 };
 
 class TreeNode : public Node {

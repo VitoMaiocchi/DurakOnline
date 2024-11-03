@@ -8,13 +8,14 @@ Card::Card() {
 Card::Card(Rank rank, Suit suit) : rank(rank), suit(suit) {}
 
 Card::Card(uint i) {
-    //TODO
-    rank = RANK_ACE;
-    suit = SUIT_SPADES;
+    // Decode suit by shifting 4 bits to the right, mask for rank with lower 4 bits
+    suit = static_cast<Suit>((i >> 4) & 0b11); // Mask higher bits to get suit
+    rank = static_cast<Rank>(i & 0b1111); // Mask lower 4 bits to get rank
 }
 
 const uint Card::toInt() const {
-    return 0; //TODO
+    // Shift suit by 4 bits and add rank (rank fits in lower 4 bits, suit in higher 2 bits)
+    return (static_cast<uint>(suit) << 4) | static_cast<uint>(rank);
 }
 
 bool Card::operator==(const Card& other) const {

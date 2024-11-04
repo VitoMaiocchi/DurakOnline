@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <deque>
+#include <memory>
 #include "card.hpp"
 
 class card_manager
@@ -14,7 +15,8 @@ private:
     bool endgame;                       //Could be useful for endgame functions, delete if it is not used
     std::vector<Card> discarded_cards;  //Charte wo "weg" sind
     unsigned int number_discarded_cards; // azahl charte wo "weg" sind
-    enum trump{Hearts, Clubs, Diamonds, Spades};                 //trump suit
+    //enum trump{Hearts, Clubs, Diamonds, Spades};                 //trump suit
+    Suit trump;                             //included from card.hpp if we remove/change this inclusion we have to find another solution
     std::vector<std::vector<Card>> player_hands;
     std::vector<unsigned int> player_number_of_cards;
     std::vector<std::pair<Card,Card>> Middle; //represents the battlefield in the middle
@@ -31,7 +33,7 @@ public:
     bool determineTrump();
 
     //getter functions
-    std::vector<unsigned int> getPlayerHand (unsigned int PlayerID);
+    std::vector<Card> getPlayerHand (unsigned int PlayerID);
     std::vector<std::pair<Card,Card>> getMiddle();
     unsigned int getNumberActivePlayers();
     unsigned int getNumberOfCardsInHand(unsigned int PlayerID);

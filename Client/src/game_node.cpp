@@ -14,7 +14,7 @@ void sortCards(std::list<Card> &cards) {
 }
 
 //das sött no relativ zum ext si
-#define HOVER_OFFSET 70
+#define HOVER_OFFSET_FACTOR 0.08
 #define CARD_DELTA_FACTOR 0.7
 
 class HandNode : public LeafNode {
@@ -40,9 +40,31 @@ class HandNode : public LeafNode {
             return true;
         }
 
-        void toggleSelect(Card card) {
-            if(selected.find(card) == selected.end()) selected.insert(card);
-            else selected.erase(card);
+        std::optional<Card> getCard(float x, float y) {
+            float card_width, delta;
+            uint N;
+            if(!computeDelta(delta, card_width, N)) return std::nullopt;
+
+            const float x_border = (extends.width - (card_width + delta * (N-1)))/2;
+            float card_x = extends.x + x_border;
+
+            if(x < extends.x + x_border|| x > extends.x + extends.width - x_border) return std::nullopt;
+            if(y < extends.y || y > extends.y + (1+HOVER_OFFSET_FACTOR)*extends.height) return std::nullopt;
+
+            auto it = cards.begin();
+            while(it != cards.end()) {
+                if(x >= card_x && x <= card_x + delta) {
+                    if(*it == hover) return *it;
+                    if(y > extends.y + extends.height) return std::nullopt;
+                    else return *it;
+                }
+                card_x += delta;
+                it++;
+            }
+            it--;
+            if(*it == hover) return *it;
+            if(y > extends.y + extends.height) return std::nullopt;
+            else return *it;
         }
 
     public:
@@ -53,7 +75,6 @@ class HandNode : public LeafNode {
             uint N;
             if(!computeDelta(delta, card_width, N)) return;
 
-            //const float w = (card_width + delta * (N-1));
             Extends image_ext = {
                 extends.x + (extends.width - (card_width + delta * (N-1)) )/2,
                 extends.y,
@@ -63,7 +84,7 @@ class HandNode : public LeafNode {
             };
 
             for(Card card : cards) {
-                if(card == hover) image_ext.y += HOVER_OFFSET;
+                if(card == hover) image_ext.y += HOVER_OFFSET_FACTOR*extends.height;
                 OpenGL::drawImage(card.getFileName(), image_ext);
                 if(selected.find(card) != selected.end()) 
                     OpenGL::drawImage(std::string(CLIENT_RES_DIR) + "/cards/outline.png", image_ext);
@@ -73,95 +94,14 @@ class HandNode : public LeafNode {
         }
 
         void sendHoverEvent(float x, float y) override {
-            float card_width, delta;
-            uint N;
-            if(!computeDelta(delta, card_width, N)) return;
-
-            float card_x = extends.x + (extends.width - (card_width + delta * (N-1)) )/2;
-
-            if(x < extends.x) {
-                hover.reset();
-                return;
-            }
-            if(x > extends.x + extends.width) {
-                hover.reset();
-                return;
-            }
-            auto it = cards.begin();
-            while(it != cards.end()) {
-                if(x > card_x && x < card_x + delta) {
-                    if(*it == hover && y > extends.height + HOVER_OFFSET) {
-                        hover.reset();
-                        return;
-                    }
-                    if(!(*it == hover) && y > extends.height) {
-                        hover.reset();
-                        return;
-                    }
-                    if(!(*it == hover) && y < extends.height) {
-                        hover = *it;
-                        return;
-                    }
-                }
-                card_x += delta;
-                it++;
-            }
-            it--;
-            if(x > card_x && x < card_x + card_width) {
-                if(*it == hover && y > extends.height + HOVER_OFFSET) {
-                    hover.reset();
-                    return;
-                }
-                if(!(*it == hover) && y > extends.height) {
-                        hover.reset();
-                        return;
-                    }
-                if(!(*it == hover) && y < extends.height) {
-                    hover = *it;
-                    return;
-                }
-            }
+            hover = getCard(x,y);
         }
 
         void sendClickEvent(float x, float y) override {
-            float card_width, delta;
-            uint N;
-            if(!computeDelta(delta, card_width, N)) return;
-
-            float card_x = extends.x + (extends.width - (card_width + delta * (N-1)) )/2;
-
-
-            if(x < extends.x) {
-                return;
-            }
-            if(x > extends.x + extends.width) {
-                return;
-            }
-            auto it = cards.begin();
-            while(it != cards.end()) {
-                if(x > card_x && x < card_x + delta) {
-                    if(*it == hover && y < extends.height + HOVER_OFFSET) {
-                        toggleSelect(*it);
-                        return;
-                    }
-                    if(!(*it == hover) && y < extends.height) {
-                        toggleSelect(*it);
-                        return;
-                    }
-                }
-                card_x += delta;
-                it++;
-            }
-            it--;
-            if(x > card_x && x < card_x + card_width) {
-                if(*it == hover && y < extends.height + HOVER_OFFSET) {
-                    toggleSelect(*it);
-                    return;
-                }
-                if(!(*it == hover) && y < extends.height) {
-                    toggleSelect(*it);
-                    return;
-                }
+            auto card = getCard(x,y);
+            if(card.has_value()) {
+                if(selected.find(card.value()) == selected.end()) selected.insert(card.value());
+                else selected.erase(card.value());
             }
         }
 

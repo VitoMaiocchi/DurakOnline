@@ -13,54 +13,8 @@ void sortCards(std::list<Card> &cards) {
     //da muss mer wüsse was trumpf isch und so
 }
 
-void drawCard(float x, float y, float height, Card card) {
-    float width = height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-    Extends ext = {
-        x - width/2,
-        y - height/2,
-        width,
-        height,
-        0
-    };
-    OpenGL::drawImage(card.getFileName(), ext);
-}
-
+//das sött no relativ zum ext si
 #define HOVER_OFFSET 70
-
-void drawCards(Extends ext, std::list<Card> cards, std::unordered_set<Card> &selected, std::optional<Card> &hover) {
-    uint N = cards.size();
-    if(N == 0) return;
-
-    const float card_width = ext.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-    if(ext.width < card_width) {
-        //degenerate case 
-        //TODO: compact extends für master node und so 
-        return;
-    }
-
-    Extends image_ext = {
-        ext.x,
-        ext.y,
-        card_width,
-        ext.height,
-        0
-    };
-
-    float delta = (ext.width-card_width)/(N-1);
-    if(delta > card_width * 0.7) {
-        delta = card_width * 0.7;
-        const double w = card_width + delta * (N-1);
-        image_ext.x += (ext.width - w)/2;
-    }
-    for(Card card : cards) {
-        if(card == hover) image_ext.y += HOVER_OFFSET;
-        OpenGL::drawImage(card.getFileName(), image_ext);
-        if(selected.find(card) != selected.end()) 
-            OpenGL::drawImage(std::string(CLIENT_RES_DIR) + "/cards/outline.png", image_ext);
-        if(card == hover) image_ext.y = ext.y;
-        image_ext.x += delta;
-    }
-}
 
 class HandNode : public LeafNode {
     private:
@@ -72,63 +26,81 @@ class HandNode : public LeafNode {
         Extends getCompactExtends(Extends ext) {return ext;}
 
         void draw() {
-            Extends ext = {
-                extends.x + extends.width / 4,
-                extends.y,
-                extends.width / 2,
-                extends.height / 3,
-                0
-            };
-            drawCards(ext, cards, selected, hover);
-        }
-
-        void sendHoverEvent(float x, float y) override {
-            //std::cout << "HOVER EVENT  - x: " << x << "; y: " << y << std::endl;
-            if(!extends.contains(x,y)) return; //technically not necessary with current implementation
-
-            Extends hand_ext = {
-                extends.x + extends.width / 4,
-                extends.y,
-                extends.width / 2,
-                extends.height / 3,
-                0
-            };
-
             uint N = cards.size();
             if(N == 0) return;
 
-            const float card_width = hand_ext.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-            if(hand_ext.width < card_width) {
+            const float card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
+            if(extends.width < card_width) {
                 //degenerate case 
                 //TODO: compact extends für master node und so 
                 return;
             }
 
-            float card_x = hand_ext.x;
+            Extends image_ext = {
+                extends.x,
+                extends.y,
+                card_width,
+                extends.height,
+                0
+            };
 
-            float delta = (hand_ext.width-card_width)/(N-1);
+            float delta = (extends.width-card_width)/(N-1);
             if(delta > card_width * 0.7) {
                 delta = card_width * 0.7;
                 const double w = card_width + delta * (N-1);
-                card_x += (hand_ext.width - w)/2;
+                image_ext.x += (extends.width - w)/2;
+            }
+            for(Card card : cards) {
+                if(card == hover) image_ext.y += HOVER_OFFSET;
+                OpenGL::drawImage(card.getFileName(), image_ext);
+                if(selected.find(card) != selected.end()) 
+                    OpenGL::drawImage(std::string(CLIENT_RES_DIR) + "/cards/outline.png", image_ext);
+                if(card == hover) image_ext.y = extends.y;
+                image_ext.x += delta;
+            }
+        }
+
+        void sendHoverEvent(float x, float y) override {
+
+            uint N = cards.size();
+            if(N == 0) return;
+
+            const float card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
+            if(extends.width < card_width) {
+                //degenerate case 
+                //TODO: compact extends für master node und so 
+                return;
             }
 
-            if(x < hand_ext.x) {
+            float card_x = extends.x;
+
+            float delta = (extends.width-card_width)/(N-1);
+            if(delta > card_width * 0.7) {
+                delta = card_width * 0.7;
+                const double w = card_width + delta * (N-1);
+                card_x += (extends.width - w)/2;
+            }
+
+            if(x < extends.x) {
                 hover.reset();
                 return;
             }
-            if(x > hand_ext.x + hand_ext.width) {
+            if(x > extends.x + extends.width) {
                 hover.reset();
                 return;
             }
             auto it = cards.begin();
             while(it != cards.end()) {
                 if(x > card_x && x < card_x + delta) {
-                    if(*it == hover && y > hand_ext.height + HOVER_OFFSET) {
+                    if(*it == hover && y > extends.height + HOVER_OFFSET) {
                         hover.reset();
                         return;
                     }
-                    if(!(*it == hover) && y < hand_ext.height) {
+                    if(!(*it == hover) && y > extends.height) {
+                        hover.reset();
+                        return;
+                    }
+                    if(!(*it == hover) && y < extends.height) {
                         hover = *it;
                         return;
                     }
@@ -138,11 +110,15 @@ class HandNode : public LeafNode {
             }
             it--;
             if(x > card_x && x < card_x + card_width) {
-                if(*it == hover && y > hand_ext.height + HOVER_OFFSET) {
+                if(*it == hover && y > extends.height + HOVER_OFFSET) {
                     hover.reset();
                     return;
                 }
-                if(!(*it == hover) && y < hand_ext.height) {
+                if(!(*it == hover) && y > extends.height) {
+                        hover.reset();
+                        return;
+                    }
+                if(!(*it == hover) && y < extends.height) {
                     hover = *it;
                     return;
                 }
@@ -155,49 +131,40 @@ class HandNode : public LeafNode {
         }
 
         void sendClickEvent(float x, float y) override {
-            if(!extends.contains(x,y)) return; //technically not necessary with current implementation
-
-            Extends hand_ext = {
-                extends.x + extends.width / 4,
-                extends.y,
-                extends.width / 2,
-                extends.height / 3,
-                0
-            };
 
             uint N = cards.size();
             if(N == 0) return;
 
-            const float card_width = hand_ext.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-            if(hand_ext.width < card_width) {
+            const float card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
+            if(extends.width < card_width) {
                 //degenerate case 
                 //TODO: compact extends für master node und so 
                 return;
             }
 
-            float card_x = hand_ext.x;
+            float card_x = extends.x;
 
-            float delta = (hand_ext.width-card_width)/(N-1);
+            float delta = (extends.width-card_width)/(N-1);
             if(delta > card_width * 0.7) {
                 delta = card_width * 0.7;
                 const double w = card_width + delta * (N-1);
-                card_x += (hand_ext.width - w)/2;
+                card_x += (extends.width - w)/2;
             }
 
-            if(x < hand_ext.x) {
+            if(x < extends.x) {
                 return;
             }
-            if(x > hand_ext.x + hand_ext.width) {
+            if(x > extends.x + extends.width) {
                 return;
             }
             auto it = cards.begin();
             while(it != cards.end()) {
                 if(x > card_x && x < card_x + delta) {
-                    if(*it == hover && y < hand_ext.height + HOVER_OFFSET) {
+                    if(*it == hover && y < extends.height + HOVER_OFFSET) {
                         toggleSelect(*it);
                         return;
                     }
-                    if(!(*it == hover) && y < hand_ext.height) {
+                    if(!(*it == hover) && y < extends.height) {
                         toggleSelect(*it);
                         return;
                     }
@@ -207,11 +174,11 @@ class HandNode : public LeafNode {
             }
             it--;
             if(x > card_x && x < card_x + card_width) {
-                if(*it == hover && y < hand_ext.height + HOVER_OFFSET) {
+                if(*it == hover && y < extends.height + HOVER_OFFSET) {
                     toggleSelect(*it);
                     return;
                 }
-                if(!(*it == hover) && y < hand_ext.height) {
+                if(!(*it == hover) && y < extends.height) {
                     toggleSelect(*it);
                     return;
                 }
@@ -234,7 +201,15 @@ GameNode::GameNode() {
 
 void GameNode::updateExtends(Extends ext) {
     extends = ext; //TODO so mache das mer das nöd immer selber mache muess
-    handNode->updateExtends(ext);
+
+    Extends hand_ext = {
+        extends.x + extends.width / 4,
+        extends.y,
+        extends.width / 2,
+        extends.height / 3,
+        0
+    };
+    handNode->updateExtends(hand_ext);
     //TODO
 }
 

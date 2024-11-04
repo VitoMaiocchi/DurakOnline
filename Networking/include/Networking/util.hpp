@@ -44,6 +44,15 @@ struct Card {
     bool operator==(const Card& other) const;
 };
 
+namespace std {
+    template <>
+    struct hash<Card> {
+        size_t operator()(const Card& card) const {
+            return hash<int>()(static_cast<int>(card.suit) * 13 + static_cast<int>(card.rank));
+        }
+    };
+}
+
 enum CardSlot {
     CARDSLOT_1,
     CARDSLOT_2,

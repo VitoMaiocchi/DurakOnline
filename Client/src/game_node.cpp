@@ -15,6 +15,7 @@ void sortCards(std::list<Card> &cards) {
 
 //das sött no relativ zum ext si
 #define HOVER_OFFSET 70
+#define CARD_DELTA_FACTOR 0.7
 
 class HandNode : public LeafNode {
     private:
@@ -22,34 +23,45 @@ class HandNode : public LeafNode {
         std::unordered_set<Card> selected;
         std::optional<Card> hover;
 
+        bool computeDelta(float &delta, float &card_width, uint &N) {
+            N = cards.size();
+            if(N == 0) return false;
+
+            card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
+
+            if(extends.width < card_width) {
+                //degenerate case 
+                //weiss nonig genau wi mer das vernünftig handled
+                return false;
+            }
+
+            delta = (extends.width-card_width)/(N-1);
+            if(delta > card_width * CARD_DELTA_FACTOR)  delta = card_width * CARD_DELTA_FACTOR;
+            return true;
+        }
+
+        void toggleSelect(Card card) {
+            if(selected.find(card) == selected.end()) selected.insert(card);
+            else selected.erase(card);
+        }
+
     public:
         Extends getCompactExtends(Extends ext) {return ext;}
 
         void draw() {
-            uint N = cards.size();
-            if(N == 0) return;
+            float card_width, delta;
+            uint N;
+            if(!computeDelta(delta, card_width, N)) return;
 
-            const float card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-            if(extends.width < card_width) {
-                //degenerate case 
-                //TODO: compact extends für master node und so 
-                return;
-            }
-
+            //const float w = (card_width + delta * (N-1));
             Extends image_ext = {
-                extends.x,
+                extends.x + (extends.width - (card_width + delta * (N-1)) )/2,
                 extends.y,
                 card_width,
                 extends.height,
                 0
             };
 
-            float delta = (extends.width-card_width)/(N-1);
-            if(delta > card_width * 0.7) {
-                delta = card_width * 0.7;
-                const double w = card_width + delta * (N-1);
-                image_ext.x += (extends.width - w)/2;
-            }
             for(Card card : cards) {
                 if(card == hover) image_ext.y += HOVER_OFFSET;
                 OpenGL::drawImage(card.getFileName(), image_ext);
@@ -61,25 +73,11 @@ class HandNode : public LeafNode {
         }
 
         void sendHoverEvent(float x, float y) override {
+            float card_width, delta;
+            uint N;
+            if(!computeDelta(delta, card_width, N)) return;
 
-            uint N = cards.size();
-            if(N == 0) return;
-
-            const float card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-            if(extends.width < card_width) {
-                //degenerate case 
-                //TODO: compact extends für master node und so 
-                return;
-            }
-
-            float card_x = extends.x;
-
-            float delta = (extends.width-card_width)/(N-1);
-            if(delta > card_width * 0.7) {
-                delta = card_width * 0.7;
-                const double w = card_width + delta * (N-1);
-                card_x += (extends.width - w)/2;
-            }
+            float card_x = extends.x + (extends.width - (card_width + delta * (N-1)) )/2;
 
             if(x < extends.x) {
                 hover.reset();
@@ -125,31 +123,13 @@ class HandNode : public LeafNode {
             }
         }
 
-        void toggleSelect(Card card) {
-            if(selected.find(card) == selected.end()) selected.insert(card);
-            else selected.erase(card);
-        }
-
         void sendClickEvent(float x, float y) override {
+            float card_width, delta;
+            uint N;
+            if(!computeDelta(delta, card_width, N)) return;
 
-            uint N = cards.size();
-            if(N == 0) return;
+            float card_x = extends.x + (extends.width - (card_width + delta * (N-1)) )/2;
 
-            const float card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
-            if(extends.width < card_width) {
-                //degenerate case 
-                //TODO: compact extends für master node und so 
-                return;
-            }
-
-            float card_x = extends.x;
-
-            float delta = (extends.width-card_width)/(N-1);
-            if(delta > card_width * 0.7) {
-                delta = card_width * 0.7;
-                const double w = card_width + delta * (N-1);
-                card_x += (extends.width - w)/2;
-            }
 
             if(x < extends.x) {
                 return;
@@ -188,15 +168,14 @@ class HandNode : public LeafNode {
         void updateHand(std::list<Card> &cards) {
             sortCards(cards);
             this->cards = cards;
-            //selected.insert(Card(RANK_KING, SUIT_DIAMONDS));
         }
 
 };
 
 
 GameNode::GameNode() {
-    //TODO
     handNode = std::make_unique<HandNode>();
+    //TODO
 }
 
 void GameNode::updateExtends(Extends ext) {

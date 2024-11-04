@@ -13,6 +13,11 @@ namespace OpenGL {
 
     struct Texture;
 
+    void drawImage(std::string path, Extends ext);
+
+    //TODO: ALL DIE CLASSES SIND UNNÖTIG
+    //DAS CHAMMER ALLES I NORMALI GLOBALI FUNCTIONS UMWANDLE
+    //aka fuck Object Oriented boilerplate cancer
     class Image {
         public:
             Image(std::string path);

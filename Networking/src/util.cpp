@@ -19,7 +19,7 @@ const uint Card::toInt() const {
 }
 
 bool Card::operator==(const Card& other) const {
-    return false; //TODO
+    return rank==other.rank && suit==other.suit;
 }
 
 std::string Card::getFileName() {

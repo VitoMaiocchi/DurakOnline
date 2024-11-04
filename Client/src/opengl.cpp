@@ -126,6 +126,22 @@ namespace OpenGL {
         height = texture->height;
     }
 
+    void drawImage(std::string path, Extends ext) {
+        Texture* texture = getTexture(path);
+
+        glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
+        glUseProgram(imageShader->shader_program);
+
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, ext.layer));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
+
+        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
 
     //Rectangle
     Rectangle::Rectangle(float r, float g, float b) :
@@ -182,6 +198,12 @@ namespace OpenGL {
         Window::width = width;
     }
 
+    static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+        xpos = xpos / Window::width * Viewport::width;
+        ypos = (1 - ypos / Window::height) * Viewport::height;
+        masterNode->sendHoverEvent(xpos, ypos);
+    }
+
     bool setupWindow() {
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -209,6 +231,7 @@ namespace OpenGL {
         glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
         glfwSetWindowSizeCallback(window, window_size_callback);
         glfwSetMouseButtonCallback(window, mouse_button_callback);
+        glfwSetCursorPosCallback(window, cursor_position_callback);
         return true;
     }
 

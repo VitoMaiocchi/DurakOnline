@@ -13,34 +13,14 @@ bool master_node_exists = false;
 GameState GlobalState::game_state = GAMESTATE_NONE;
 std::vector<Player> GlobalState::players;
 
-std::unique_ptr<Node> rect_node;
-std::unique_ptr<Node> rect_node2;
-std::unique_ptr<Node> text_node;
-std::unique_ptr<Node> stack_node1;
-
 std::unique_ptr<Node> game_node;
 
 MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
     master_node_exists = true;
-    // RectangleNode and TextNode
-    rect_node = std::make_unique<RectangleNode>(0, 0, 0);
-    rect_node2 = std::make_unique<RectangleNode>(1.0, 0, 0);
-    text_node = std::make_unique<TextNode>("Sample Text", 0.2, 1.0, 0.8);
-
-    // StackNode
-    stack_node1 = std::make_unique<LinearStackNode>();
-    cast(LinearStackNode, stack_node1)->setStackType(STACKDIRECTION_VERTICAL, STACKTYPE_SPACED);
-    cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
-    cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
-    cast(LinearStackNode, stack_node1)->children.push_back(std::make_unique<ImageNode>(Card(RANK_QUEEN, SUIT_DIAMONDS).getFileName()));
 } 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
-    function(rect_node);
-    function(rect_node2);
-    function(text_node);
-    function(stack_node1);
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);
         function(game_node);
@@ -49,13 +29,6 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 
 void MasterNode::updateExtends(Extends ext) {
     extends = ext;
-    Extends ext1 = {ext.x, ext.y, ext.width/2, ext.height};
-    Extends ext2 = {ext.x+ext.width/2, ext.y, ext.width/2, ext.height};
-    Extends ext3 = {0, 0, ext.width, ext.height};
-    rect_node->updateExtends(ext1);
-    rect_node2->updateExtends(ext2);
-    text_node->updateExtends(ext);
-    stack_node1->updateExtends(extends);
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         assert(game_node);
@@ -71,11 +44,11 @@ void handleGameStateUpdate(GameStateUpdate update) {
     if(GlobalState::game_state == update.state) return;
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
-        game_node = std::make_unique<GameNode>();
+        game_node = nullptr;
     }
 
     if(update.state == GAMESTATE_GAME) {
-        game_node = nullptr;
+        game_node = std::make_unique<GameNode>();
     }
 
     GlobalState::game_state = update.state;

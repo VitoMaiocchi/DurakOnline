@@ -13,7 +13,6 @@ void sortCards(std::list<Card> &cards) {
     //da muss mer wüsse was trumpf isch und so
 }
 
-//das sött no relativ zum ext si
 #define HOVER_OFFSET_FACTOR 0.08
 #define CARD_DELTA_FACTOR 0.7
 

@@ -11,11 +11,19 @@ class Battle {
         std::vector<std::tuple<int, int>> battle_state; //attacking, defending, spectating
         bool defending_flag;
         int max_attacks;
-        int attacks_to_defend; 
+        int attacks_to_defend;
+        bool first_battle_ = false;;
 
     public:
         Battle(); //default Constructor
-        Battle(int max_attacks_) : max_attacks(max_attacks_){}
+        Battle(bool first_battle) : first_battle_(first_battle){
+            if(first_battle_ == true){
+                max_attacks = 5;
+            }
+            else{
+                max_attacks = 6;
+            }
+        }
         ~Battle(); //default Destructor
         
 

@@ -86,7 +86,7 @@ bool card_manager::distributeNewCards(){
 //POST: returns true if card 2 is "greater" than card one in the sense of durak rules
 bool card_manager::compareCards(Card card1, Card card2){
     if (card1.suit == trump){
-        return card2.suit==trump && card2.rank > card2.rank;
+        return card2.suit==trump && card2.rank > card1.rank;
     }
     return card2.suit==trump || (card2.suit==card1.suit && card2.rank > card1.rank);
 }

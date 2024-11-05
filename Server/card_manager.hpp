@@ -4,7 +4,7 @@
 #include <vector>
 #include <deque>
 #include <memory>
-#include "card.hpp"
+#include "../Networking/include/Networking/util.hpp"
 
 class card_manager
 {

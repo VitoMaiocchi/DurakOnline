@@ -85,6 +85,15 @@ enum ClientAction {
     CLIENTACTION_PICK_UP
 };
 
+enum PlayerRole {
+    ATTACKER,
+    DEFENDER,
+    CO_ATTACKER,
+    IDLE_1,
+    IDLE_2,
+    IDLE_3
+}; //max 6 players
+
 #define PRINT_DEBUG(msg) \
     std::cout << "DEBUG: " << msg << " (" << __FILE__ << ":" << __LINE__ << ")" << std::endl
 

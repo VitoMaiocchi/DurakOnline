@@ -1,21 +1,24 @@
 #ifndef BATTLE_HPP
 #define BATTLE_HPP
 
+#include <Networking/util.hpp>
+
 #include <vector>
 #include <tuple>
 
 class Battle {
     private:
         //we might not need that because the other vector saves it already
-        std::vector<int> players; //saves the player ids of the players
-        std::vector<std::tuple<int, int>> battle_state; //attacking, defending, spectating
+        // std::vector<int> players; //saves the player ids of the players
+        std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
         bool defending_flag;
         int max_attacks;
-        int attacks_to_defend; 
+        int attacks_to_defend;
+        bool first_battle_ = false;;
 
     public:
         Battle(); //default Constructor
-        Battle(int max_attacks_) : max_attacks(max_attacks_){}
+        Battle(bool first_battle);
         ~Battle(); //default Destructor
         
 

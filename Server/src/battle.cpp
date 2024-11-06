@@ -5,6 +5,16 @@
 /**
 * QUESTIONS: 
  */
+
+//constructor 
+Battle::Battle(bool first_battle) : first_battle_(first_battle){
+    if(first_battle_ == true){
+        max_attacks = 5;
+    }
+    else{
+        max_attacks = 6;
+    }
+}
 bool Battle::handleCardEvent(/* the message card event */){
 
     std::cout << "handleCardEvent was called" << std::endl;

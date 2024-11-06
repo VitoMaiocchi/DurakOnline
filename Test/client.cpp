@@ -211,15 +211,11 @@ int main() {
     Network::openConnection("localhost", 42069);
     while(true) {
         Network::sendMessage(m);
-        std::unique_ptr<Message> awnser = Network::reciveMessage();
-        if(awnser == nullptr){
-            std::cerr << "This is the issue!" << std::endl;
-            return -1;
-        }
-        else{
-            TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
-            std::cout   << "string: " << ret->string
-                        << "\nx: "<< ret->x << std::endl;
-        }
+        std::unique_ptr<Message> awnser = nullptr;
+        while(!awnser) awnser = Network::reciveMessage();
+        TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
+        std::cout   << "string: " << ret->string
+                    << "\nx: "<< ret->x << std::endl;
+
     }
 }

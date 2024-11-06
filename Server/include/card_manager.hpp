@@ -4,9 +4,9 @@
 #include <vector>
 #include <deque>
 #include <memory>
-#include "../Networking/include/Networking/util.hpp"
+#include <Networking/util.hpp>
 
-class card_manager
+class CardManager
 {
 private:
     std::deque<Card> deck;              //represents cards in the middle
@@ -25,8 +25,8 @@ private:
 
 public:
     //constructor and destructor
-    card_manager(/* args */);
-    ~card_manager();
+    CardManager(/* args */);
+    ~CardManager();
 
     //At the beginning of the game
     bool shuffleCards();

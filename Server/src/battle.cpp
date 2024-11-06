@@ -1,4 +1,4 @@
-#include "battle.hpp"
+#include "../include/battle.hpp"
 #include <iostream>
 
 
@@ -24,7 +24,16 @@ bool Battle::successfulDefend(){
     *PRE: 
     *POST:
  */
-bool Battle::passOn(){
+bool Battle::passOn(/*unsigned player_id*/){
+    //check if isValidMove() -> there cannot be anything defended
+    //                       -> the defender has to lay down the card on a free card slot
+    //                       -> card has to be valid (i.e same number)
+
+    //getPlayerHand(player_id) check if a card with the same number is in the hand
+    //if no return invalid move
+    //if yes set attacker to idle, defender to attacker, coattacker to defender, the next player to coattacker
+
+    
     return false;
 }
 
@@ -35,6 +44,7 @@ bool Battle::passOn(){
     *QUESTIONS: should it also pass the message? how does it know if its attacker/defender/idle
                 does it check only one card at the time or also multiple if there are multiple that are
                 being played? 
+
  */ 
 bool Battle::isValidMove( /*const Card &card, int player_id*/){
 
@@ -52,6 +62,10 @@ bool Battle::isValidMove( /*const Card &card, int player_id*/){
     return false;
 }
 
-void Battle::attack(){}
+void Battle::attack(){
+    //calls attack
+}
 
-void Battle::defend(){}
+void Battle::defend(){ 
+    //calls defendCard
+}

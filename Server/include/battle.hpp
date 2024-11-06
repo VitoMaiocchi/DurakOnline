@@ -7,8 +7,8 @@
 class Battle {
     private:
         //we might not need that because the other vector saves it already
-        std::vector<int> players; //saves the player ids of the players
-        std::vector<std::tuple<int, int>> battle_state; //attacking, defending, spectating
+        // std::vector<int> players; //saves the player ids of the players
+        std::vector<std::pairs<int, /*enum player role*/>> players_bs; //attacking, defending, spectating
         bool defending_flag;
         int max_attacks;
         int attacks_to_defend;

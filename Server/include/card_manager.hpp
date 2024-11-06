@@ -4,6 +4,7 @@
 #include <vector>
 #include <deque>
 #include <memory>
+#include <algorithm>
 #include "Networking/util.hpp"
 
 class cardManager
@@ -19,6 +20,7 @@ private:
     std::vector<std::vector<Card>> player_hands;
     std::vector<unsigned int> player_number_of_cards;
     std::vector<std::pair<Card,Card>> Middle; //represents the battlefield in the middle
+    unsigned int number_cards_Middle; //Number of cards in the middle
     
 
 

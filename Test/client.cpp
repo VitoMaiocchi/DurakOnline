@@ -202,7 +202,7 @@ int main() {
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
 
-
+    std::cout << "TEST MESSAGETYPE_TEST"<<std::endl;
     TestMessage message;
     message.x = 3;
     message.y = 7;

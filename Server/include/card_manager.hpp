@@ -4,9 +4,9 @@
 #include <vector>
 #include <deque>
 #include <memory>
-#include "../Networking/include/Networking/util.hpp"
+#include "Networking/util.hpp"
 
-class card_manager
+class cardManager
 {
 private:
     std::deque<Card> deck;              //represents cards in the middle
@@ -15,8 +15,7 @@ private:
     bool endgame;                       //Could be useful for endgame functions, delete if it is not used
     std::vector<Card> discarded_cards;  //Charte wo "weg" sind
     unsigned int number_discarded_cards; // azahl charte wo "weg" sind
-    //enum trump{Hearts, Clubs, Diamonds, Spades};                 //trump suit
-    Suit trump;                             //included from card.hpp if we remove/change this inclusion we have to find another solution
+    Suit trump;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
     std::vector<std::vector<Card>> player_hands;
     std::vector<unsigned int> player_number_of_cards;
     std::vector<std::pair<Card,Card>> Middle; //represents the battlefield in the middle
@@ -25,8 +24,8 @@ private:
 
 public:
     //constructor and destructor
-    card_manager(/* args */);
-    ~card_manager();
+    cardManager(/* args */);
+    ~cardManager();
 
     //At the beginning of the game
     bool shuffleCards();

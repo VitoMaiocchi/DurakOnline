@@ -15,8 +15,7 @@ private:
     bool endgame;                       //Could be useful for endgame functions, delete if it is not used
     std::vector<Card> discarded_cards;  //Charte wo "weg" sind
     unsigned int number_discarded_cards; // azahl charte wo "weg" sind
-    //enum trump{Hearts, Clubs, Diamonds, Spades};                 //trump suit
-    Suit trump;                             //included from card.hpp if we remove/change this inclusion we have to find another solution
+    Suit trump;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
     std::vector<std::vector<Card>> player_hands;
     std::vector<unsigned int> player_number_of_cards;
     std::vector<std::pair<Card,Card>> Middle; //represents the battlefield in the middle
@@ -37,6 +36,9 @@ public:
     std::vector<std::pair<Card,Card>> getMiddle();
     unsigned int getNumberActivePlayers();
     unsigned int getNumberOfCardsInHand(unsigned int PlayerID);
+
+    bool attackCard(Card card, unsigned int PlayerID);
+    bool defendCard(Card card, unsigned int PlayerID, unsigned int slot);
 
     // game actions
     bool playCard(Card card, unsigned int PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 

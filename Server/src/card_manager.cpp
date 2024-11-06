@@ -1,7 +1,9 @@
-#include "card_manager.hpp"
+#include "../include/card_manager.hpp"
 #include <algorithm>
 #include <cassert>
 #include <random>
+#include <iostream>
+#include "card_manager.hpp"
 
 
 //constructors
@@ -54,10 +56,15 @@ unsigned int CardManager::getNumberActivePlayers(){
 unsigned int CardManager::getNumberOfCardsInHand(unsigned int PlayerID){
     return player_hands.at(PlayerID).size();
 }
+/**
+    *PRE:A valid move 
+    *POST:???
+*/
+bool CardManager::attackCard(Card card, unsigned int PlayerID){
+    return 0;
+}
 
-//PRE:???
-//POST:???
-bool CardManager::playCard(Card card, unsigned int PlayerID){
+bool CardManager::defendCard(Card card, unsigned int PlayerID, unsigned int slot){
     return 0;
 }
 
@@ -65,6 +72,10 @@ bool CardManager::playCard(Card card, unsigned int PlayerID){
 //POST: All cards in the middle are moved from "middle" to "discarded cards"
 bool CardManager::clearMiddle(){
     //Mit de andere abmache wie das mir dmitti implementiered
+
+    //Alli charte transfere vo mitti zu discarded
+
+    //Überprüefe öb charte ufem dicarded+stack+playerhands=52 isch
     return 0;
 }   
 

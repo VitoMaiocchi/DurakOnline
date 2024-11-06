@@ -3,4 +3,5 @@ project(Durak)
 
 add_subdirectory(Client)
 add_subdirectory(Networking)
+add_subdirectory(Server)
 add_subdirectory(Test)

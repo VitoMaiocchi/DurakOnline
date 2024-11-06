@@ -32,13 +32,14 @@ void handleMessage(std::unique_ptr<Message> message, ClientID client) {
 int main() {
 
     //start networking
-    Network::openSocket(42069);
-    //set up irgend welches züg etc
+    // Network::openSocket(42069);
+    // //set up irgend welches züg etc
 
-    while(true) {
-        //listen for messages
-        ClientID client;
-        handleMessage(Network::reciveMessage(client), client);
-    }
+    // while(true) {
+    //     //listen for messages
+    //     ClientID client;
+    //     handleMessage(Network::reciveMessage(client), client);
+    // }
+    return 0;
 
 }

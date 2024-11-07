@@ -35,3 +35,8 @@ class Battle {
 
 #endif
 //first_battle
+
+
+// (\(\ 
+// ( -.-)
+// o_(")(")

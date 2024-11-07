@@ -4,10 +4,12 @@
 #include <vector>
 #include <deque>
 #include <memory>
+<<<<<<< HEAD
 #include <algorithm>
 #include "Networking/util.hpp"
+=======
 
-class cardManager
+class CardManager
 {
 private:
     std::deque<Card> deck;              //represents cards in the middle
@@ -26,8 +28,8 @@ private:
 
 public:
     //constructor and destructor
-    cardManager(/* args */);
-    ~cardManager();
+    CardManager(/* args */);
+    ~CardManager();
 
     //At the beginning of the game
     bool shuffleCards();
@@ -38,6 +40,9 @@ public:
     std::vector<std::pair<Card,Card>> getMiddle();
     unsigned int getNumberActivePlayers();
     unsigned int getNumberOfCardsInHand(unsigned int PlayerID);
+
+    bool attackCard(Card card, unsigned int PlayerID);
+    bool defendCard(Card card, unsigned int PlayerID, unsigned int slot);
 
     // game actions
     bool playCard(Card card, unsigned int PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 

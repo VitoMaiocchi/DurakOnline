@@ -135,20 +135,30 @@ void CardManager::defendCard(Card card, unsigned int PlayerID, unsigned int slot
 //PRE:
 //POST: All cards in the middle are moved from "middle" to "discarded cards"
 bool CardManager::clearMiddle(){
-    //Mit de andere abmache wie das mir dmitti implementiered
-
-    //Alli charte transfere vo mitti zu discarded
-
-    //Überprüefe öb charte ufem dicarded+stack+playerhands=52 isch
+    assert(Middle.size()<=6 && "Middle shouldn't have more than six slots")
+    //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
+    while(!Middle.empty()){
+        discarded_Cards.push_back(Middle[i].first);
+        discarded_Cards.push_back(Middle[i].second);
+        Middle.erase(Middle.begin());
+    }
 
     //Azahl charte i de mitti apasse
+    number_cards_Middle=middle.size();
     return 0;
 }   
 
 //PRE:
 //POST: All cards in the middle are assigned to the defenders hands
-bool CardManager::pickUp(){
-    //Danil söll mer nomal erkläre woe genau er drolle ispeicheret (agriife verteidige)
+bool CardManager::pickUp(unsigned int PlayerID){
+    //Danil söll ID vom defender mitgeh
+    assert(Middle.size()<=6 && "Middle shouldn't have more than six slots")
+    //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
+    while(!Middle.empty()){
+        player.push_back(Middle[i].first);
+        discarded_Cards.push_back(Middle[i].second);
+        Middle.erase(Middle.begin());
+    }
     return 0;
 }   
 

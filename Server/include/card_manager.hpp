@@ -4,10 +4,8 @@
 #include <vector>
 #include <deque>
 #include <memory>
-<<<<<<< HEAD
 #include <algorithm>
 #include "Networking/util.hpp"
-=======
 
 class CardManager
 {
@@ -28,12 +26,13 @@ private:
 
 public:
     //constructor and destructor
-    CardManager(/* args */);
+    //Constructor where the number of players is passed
+    CardManager(unsigned int);
     ~CardManager();
 
     //At the beginning of the game
-    bool shuffleCards();
-    bool determineTrump();
+    void shuffleCards();
+    void determineTrump();
 
     //getter functions
     std::vector<Card> getPlayerHand (unsigned int PlayerID);
@@ -42,12 +41,12 @@ public:
     unsigned int getNumberOfCardsInHand(unsigned int PlayerID);
 
     bool attackCard(Card card, unsigned int PlayerID);
-    bool defendCard(Card card, unsigned int PlayerID, unsigned int slot);
+    void defendCard(Card card, unsigned int PlayerID, unsigned int slot);
 
     // game actions
     bool playCard(Card card, unsigned int PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
     bool clearMiddle();         //When attack is succesfully defended
-    bool pickUp();              //When attack wasn't succesfully defended
+    void pickUp(unsigned int PlayerID_def);              //When attack wasn't succesfully defended
     bool distributeNewCards();
     bool compareCards(Card card1, Card card2);
 

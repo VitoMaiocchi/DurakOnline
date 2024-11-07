@@ -2,7 +2,7 @@
 #include <cassert>
 #include <random>
 #include <iostream>
-#include "card_manager.hpp"
+#include "../include/card_manager.hpp"
 
 
 //constructors
@@ -23,7 +23,6 @@ CardManager::CardManager(unsigned int number_of_players){
 //Brucht die funktion en rückgabetyp?
 //PRE: A deque containing all 52 cards in the deck (evtl au nöd?), empty player_hands vector
 //POST: Returns true if the deck was succesfully shuffled, stored in the deck member and 6 cards were distributed to every palyer
-<<<<<<< HEAD
 void CardManager::shuffleCards(){
     // Check if deck has been initialized properly
     assert(deck.size() == 52 && "Deck must contain exactly 52 cards before shuffling");
@@ -50,8 +49,7 @@ void CardManager::shuffleCards(){
 
 //PRE: A complete  shuffled deck containing the 52 cards
 //POST: Sets the trump suit according to last card in the deck
-<<<<<<< HEAD
-Suit CardManager::determineTrump(){
+void CardManager::determineTrump(){
     // Check if deck has been initialized properly
     assert(deck.size() == 52/*-6*Number Players*/ && "Deck must contain exactly 52 cards before determining trump");
 
@@ -59,10 +57,10 @@ Suit CardManager::determineTrump(){
     last_card = std::make_shared<Card>(deck.back());
 
     // Check if pointer has been assigned
-    assert(*last_card && "Pointer to last card is void")
+    assert(last_card && "Pointer to last card is void");
 
     //Lueg mal öb ich de const mache chan
-    return last_card->suit();
+    //return last_card->suit();
     
 }
 
@@ -81,10 +79,9 @@ std::vector<std::pair<Card,Card>> CardManager::getMiddle(){
 
 //PRE:
 //POST: Returns number of active players (players that haven't finished yet)
-<<<<<<< HEAD
 unsigned int CardManager::getNumberActivePlayers(){
-    unsigned int activePlayers = std::count_if(player_hands.begin(), player_hands.end(), [](const std::vector<int>& v) {
-        return v.empty()
+    unsigned int activePlayers = std::count_if(player_hands.begin(), player_hands.end(), [](std::vector<Card>& v) {
+        return v.empty();
     });
     return activePlayers;
 }
@@ -94,7 +91,7 @@ unsigned int CardManager::getNumberActivePlayers(){
 unsigned int CardManager::getNumberOfCardsInHand(unsigned int PlayerID){
     return player_hands.at(PlayerID).size();
 }
-<<<<<<< HEAD
+
 
 //PRE:A valid move 
 //POST:Middle, Playerhand & numberofcards in hand updated
@@ -135,31 +132,30 @@ void CardManager::defendCard(Card card, unsigned int PlayerID, unsigned int slot
 //PRE:
 //POST: All cards in the middle are moved from "middle" to "discarded cards"
 bool CardManager::clearMiddle(){
-    assert(Middle.size()<=6 && "Middle shouldn't have more than six slots")
+    assert(Middle.size()<=6 && "Middle shouldn't have more than six slots");
     //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
     while(!Middle.empty()){
-        discarded_Cards.push_back(Middle[i].first);
-        discarded_Cards.push_back(Middle[i].second);
+        discarded_cards.push_back(Middle[0].first);
+        discarded_cards.push_back(Middle[0].second);
         Middle.erase(Middle.begin());
     }
 
     //Azahl charte i de mitti apasse
-    number_cards_Middle=middle.size();
+    number_cards_Middle=Middle.size();
     return 0;
 }   
 
 //PRE:
 //POST: All cards in the middle are assigned to the defenders hands
-bool CardManager::pickUp(unsigned int PlayerID){
+void CardManager::pickUp(unsigned int PlayerID_def){
     //Danil söll ID vom defender mitgeh
-    assert(Middle.size()<=6 && "Middle shouldn't have more than six slots")
+    assert(Middle.size()<=6 && "Middle shouldn't have more than six slots");
     //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
     while(!Middle.empty()){
-        player.push_back(Middle[i].first);
-        discarded_Cards.push_back(Middle[i].second);
+        player_hands[PlayerID_def].push_back(Middle[0].first);
+        discarded_cards.push_back(Middle[0].second);
         Middle.erase(Middle.begin());
     }
-    return 0;
 }   
 
 //PRE:

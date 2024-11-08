@@ -17,6 +17,8 @@ class Battle {
         int attacks_to_defend;
         bool first_battle_ = false;;
 
+        //pointer to cardmanager?
+
     public:
         Battle(); //default Constructor
         Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players);
@@ -27,12 +29,13 @@ class Battle {
         bool handleActionEvent();
         bool successfulDefend();
         bool passOn();
-        bool isValidMove( const Card &card, int player_id);
+        bool isValidMove( const Card &card, int player_id, CardSlot slot);
 
         // helper functions
         void attack(); 
         void defend();
 };
+
 
 #endif
 //first_battle

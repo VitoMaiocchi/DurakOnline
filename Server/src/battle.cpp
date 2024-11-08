@@ -25,14 +25,20 @@ bool Battle::handleCardEvent(/* the message play card event */){
     //here we should handle the list and maybe break it down? by card, then we can call isValidMove multiple 
     //times and check if each card is valid, and if yes, then we give to go
     
+    //after the play card event message is taken care of we can implement the logic of this
+
+    //if(isValidMove()){
+    // check role and call attack() or defend()}
     return false;
 }
 
 bool Battle::handleActionEvent(){
+    
     return false;
 }
 
 bool Battle::successfulDefend(){
+    //fetches middle from the cardmanager 
     return false;
 }
 
@@ -69,7 +75,7 @@ bool Battle::passOn(/*unsigned player_id*/){
 //     std::list<Card> cards; // can be multiple if multiple cards are played at once, max 4
 //     CardSlot slot; //place of the card
 // };
-bool Battle::isValidMove( const Card &card, int player_id /*message with slots?*/){
+bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
 
     //if its a defender -> how to check that?
     //call cards in middle 
@@ -93,15 +99,19 @@ bool Battle::isValidMove( const Card &card, int player_id /*message with slots?*
         }
     }
     if(role == DEFENDER){
-        
+        //fetch middle from cardmanager 
+        //check the slot, if there is a card
+        //check if the card is higher with card_compare
+
     }
     if(role == ATTACKER){
         if(curr_attacks == max_attacks){
             return false;
         }
-        if(curr_attacks == 0 /*&& message -> */){
+        if(curr_attacks == 0){
             return true;
         }
+        if(curr_attacks < max_attacks){}
     }
     if(role == IDLE){
         return false;

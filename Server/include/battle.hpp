@@ -2,6 +2,7 @@
 #define BATTLE_HPP
 
 #include <Networking/util.hpp>
+#include "card_manager.hpp"
 
 #include <vector>
 #include <tuple>
@@ -18,10 +19,11 @@ class Battle {
         bool first_battle_ = false;;
 
         //pointer to cardmanager?
+        CardManager *card_manager_ptr;
 
     public:
         Battle(); //default Constructor
-        Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players);
+        Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager);
         ~Battle(); //default Destructor
         
 

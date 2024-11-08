@@ -7,8 +7,8 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players) : 
-                                    first_battle_(first_battle), players_bs(players), curr_attacks(0){
+Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager) : 
+                                    first_battle_(first_battle), players_bs(players), card_manager_ptr(&card_manager),curr_attacks(0){
     if(first_battle_ == true){
         max_attacks = 5;
     }

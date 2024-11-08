@@ -117,3 +117,7 @@ void Battle::attack(){
 void Battle::defend(){ 
     //calls defendCard
 }
+
+// (\(\ 
+// ( -.-)
+// o_(")(")

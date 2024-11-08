@@ -102,7 +102,12 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
         //fetch middle from cardmanager 
         //check the slot, if there is a card
         //check if the card is higher with card_compare
-
+        std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();
+        Card first = middle[slot].first;
+        if(card_manager_ptr->compareCards(first, card)){
+            return true;
+        }
+        else return false;
     }
     if(role == ATTACKER){
         if(curr_attacks == max_attacks){
@@ -111,7 +116,15 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
         if(curr_attacks == 0){
             return true;
         }
-        if(curr_attacks < max_attacks){}
+        if(curr_attacks < max_attacks){
+            //fetch middle if the card is in play
+            std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();
+            for(auto& card_in_middle : middle){
+                if(card_in_middle.first.rank == card.rank || card_in_middle.second.rank == card.rank){
+                    return true;
+                }
+            } 
+        }
     }
     if(role == IDLE){
         return false;

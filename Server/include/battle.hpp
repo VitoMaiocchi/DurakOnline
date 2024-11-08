@@ -13,12 +13,15 @@ class Battle {
         std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
         bool defending_flag;
         int max_attacks;
+        int curr_attacks;
         int attacks_to_defend;
         bool first_battle_ = false;;
 
+        //pointer to cardmanager?
+
     public:
         Battle(); //default Constructor
-        Battle(bool first_battle);
+        Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players);
         ~Battle(); //default Destructor
         
 
@@ -26,12 +29,13 @@ class Battle {
         bool handleActionEvent();
         bool successfulDefend();
         bool passOn();
-        bool isValidMove();
+        bool isValidMove( const Card &card, int player_id, CardSlot slot);
 
         // helper functions
         void attack(); 
         void defend();
 };
+
 
 #endif
 //first_battle

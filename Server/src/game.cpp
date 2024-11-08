@@ -1,10 +1,8 @@
 #include "../include/game.hpp"
 
-#include <iostream>
+// default constructor
 
-
-
-bool Game::createGame(){
+bool Game::Game(){
     return false;
 }
 

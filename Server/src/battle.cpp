@@ -111,11 +111,12 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     }
     if(role == ATTACKER){
         if(curr_attacks == max_attacks){
-            return false;
+            return false; //idk about this maybe should be > and if == true
         }
         if(curr_attacks == 0){
             return true;
         }
+        //check if card rank is in middle
         if(curr_attacks < max_attacks){
             //fetch middle if the card is in play
             std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();

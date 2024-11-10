@@ -8,6 +8,10 @@
 #include "../include/server.hpp"
 #include "../include/game.hpp"
 
+#include <unordered_set>
+#include <memory>
 
-void handleMessage(std::unique_ptr<Message> message, ClientID client);
+void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* current_game);
+
+void get_playcard_msg(PlayCardEvent* ret_msg, ClientID client, Game* current_game);
 #endif

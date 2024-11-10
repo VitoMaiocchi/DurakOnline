@@ -30,10 +30,11 @@ int main() {
     Network::openSocket(42069);
     //set up irgend welches züg etc
     //std::unordered_set<ClientID> clients;
+
     while(true) {
         //listen for messages
         ClientID client;
-        handleMessage(Network::reciveMessage(client), client);
+        handleMessage(Network::reciveMessage(client), client, currentGame);
     }
     return 0;
 
@@ -69,3 +70,20 @@ int main() {
 
 //     return 0;
 // }
+
+    // std::cout << "TEST MESSAGETYPE_TEST"<<std::endl;
+    // TestMessage message;
+    // message.x = 3;
+    // message.y = 7;
+    // message.string = "mhh trash i like trash";
+    // std::unique_ptr<Message> m = std::make_unique<TestMessage>(message);
+    // Network::openConnection("localhost", 42069);
+    // while(true) {
+    //     Network::sendMessage(m);
+    //     std::unique_ptr<Message> awnser = nullptr;
+    //     while(!awnser) awnser = Network::reciveMessage();
+    //     TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
+    //     std::cout   << "string: " << ret->string
+    //                 << "\nx: "<< ret->x << std::endl;
+
+    // }

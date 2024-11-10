@@ -2,9 +2,7 @@
 
 // default constructor
 
-bool Game::Game(){
-    return false;
-}
+Game::Game(){}
 
 bool Game::makeFirstBattle(){
     return false;

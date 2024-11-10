@@ -4,6 +4,7 @@
 
 #include "../include/server.hpp"
 #include "../include/game.hpp"
+#include "../include/msg_handler.hpp"
 #include <unordered_set>
 #include <iostream>
 
@@ -22,55 +23,13 @@ void broadcastMessage(std::unique_ptr<Message> message) {
     //send Network::message
 }
 
-void handleMessage(std::unique_ptr<Message> message, ClientID client) {
-    //da message handle dies das
-    switch (message->messageType) {
-        case MESSAGETYPE_TEST:
-            std::cout << "just a test message"<<std::endl;
-        break;
-        case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-            //something
-        break;
-        case MESSAGETYPE_CARD_UPDATE:
-            //do something
-            //Network::sendMessage(client, goo goo gagag);
-        break;
-        case MESSAGETYPE_PLAYER_UPDATE:
-            //something
-        break;
-        case MESSAGETYPE_BATTLE_STATE_UPDATE:
-            //something
-        break;
-        case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
-            //something
-        break;
-        case MESSAGETYPE_GAME_STATE_UPDATE:
-            //something
-        break;
-        case MESSAGETYPE_PLAYCARD_EVENT:
-            //something
-        break;
-        case MESSAGETYPE_CLIENT_ACTION_EVENT:
-            //something
-        break;
-        case MESSAGETYPE_CLIENT_CONNECT_EVENT:
-            //something
-        break;
-        case MESSAGETYPE_CLIENT_DISCONNECT_EVENT:
-            //something
-        break;
-        default:
-            std::cout << "messagetype not found" << std::endl;
-        break;
-    }
-}
 
 int main() {
 
     //start networking
     Network::openSocket(42069);
     //set up irgend welches züg etc
-
+    //std::unordered_set<ClientID> clients;
     while(true) {
         //listen for messages
         ClientID client;

@@ -3,6 +3,7 @@
 
 #include <Networking/util.hpp>
 #include "card_manager.hpp"
+// #include "game.hpp"
 
 #include <vector>
 #include <tuple>
@@ -15,29 +16,31 @@ class Battle {
         bool defending_flag;
         int max_attacks;
         int curr_attacks;
-        int attacks_to_defend;
+        int attacks_to_defend = 0;
         bool first_battle_ = false;;
 
-        //pointer to cardmanager?
+        //pointer to cardmanager
         CardManager *card_manager_ptr;
+
+        //pointer to current game
+        // Game *current_game;
 
     public:
         Battle(); //default Constructor
-        Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager);
+        Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager /*,Game &game*/);
         ~Battle(); //default Destructor
         
 
-        bool handleCardEvent();
+        bool handleCardEvent(std::vector<Card> cards, int player_id, CardSlot slot);
         bool handleActionEvent();
         bool successfulDefend();
-        bool passOn();
+        bool passOn(Card card, int player_id, CardSlot slot);
         bool isValidMove( const Card &card, int player_id, CardSlot slot);
 
         // helper functions
         void attack(); 
         void defend();
 };
-
 
 #endif
 //first_battle

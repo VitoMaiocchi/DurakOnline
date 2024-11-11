@@ -19,6 +19,8 @@ void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* curr
         break;
         case MESSAGETYPE_BATTLE_STATE_UPDATE:
             //something
+            // Network::sendMessage(message, client);
+            //has to send a message from either game or from battle to the client
         break;
         case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
             //something
@@ -26,12 +28,12 @@ void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* curr
         case MESSAGETYPE_GAME_STATE_UPDATE:
             //something
         break;
-        case MESSAGETYPE_PLAYCARD_EVENT:
+        case MESSAGETYPE_PLAYCARD_EVENT: {
             //something
             PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
             get_playcard_msg(return_pce, client, current_game);
             //calls game function handleClientCardEvent();
-            
+        }
         break;
         case MESSAGETYPE_CLIENT_ACTION_EVENT:
             //something
@@ -57,7 +59,7 @@ void get_playcard_msg(PlayCardEvent* ret_msg, ClientID client, Game* current_gam
     for(auto card : ret_msg->cards){
         vector_of_cards.push_back(card);
     }
-    int slot = ret_msg->slot;
+    CardSlot slot = ret_msg->slot;
     //here we should call the Game function handleClientCardEvent()
     
 }

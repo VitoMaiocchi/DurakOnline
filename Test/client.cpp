@@ -209,13 +209,15 @@ int main() {
     message.string = "mhh trash i like trash";
     std::unique_ptr<Message> m = std::make_unique<TestMessage>(message);
     Network::openConnection("localhost", 42069);
+    Network::sendMessage(m);
     while(true) {
-        Network::sendMessage(m);
+
         std::unique_ptr<Message> awnser = nullptr;
         while(!awnser) awnser = Network::reciveMessage();
         TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
         std::cout   << "string: " << ret->string
-                    << "\nx: "<< ret->x << std::endl;
+                    << "\nx: "<< ret->x  
+                    << "\ny: " << ret->y << std::endl;
 
     }
 }

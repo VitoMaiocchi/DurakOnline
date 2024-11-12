@@ -15,8 +15,7 @@ class Battle; //forward declaration to avoid circular dependencies
 class Game{
 
     private:
-        std::vector<player_id> player_ids;
-        // std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
+        std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
         // should this not be stored inside the battle class?
         // as the current role of the players is only relevant for the current battle
         Battle* current_battle;

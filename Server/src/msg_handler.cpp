@@ -1,11 +1,19 @@
 #include "../include/msg_handler.hpp"
 #include <iostream>
 
-void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* current_game){
+void handleMessage(std::unique_ptr<Message> message, ClientID client /*, const std::unordered_set<ClientID>& clients, Game* current_game*/){
     //da message handle dies das
     switch (message->messageType) {
-        case MESSAGETYPE_TEST:
-            std::cout << "just a test message"<<std::endl;
+        case MESSAGETYPE_TEST: {
+            std::cout << "just a test message from client: " << client <<std::endl;
+            // TestMessage* return_test = dynamic_cast<TestMessage*>(message.get());
+            TestMessage* ret_test = dynamic_cast<TestMessage*>(message.get());
+            std::cout << "string: " << ret_test->string
+                      << "\nx: " <<ret_test->x
+                      << "\ny: " <<ret_test->y << std::endl;
+            dynamic_cast<TestMessage*>(message.get())->x = client;
+            Network::sendMessage(message, client);
+        }
         break;
         case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
             //something
@@ -31,7 +39,7 @@ void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* curr
         case MESSAGETYPE_PLAYCARD_EVENT: {
             //something
             PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
-            get_playcard_msg(return_pce, client, current_game);
+            /*get_playcard_msg(return_pce, client, current_game);*/
             //calls game function handleClientCardEvent();
         }
         break;
@@ -64,6 +72,9 @@ void get_playcard_msg(PlayCardEvent* ret_msg, ClientID client, Game* current_gam
     
 }
 
+// void send_test_msg(TestMessage* ret_test, ClientID client, Game* current_game){
+//     Network::sendMessage();
+// }
             // case MESSAGETYPE_TEST:
             //     dynamic_cast<TestMessage*>(m.get())->x = id;
             //     for(auto client : clients) {

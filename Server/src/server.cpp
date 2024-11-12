@@ -29,12 +29,24 @@ int main() {
     //start networking
     Network::openSocket(42069);
     //set up irgend welches züg etc
-    //std::unordered_set<ClientID> clients;
+    std::unordered_set<ClientID> clients;
 
     while(true) {
         //listen for messages
         ClientID client;
-        handleMessage(Network::reciveMessage(client), client, currentGame);
+        std::unique_ptr msg_r = Network::reciveMessage(client); //receiving message
+        if(msg_r == nullptr){
+            std::cerr << "null ptr received" <<std::endl;
+            return -1;
+        }
+        else{
+            std::cout << "message received" << std::endl;
+        }
+        clients.insert(client);
+
+        handleMessage(std::move(msg_r),client /*, clients, currentGame*/);
+        
+        //the handleMessage send message will be called somewhere else
     }
     return 0;
 

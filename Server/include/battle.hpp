@@ -4,9 +4,14 @@
 #include <Networking/util.hpp>
 #include "card_manager.hpp"
 // #include "game.hpp"
+#include "msg_handler.hpp"
 
 #include <vector>
 #include <tuple>
+
+#include <Networking/message.hpp>
+#define NETWORKTYPE_SERVER
+#include <Networking/network.hpp>
 
 class Battle {
     private:
@@ -18,6 +23,9 @@ class Battle {
         int curr_attacks;
         int attacks_to_defend = 0;
         bool first_battle_ = false;;
+        
+        //pointer to the player that first layed down a card
+        std::pair<int, PlayerRole>* first_attacker = nullptr;
 
         //pointer to cardmanager
         CardManager *card_manager_ptr;

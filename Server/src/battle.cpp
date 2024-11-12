@@ -9,11 +9,19 @@
 //constructor, passes if it is first battle or not and passes the players with their roles
 Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager /*,Game &game*/) : 
                                     first_battle_(first_battle), players_bs(players), card_manager_ptr(&card_manager) /*,current_game(&game)*/,curr_attacks(0){
-    if(first_battle_ == true){
-        max_attacks = 5;
+    
+    max_attacks = first_battle ? 5 : 6;
+    //set the first attacker pointer to the one that attacks first
+    for(auto& pl : players){
+        if(pl.second == ATTACKER){
+            first_attacker = &pl;
+            break;
+        }
     }
-    else{
-        max_attacks = 6;
+
+    //check that the attacker was found
+    if(first_attacker == nullptr){
+        std::cerr << "Error: 'attacker' not found" <<std::endl;
     }
 };
 
@@ -83,6 +91,17 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
     //if no return invalid move
     //if yes set attacker to idle, defender to attacker, coattacker to defender, the next player to coattacker
     // if(isValidMove(card, player_id, slot)) 
+
+    //if the next player after player_id is the first_attacker then the first_attacker pointer moves one
+    //in the direction of the game
+
+    /*
+
+    p1 --> p2
+    |      |
+    p4 <-- p3
+    
+    */
     return false;
 }
 
@@ -137,7 +156,15 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
             return true;
         }
 
-        else return false; //notify
+        else {
+            IllegalMoveNotify err_message;
+            err_message.error = "Illegal move";
+            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
+            // std::string string_errmsg = em->toJson();
+            // Network::sendMessage(em, player_id);
+            handleMessage(std::move(em), player_id);
+            return false;
+        } //notify
     }
     if(role == ATTACKER || role == CO_ATTACKER){
         if(curr_attacks == max_attacks){

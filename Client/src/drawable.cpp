@@ -190,12 +190,14 @@ void LinearStackNode::updateExtends(Extends ext) {
                 offset = 0.0;
             }
 
+            offset += ext.x;
+
             for (auto& child : children) {
                 Extends childExt = ext;
 
                 childExt.x += offset;
                 childExt.width = child->getCompactExtends(ext).width;
-                childExt.y = (ext.height-childExt.height*scale)/2.;
+                childExt.y = (ext.height-childExt.height*scale)/2. + ext.y;
                 childExt.width *= scale;
                 childExt.height *= scale;
                 offset += childExt.width;
@@ -224,12 +226,14 @@ void LinearStackNode::updateExtends(Extends ext) {
                 offset = 0.0;
             }
 
+            offset += ext.y;
+
             for (auto& child : children) {
                 Extends childExt = ext;
 
                 childExt.y += offset;
                 childExt.height = child->getCompactExtends(ext).height;
-                childExt.x = (ext.width-childExt.width*scale)/2.;
+                childExt.x = (ext.width-childExt.width*scale)/2. + ext.x;
                 childExt.width *= scale;
                 childExt.height *= scale;
                 offset += childExt.height;

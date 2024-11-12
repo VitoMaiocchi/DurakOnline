@@ -1,7 +1,7 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 #include "card_manager.hpp"
-#include "battle.hpp"
+// #include "battle.hpp"
 
 #include <Networking/util.hpp>
 
@@ -10,6 +10,7 @@
 #include <iostream>
 
 using player_id = unsigned int;
+class Battle; //forward declaration to avoid circular dependencies
 
 class Game{
 

@@ -12,6 +12,7 @@
 #include <Networking/message.hpp>
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
+#include <Networking/util.hpp>
 
 class Battle {
     private:

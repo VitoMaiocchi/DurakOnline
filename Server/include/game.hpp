@@ -22,10 +22,6 @@ class Game{
         CardManager* card_manager;
 
     public:
-
-        // default constructor and destructor
-        Game();
-        ~Game();
         // constructor taking in an array of player ids
         Game(std::vector<player_id> player_ids);
 

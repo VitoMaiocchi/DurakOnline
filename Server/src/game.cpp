@@ -1,8 +1,19 @@
 #include "../include/game.hpp"
+#include <__config>
 
-// default constructor
+Game::Game(std::vector<std::pair<int, PlayerRole>> players_bs){
+    // What does need to happen when a game of durak is created?
+        // done in the constructor of the card_manager
+            // - Create a deck of 52 cards
+            // - Shuffle the deck
+            // - Determine the trump suit
+            // - Distribute 6 cards to each player
+        card_manager = new CardManager(players_bs);
+    // - Determine the first attacker
+    // - Start the first battle
+    
 
-Game::Game(){}
+}
 
 bool Game::makeFirstBattle(){
     return false;

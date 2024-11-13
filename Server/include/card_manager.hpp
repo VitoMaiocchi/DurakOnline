@@ -27,7 +27,7 @@ private:
 public:
     //constructor and destructor
     //Constructor where the number of players is passed
-    CardManager(unsigned int);
+    CardManager(std::vector<std::pair<int, PlayerRole>> players_bs);
     ~CardManager();
 
     //At the beginning of the game

@@ -19,7 +19,9 @@ private:
     Suit trump;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
     std::vector<std::vector<Card>> player_hands;
     std::vector<unsigned int> player_number_of_cards;
-    std::vector<std::pair<Card,Card>> Middle; //represents the battlefield in the middle
+
+    Card empty_card = Card(RANK_NONE, SUIT_NONE);
+    std::vector<std::pair<Card,Card>> Middle = std::vector<std::pair<Card, Card>>(6, {empty_card, empty_card}); //represents the battlefield in the middle
     unsigned int number_cards_Middle; //Number of cards in the middle
     
 
@@ -50,8 +52,9 @@ public:
     bool distributeNewCards();
     bool compareCards(Card card1, Card card2);
 
+    void fillDeck();
 
-    
+
 };
 
 

@@ -9,7 +9,7 @@
 
 CardManager::CardManager(unsigned int number_of_players){
     //Deck erstelle mit 52 charte TODO:
-
+    fillDeck();
     //charte mische & usteile
     shuffleCards();
 
@@ -18,6 +18,8 @@ CardManager::CardManager(unsigned int number_of_players){
 
 }
 
+//dtor
+CardManager::~CardManager() = default;
 //At the beginning of the game
 
 //Brucht die funktion en rückgabetyp?
@@ -173,4 +175,13 @@ bool CardManager::compareCards(Card card1, Card card2){
         return card2.suit==trump && card2.rank > card1.rank;
     }
     return card2.suit==trump || (card2.suit==card1.suit && card2.rank > card1.rank);
+}
+
+
+void CardManager::fillDeck() {
+    for (int suit = SUIT_CLUBS; suit <= SUIT_HEARTS; ++suit) {  // Iterate over all suits
+        for (int rank = RANK_TWO; rank <= RANK_ACE; ++rank) {    // Iterate over all ranks
+            deck.emplace_back(static_cast<Rank>(rank), static_cast<Suit>(suit));
+        }
+    }
 }

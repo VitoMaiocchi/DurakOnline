@@ -1,7 +1,6 @@
 #pragma once
 #ifndef GAME_HPP
 #define GAME_HPP
-// #include "battle.hpp"
 
 #include "card_manager.hpp"
 #include "../../Networking/include/Networking/util.hpp"
@@ -17,14 +16,16 @@ class Game{
     private:
         // vector of pairs containing the player ids and their roles
         // has to be stored here because battle might be destructed
-        std::vector<std::pair<int, PlayerRole>> players_bs;
-        Battle* current_battle;
-        CardManager* card_manager;
+        std::vector<std::pair<int, PlayerRole>> players_;
+        // pointer to the current battle
+        Battle* current_battle_;
+        // pointer to the card manager
+        CardManager* card_manager_;
 
     public:
         // constructor taking in an array of player ids
         Game(std::vector<ClientID> player_ids);
-        // destructor taking in Client ID of Durak to be able to send endgame message
+        // destructor, should nominate the durak
         ~Game();
 
         bool makeFirstBattle();

@@ -7,7 +7,7 @@
 
 //constructors
 
-CardManager::CardManager(std::vector<std::pair<int, PlayerRole>> players_bs){
+CardManager::CardManager(std::vector<ClientID> player_ids){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
     //charte mische & usteile
@@ -62,7 +62,7 @@ void CardManager::determineTrump(){
     assert(last_card && "Pointer to last card is void");
 
     //Lueg mal öb ich de const mache chan
-    //return last_card->suit();
+    trump = last_card->suit;
     
 }
 
@@ -175,6 +175,10 @@ bool CardManager::compareCards(Card card1, Card card2){
         return card2.suit==trump && card2.rank > card1.rank;
     }
     return card2.suit==trump || (card2.suit==card1.suit && card2.rank > card1.rank);
+}
+
+Suit CardManager::getTrump(){
+    return trump;
 }
 
 

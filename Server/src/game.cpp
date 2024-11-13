@@ -14,7 +14,7 @@ Game::Game(std::vector<ClientID> player_ids){
         Card current_lowest_trump = Card(RANK_ACE, trump);
         // iterate through all players and find the one with the lowest trump card
         ClientID first_attacker = -1; // -1 means no one has a trump
-        for(unsigned i = 0; i < players_.size(); i++){
+        for(auto i : player_ids){
             std::vector<Card> hand = card_manager_->getPlayerHand(i);
             // iterate through hand
             for(unsigned j = 0; j < hand.size(); j++){
@@ -26,11 +26,28 @@ Game::Game(std::vector<ClientID> player_ids){
         }
         if(first_attacker == -1){
             // no one has a trump, choose a random player as the first attacker
-            first_attacker = rand() % players_.size();
+            first_attacker = rand() % player_ids.size();
         }
-    // set private members
+        ClientID first_defender = (first_attacker + 1) % player_ids.size();
+        ClientID second_attacker = (first_attacker + 2) % player_ids.size();
+    // set private member player_roles_
+    for(auto i : player_ids){
+        if(i == first_attacker){
+            player_roles_[i] = ATTACKER;
+        }
+        else if(i == first_defender){
+            player_roles_[i] = DEFENDER;
+        }
+        else if(i == second_attacker){
+            player_roles_[i] = CO_ATTACKER;
+        }
+        else{
+            player_roles_[i] = IDLE;
+        }
+    }
     // - Start the first battle
-    // Battle first_battle = Battle(first_attacker, players_, card_manager_);
+    // only decomment this when constructor of battle user map
+    // current_battle_ = new Battle(true, player_roles_, *card_manager_);
 
 }
 

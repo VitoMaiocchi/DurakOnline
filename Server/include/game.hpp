@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <tuple>
+#include <map>
 
 using player_id = unsigned int;
 class Battle; //forward declaration to avoid circular dependencies
@@ -16,7 +17,7 @@ class Game{
     private:
         // vector of pairs containing the player ids and their roles
         // has to be stored here because battle might be destructed
-        std::vector<std::pair<int, PlayerRole>> players_;
+        std::map<ClientID, PlayerRole> player_roles_;
         // pointer to the current battle
         Battle* current_battle_;
         // pointer to the card manager

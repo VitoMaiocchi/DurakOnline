@@ -10,17 +10,17 @@
 class CardManager
 {
 private:
-    std::deque<Card> deck;              //represents cards in the middle
-    std::shared_ptr<Card> last_card=std::make_shared<Card>();                    //Pointer to the last card in the deck, maybe make it const
-    unsigned int number_cards_in_deck;  //Number of cards in the deck
-    bool endgame;                       //Could be useful for endgame functions, delete if it is not used
-    std::vector<Card> discarded_cards;  //Charte wo "weg" sind
-    unsigned int number_discarded_cards; // azahl charte wo "weg" sind
-    Suit trump;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
-    std::vector<std::vector<Card>> player_hands;
-    std::vector<unsigned int> player_number_of_cards;
-    std::vector<std::pair<Card,Card>> Middle; //represents the battlefield in the middle
-    unsigned int number_cards_Middle; //Number of cards in the middle
+    std::deque<Card> deck_;              //represents cards in the middle
+    std::shared_ptr<Card> last_card_=std::make_shared<Card>();                    //Pointer to the last card in the deck, maybe make it const
+    unsigned int number_cards_in_deck_;  //Number of cards in the deck
+    bool endgame_;                       //Could be useful for endgame functions, delete if it is not used
+    std::vector<Card> discarded_cards_;  //Charte wo "weg" sind
+    unsigned int number_discarded_cards_; // azahl charte wo "weg" sind
+    Suit trump_;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
+    std::vector<std::vector<Card>> player_hands_;
+    std::vector<unsigned int> player_number_of_cards_;
+    std::vector<std::pair<Card,Card>> middle_; //represents the battlefield in the middle
+    unsigned int number_cards_middle_; //Number of cards in the middle
     
 
 

@@ -12,7 +12,7 @@
 #include <Networking/message.hpp>
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
-#include <Networking/util.hpp>
+// #include <Networking/util.hpp>
 
 class Battle {
     private:
@@ -20,10 +20,10 @@ class Battle {
         // std::vector<int> players; //saves the player ids of the players
         std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
         bool defending_flag;
-        int max_attacks;
-        int curr_attacks;
+        int max_attacks = 6;
+        int curr_attacks = 0;
         int attacks_to_defend = 0;
-        bool first_battle_ = false;;
+        bool first_battle_ = false;
         
         //pointer to the player that first layed down a card
         std::pair<int, PlayerRole>* first_attacker = nullptr;
@@ -35,6 +35,8 @@ class Battle {
         // Game *current_game;
 
     public:
+        friend class DurakBattleTest;
+        
         Battle(); //default Constructor
         Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager /*,Game &game*/);
         ~Battle(); //default Destructor
@@ -49,6 +51,14 @@ class Battle {
         // helper functions
         void attack(); 
         void defend();
+
+//setter and getter functions
+        void setCurrAttacks(int attacks) { curr_attacks = attacks; }
+        int getCurrAttacks() const { return curr_attacks; }
+
+        void setMaxAttacks(int max) { max_attacks = max; }
+        int getMaxAttacks() const { return max_attacks; }
+
 };
 
 #endif

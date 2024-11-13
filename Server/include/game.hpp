@@ -25,7 +25,7 @@ class Game{
         // constructor taking in an array of player ids
         Game(std::vector<ClientID> player_ids);
         // destructor taking in Client ID of Durak to be able to send endgame message
-        ~Game(ClientID DurakID);
+        ~Game();
 
         bool makeFirstBattle();
         bool createBattle();

@@ -5,7 +5,7 @@
 #include <deque>
 #include <memory>
 #include <algorithm>
-#include "Networking/util.hpp"
+#include "../../Networking/include/Networking/util.hpp"
 
 class CardManager
 {

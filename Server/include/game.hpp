@@ -1,13 +1,13 @@
+#pragma once
 #ifndef GAME_HPP
 #define GAME_HPP
-#include "card_manager.hpp"
 // #include "battle.hpp"
 
-#include <Networking/util.hpp>
+#include "card_manager.hpp"
+#include "../../Networking/include/Networking/util.hpp"
 
 #include <vector>
 #include <tuple>
-#include <iostream>
 
 using player_id = unsigned int;
 class Battle; //forward declaration to avoid circular dependencies
@@ -15,15 +15,17 @@ class Battle; //forward declaration to avoid circular dependencies
 class Game{
 
     private:
-        std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
-        // should this not be stored inside the battle class?
-        // as the current role of the players is only relevant for the current battle
+        // vector of pairs containing the player ids and their roles
+        // has to be stored here because battle might be destructed
+        std::vector<std::pair<int, PlayerRole>> players_bs;
         Battle* current_battle;
         CardManager* card_manager;
 
     public:
         // constructor taking in an array of player ids
-        Game(std::vector<player_id> player_ids);
+        Game(std::vector<ClientID> player_ids);
+        // destructor taking in Client ID of Durak to be able to send endgame message
+        ~Game(ClientID DurakID);
 
         bool makeFirstBattle();
         bool createBattle();

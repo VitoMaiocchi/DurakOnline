@@ -1,7 +1,7 @@
 #ifndef BATTLE_HPP
 #define BATTLE_HPP
 
-#include <Networking/util.hpp>
+#include "../../Networking/include/Networking/util.hpp"
 #include "card_manager.hpp"
 // #include "game.hpp"
 #include "msg_handler.hpp"

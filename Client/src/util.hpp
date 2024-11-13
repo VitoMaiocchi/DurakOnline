@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <string>
-#include <Networking/util.hpp>
+#include "../../Networking/include/Networking/util.hpp"
 
 #define cast(type, ptr) dynamic_cast<type*>(ptr.get()) 
 #define CARD_TEXTURE_WIDTH 500

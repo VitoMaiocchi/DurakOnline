@@ -7,7 +7,7 @@
 
 //constructors
 
-CardManager::CardManager(unsigned int number_of_players){
+CardManager::CardManager(std::vector<std::pair<int, PlayerRole>> players_bs){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
     //charte mische & usteile

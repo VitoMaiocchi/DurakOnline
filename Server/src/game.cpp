@@ -1,7 +1,7 @@
 #include "../include/game.hpp"
 #include "../include/battle.hpp"
 #include "../include/card_manager.hpp"
-#include <__config>
+// #include <__config>
 
 Game::Game(std::vector<ClientID> player_ids){
     // What does need to happen when a game of durak is created?

@@ -151,8 +151,8 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     if(role == DEFENDER){
         //fetch middle from cardmanager 
         std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();
-        Card first = middle[slot].first;
-
+        Card first = middle[slot % 6].first;
+        
         //check the slot, if there is a valid card, if its empty return false
         if(first.suit == SUIT_NONE || first.rank == RANK_NONE){
             //notify the illegal move

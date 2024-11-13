@@ -10,15 +10,15 @@ protected:
     CardManager card_manager;
     std::vector<std::pair<int, PlayerRole>> players_bs;
     Battle battle;
+    std::vector<ClientID> clients ;
 
     // Constructor for setting up the test fixture with initialized components
     DurakBattleTest()
-        : card_manager(3),                         // Initialize CardManager for 2 players
+        : clients({1, 2, 3}),
+          card_manager(clients),                         // Initialize CardManager for 2 players
           players_bs({ {1, ATTACKER}, {2, DEFENDER}, {3, CO_ATTACKER}}), // Sample player setup
           battle(false, players_bs, card_manager)    // Initialize Battle with first_battle = true
-    {
-        card_manager.fillDeck();
-    }
+    {}
 
     void SetUp() override {
         // Additional setup if necessary
@@ -43,21 +43,26 @@ TEST_F(DurakBattleTest, TestIsValidMove_AttackerValid) {
 }
 
 TEST_F(DurakBattleTest, TestIsValidMove_DefenderValid) {
+    // ::testing::internal::CaptureStdout();
     // Mock setup for a defender’s valid move
     Card attackCard(RANK_QUEEN, SUIT_HEARTS); // Attacker's card on the table
     Card defendCard(RANK_KING, SUIT_HEARTS);  // Defender's card, assumed valid for defense
 
     int attacker_id = 1;        // Attacker ID
     int defender_id = 2;        // Defender ID
-    CardSlot slot = CARDSLOT_1; // Slot for the defender's response
+    CardSlot slot = CARDSLOT_1_TOP; // Slot for the defender's response
 
     // Place the attack card in the middle to simulate an ongoing battle
-    // card_manager.getMiddle().at(slot).first = attackCard;
-    card_manager.attackCard(attackCard, 1);
+    // card_manager.placeAttackCard(attackCard, slot);
 
+    card_manager.addCardToPlayerHand(attacker_id, attackCard);
+    card_manager.attackCard(attackCard, attacker_id);
+    // ASSERT_TRUE(card_manager.attackCard(attackCard, attacker_id));
     // Call isValidMove to check the defender's move
     bool result = battle.isValidMove(defendCard, defender_id, slot);
 
+    std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
+    // std::cout << "Captured output: " << output << std::endl;
     // Check if the defender's move is valid
     EXPECT_TRUE(result);
 }

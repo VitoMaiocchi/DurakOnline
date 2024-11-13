@@ -22,7 +22,7 @@ private:
 
     Card empty_card = Card(RANK_NONE, SUIT_NONE);
     std::vector<std::pair<Card,Card>> Middle = std::vector<std::pair<Card, Card>>(6, {empty_card, empty_card}); //represents the battlefield in the middle
-    unsigned int number_cards_Middle; //Number of cards in the middle
+    unsigned int number_cards_Middle = 0; //Number of cards in the middle
     
 
 
@@ -54,7 +54,8 @@ public:
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();
-
+    void placeAttackCard(Card card, int slot);
+    void addCardToPlayerHand(unsigned int PlayerID, const Card& card);
 
 };
 

@@ -10,6 +10,8 @@
 CardManager::CardManager(std::vector<ClientID> player_ids){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
+    //adjust the size of the player hands
+    player_hands = std::vector<std::vector<Card>>(player_ids.size());
     //charte mische & usteile
     shuffleCards();
 
@@ -42,7 +44,7 @@ void CardManager::shuffleCards(){
 
         //distribute the top 6 cards to the player
         player_hands[i].insert(player_hands[i].begin(), deck.begin(), deck.begin()+6);
-
+        // player_number_of_cards[i] 
         //remove cards from deck
         deck.erase(deck.begin(), deck.begin()+6);
     }
@@ -53,7 +55,7 @@ void CardManager::shuffleCards(){
 //POST: Sets the trump suit according to last card in the deck
 void CardManager::determineTrump(){
     // Check if deck has been initialized properly
-    assert(deck.size() == 52/*-6*Number Players*/ && "Deck must contain exactly 52 cards before determining trump");
+    assert(deck.size() == 52 - (6 * player_hands.size()) && "Deck must contain exactly 52 cards before determining trump");
 
     // Assign pointer
     last_card = std::make_shared<Card>(deck.back());
@@ -63,7 +65,7 @@ void CardManager::determineTrump(){
 
     //Lueg mal öb ich de const mache chan
     trump = last_card->suit;
-    
+
 }
 
 //PRE: A valid PlayerID (unsigned int between 0 and #players-1)
@@ -105,11 +107,26 @@ bool CardManager::attackCard(Card card, unsigned int PlayerID){
     
 
     //Position of next free slot in the middle should be passed to this function
+    int free_slot = -1;
+    for (size_t i = 0; i < Middle.size(); ++i) {
+        if (Middle[i].first.rank == RANK_NONE && Middle[i].first.suit == SUIT_NONE) {
+            free_slot = i;
+            break;
+        }
+    }
 
+    if (free_slot == -1) {
+        std::cerr << "Error: No free slot available in Middle." << std::endl;
+        return false;
+    }
 
-    //Update middle number of cards in middle & in player hand
+    // Place the card in the identified slot
+    Middle[free_slot].first = card;
+
+    // // Update middle and player hand counters
     ++number_cards_Middle;
-    --player_number_of_cards[PlayerID];
+    // --player_number_of_cards[PlayerID];
+    // player_hands[PlayerID].erase(cardPosition);
 
     return 0;
 }
@@ -187,5 +204,23 @@ void CardManager::fillDeck() {
         for (int rank = RANK_TWO; rank <= RANK_ACE; ++rank) {    // Iterate over all ranks
             deck.emplace_back(static_cast<Rank>(rank), static_cast<Suit>(suit));
         }
+    }
+}
+
+void CardManager::placeAttackCard(Card card, int slot){
+    Middle[slot % 6].first = card;
+}
+void CardManager::addCardToPlayerHand(unsigned int PlayerID, const Card& card) {
+    bool flag = false;
+    if (PlayerID < player_hands.size()) {
+        for(int i = 0; i < player_hands[PlayerID].size(); ++i){
+            if (player_hands[PlayerID][i] == card){
+                flag = true; //card is already in the hand
+                break;
+            }
+        }
+    }
+    if(flag == false){
+        player_hands[PlayerID].push_back(card);
     }
 }

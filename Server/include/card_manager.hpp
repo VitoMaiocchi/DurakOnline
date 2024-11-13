@@ -27,7 +27,7 @@ private:
 public:
     //constructor and destructor
     //Constructor where the number of players is passed
-    CardManager(std::vector<std::pair<int, PlayerRole>> players_bs);
+    CardManager(std::vector<ClientID> player_ids);
     ~CardManager();
 
     //At the beginning of the game
@@ -39,6 +39,7 @@ public:
     std::vector<std::pair<Card,Card>> getMiddle();
     unsigned int getNumberActivePlayers();
     unsigned int getNumberOfCardsInHand(unsigned int PlayerID);
+    Suit getTrump();
 
     bool attackCard(Card card, unsigned int PlayerID);
     void defendCard(Card card, unsigned int PlayerID, unsigned int slot);

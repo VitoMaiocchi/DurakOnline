@@ -198,7 +198,7 @@ Suit CardManager::getTrump(){
 void CardManager::fillDeck() {
     for (int suit = SUIT_CLUBS; suit <= SUIT_HEARTS; ++suit) {  // Iterate over all suits
         for (int rank = RANK_TWO; rank <= RANK_ACE; ++rank) {    // Iterate over all ranks
-            deck_.emplace_back(static_cast<Rank>(rank), static_cast<Suit>(suit));
+            deck_.push_back(Card(static_cast<Rank>(rank), static_cast<Suit>(suit)));
         }
     }
 }

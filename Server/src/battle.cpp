@@ -128,7 +128,8 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
 //     CardSlot slot; //place of the card
 // };
 bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
-
+    //open socket in isvalid move so we can send the messages to the client
+    Network::openSocket(42069); //server side
     //initialize the error message which will be sent if an invalid move is found
     IllegalMoveNotify err_message;
 
@@ -177,6 +178,9 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     }
     if(role == ATTACKER || role == CO_ATTACKER){
         if(curr_attacks == max_attacks){
+            err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
+            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
+            Network::sendMessage(em, player_id);
             return false; //idk about this maybe should be > and if == true
         }
         if(curr_attacks == 0){

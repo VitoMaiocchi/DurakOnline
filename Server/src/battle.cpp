@@ -128,8 +128,7 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
 //     CardSlot slot; //place of the card
 // };
 bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
-    //open socket in isvalid move so we can send the messages to the client
-    Network::openSocket(42069); //server side
+
     //initialize the error message which will be sent if an invalid move is found
     IllegalMoveNotify err_message;
 

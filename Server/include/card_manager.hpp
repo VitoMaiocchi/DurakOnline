@@ -51,8 +51,10 @@ public:
     bool distributeNewCards();
     bool compareCards(Card card1, Card card2);
 
+    void fillDeck();
+    void placeAttackCard(Card card, int slot);
+    void addCardToPlayerHand(unsigned int PlayerID, const Card& card);
 
-    
 };
 
 

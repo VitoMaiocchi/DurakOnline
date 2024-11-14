@@ -9,7 +9,9 @@
 
 CardManager::CardManager(std::vector<ClientID> player_ids){
     //Deck erstelle mit 52 charte TODO:
-
+    fillDeck();
+    //adjust the size of the player hands
+    player_hands_ = std::vector<std::vector<Card>>(player_ids.size());
     //charte mische & usteile
     shuffleCards();
 
@@ -18,10 +20,12 @@ CardManager::CardManager(std::vector<ClientID> player_ids){
 
 }
 
+//dtor
+CardManager::~CardManager() = default;
 //At the beginning of the game
 
 //Brucht die funktion en rückgabetyp?
-//PRE: A deque containing all 52 cards in the deck (evtl au nöd?), empty player_hands vector
+//PRE: A deque containing all 52 cards in the deck_ (evtl au nöd?), empty player_hands vector
 //POST: Returns true if the deck was succesfully shuffled, stored in the deck member and 6 cards were distributed to every palyer
 void CardManager::shuffleCards(){
     // Check if deck has been initialized properly
@@ -103,7 +107,18 @@ bool CardManager::attackCard(Card card, unsigned int PlayerID){
     
 
     //Position of next free slot in the middle should be passed to this function
+    int free_slot = -1;
+    for (size_t i = 0; i < middle_.size(); ++i) {
+        if (middle_[i].first.rank == RANK_NONE && middle_[i].first.suit == SUIT_NONE) {
+            free_slot = i;
+            break;
+        }
+    }
 
+    if (free_slot == -1) {
+        std::cerr << "Error: No free slot available in Middle." << std::endl;
+        return false;
+    }
 
     //Update middle number of cards in middle & in player hand
     ++number_cards_middle_;
@@ -177,4 +192,31 @@ bool CardManager::compareCards(Card card1, Card card2){
 
 Suit CardManager::getTrump(){
     return trump_;
+}
+
+
+void CardManager::fillDeck() {
+    for (int suit = SUIT_CLUBS; suit <= SUIT_HEARTS; ++suit) {  // Iterate over all suits
+        for (int rank = RANK_TWO; rank <= RANK_ACE; ++rank) {    // Iterate over all ranks
+            deck_.emplace_back(static_cast<Rank>(rank), static_cast<Suit>(suit));
+        }
+    }
+}
+
+void CardManager::placeAttackCard(Card card, int slot){
+    middle_[slot % 6].first = card;
+}
+void CardManager::addCardToPlayerHand(unsigned int PlayerID, const Card& card) {
+    bool flag = false;
+    if (PlayerID < player_hands_.size()) {
+        for(int i = 0; i < player_hands_[PlayerID].size(); ++i){
+            if (player_hands_[PlayerID][i] == card){
+                flag = true; //card is already in the hand
+                break;
+            }
+        }
+    }
+    if(flag == false){
+        player_hands_[PlayerID].push_back(card);
+    }
 }

@@ -25,6 +25,9 @@ Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> player
     }
 };
 
+//default dtor
+Battle::~Battle() = default;
+
 bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot slot){
 
     std::cout << "handleCardEvent was called" << std::endl;
@@ -50,9 +53,10 @@ bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot sl
             if(!isValidMove(card, player_id, slot)) return false;
             else attacks_to_defend++;
         }
+        attack(); // calls attack function
         return true;
     }
-    else{ //defending
+    else{ //defending only 1 card at a time
         if(isValidMove(cards.at(0), player_id, slot)) {
             attacks_to_defend--;
             return true;
@@ -125,10 +129,8 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
 // };
 bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
 
-    //if its a defender -> how to check that?
-    //call cards in middle 
-    //find out if the card played on the specific slot is bigger than the one the defender wants to play
-    // compare cards function?
+    //initialize the error message which will be sent if an invalid move is found
+    IllegalMoveNotify err_message;
 
     //if its an attacker
     //check if its the first card being played? if yes check if only one card is played
@@ -148,23 +150,30 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     }
     if(role == DEFENDER){
         //fetch middle from cardmanager 
-        //check the slot, if there is a card
-        //check if the card is higher with card_compare
         std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();
-        Card first = middle[slot].first;
-        if(card_manager_ptr->compareCards(first, card)){
+        Card first = middle[slot % 6].first;
+        
+        //check the slot, if there is a valid card, if its empty return false
+        if(first.suit == SUIT_NONE || first.rank == RANK_NONE){
+            //notify the illegal move
+            err_message.error = "Illegal move: 'empty slot'";
+            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
+            Network::sendMessage(em, player_id);
+            return false;
+        }
+
+        //check if the card is higher with card_compare
+        else if(card_manager_ptr->compareCards(first, card)){
             return true;
         }
 
         else {
-            IllegalMoveNotify err_message;
+            //notify the illegal move
             err_message.error = "Illegal move";
             std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
-            // std::string string_errmsg = em->toJson();
-            // Network::sendMessage(em, player_id);
-            handleMessage(std::move(em), player_id);
+            Network::sendMessage(em, player_id);
             return false;
-        } //notify
+        } 
     }
     if(role == ATTACKER || role == CO_ATTACKER){
         if(curr_attacks == max_attacks){
@@ -184,6 +193,7 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
             } 
         }
     }
+    
     if(role == IDLE){
         return false;
     }

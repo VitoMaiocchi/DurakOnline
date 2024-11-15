@@ -13,22 +13,33 @@ Battle::Battle(bool first_battle, std::unordered_map<ClientID, PlayerRole> playe
     max_attacks_ = first_battle ? 5 : 6;
     // you will need to adapt this for a map, but you can use the same logic
     //set the first attacker pointer to the one that attacks first
+    //while iterating also prepare the message BattleStateUpdate to send to the client, which client tho
+    BattleStateUpdate bsu_msg;
+
     for(auto& pl : players_bs_){
         if(pl.second == ATTACKER){
             first_attacker_ = &pl;
-            break;
+            bsu_msg.attackers.push_back(pl.first);
+        }
+        else if(pl.second == DEFENDER){
+            bsu_msg.defender = pl.first;
+        }
+        else if(pl.second == CO_ATTACKER){
+            bsu_msg.attackers.push_back(pl.first);
+        }
+        else if(pl.second == IDLE){
+            bsu_msg.idle.push_back(pl.first);
         }
     }
+    std::unique_ptr<Message> bsu = std::make_unique<BattleStateUpdate>(bsu_msg);
+    Network::sendMessage(bsu, 0); //need the client id vector or even better broadcast the messag
 
-    //check that the attacker was found
-    if(first_attacker_ == nullptr){
-        std::cerr << "Error: 'attacker' not found" <<std::endl;
-    }
     // the constructor of battle should at the end communicate the roles of the players to the clients
     // for this we use the message BATTLE_STATE_UPDATE
     // it should also send a GAME_STATE_UPDATE informing the client to switch to game screen
     // i dont know in what order these messages have to be sent or if it does make a difference
     // but probably the GAME_STATE_UPDATE should be sent first
+
 };
 
 //default dtor

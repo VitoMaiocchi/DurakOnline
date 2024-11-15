@@ -7,21 +7,21 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> players, CardManager &card_manager /*,Game &game*/) : 
-                                    first_battle_(first_battle), players_bs(players), card_manager_ptr(&card_manager) /*,current_game(&game)*/,curr_attacks(0){
+Battle::Battle(bool first_battle, std::unordered_map<ClientID, PlayerRole> players, CardManager &card_manager /*,Game &game*/) : 
+                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) /*,current_game(&game)*/,curr_attacks_(0){
     
-    max_attacks = first_battle ? 5 : 6;
+    max_attacks_ = first_battle ? 5 : 6;
     // you will need to adapt this for a map, but you can use the same logic
     //set the first attacker pointer to the one that attacks first
-    for(auto& pl : players){
+    for(auto& pl : players_bs_){
         if(pl.second == ATTACKER){
-            first_attacker = &pl;
+            first_attacker_ = &pl;
             break;
         }
     }
 
     //check that the attacker was found
-    if(first_attacker == nullptr){
+    if(first_attacker_ == nullptr){
         std::cerr << "Error: 'attacker' not found" <<std::endl;
     }
     // the constructor of battle should at the end communicate the roles of the players to the clients
@@ -47,9 +47,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot sl
     //do i need to check if the slot is empty? or can i just say hey the message has no slot, 
     //which means its an attack, or there is a slot, meaning its defending
 
-    // if(card_manager_ptr->getMiddle().at(slot).first == NULL){}
+    // if(card_manager_ptr_->getMiddle().at(slot).first == NULL){}
     PlayerRole role = IDLE;
-    for(auto& pl : players_bs){
+    for(auto& pl : players_bs_){
         if(pl.first == player_id){
             role = pl.second;
         }
@@ -57,14 +57,14 @@ bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot sl
     if(role == ATTACKER || role == CO_ATTACKER){
         for(auto card : cards){
             if(!isValidMove(card, player_id, slot)) return false;
-            else attacks_to_defend++;
+            else attacks_to_defend_++;
         }
         attack(); // calls attack function
         return true;
     }
     else{ //defending only 1 card at a time
         if(isValidMove(cards.at(0), player_id, slot)) {
-            attacks_to_defend--;
+            attacks_to_defend_--;
             return true;
         }
     }
@@ -81,7 +81,7 @@ bool Battle::handleActionEvent(){
 bool Battle::successfulDefend(){
     //fetches middle from the cardmanager, loops over the middle checks if all the attacks have been
     //defended, or we do
-    if(attacks_to_defend == 0){
+    if(attacks_to_defend_ == 0){
         // ----------> send message
         return true;
     }
@@ -102,7 +102,7 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
     //if yes set attacker to idle, defender to attacker, coattacker to defender, the next player to coattacker
     // if(isValidMove(card, player_id, slot)) 
 
-    //if the next player after player_id is the first_attacker then the first_attacker pointer moves one
+    //if the next player after player_id is the first_attacker_ then the first_attacker_ pointer moves one
     //in the direction of the game
 
     /*
@@ -148,7 +148,7 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     int role = IDLE;
 
     //get the role of the player that is trying to play the card
-    for(auto& player : players_bs ){
+    for(auto& player : players_bs_ ){
         if(player.first == player_id){
             role = player.second;
             break;
@@ -156,7 +156,7 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     }
     if(role == DEFENDER){
         //fetch middle from cardmanager 
-        std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();
+        std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
         Card first = middle[slot % 6].first;
         
         //check the slot, if there is a valid card, if its empty return false
@@ -169,7 +169,7 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
         }
 
         //check if the card is higher with card_compare
-        else if(card_manager_ptr->compareCards(first, card)){
+        else if(card_manager_ptr_->compareCards(first, card)){
             return true;
         }
 
@@ -182,19 +182,19 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
         } 
     }
     if(role == ATTACKER || role == CO_ATTACKER){
-        if(curr_attacks == max_attacks){
+        if(curr_attacks_ == max_attacks_){
             err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
             std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
             Network::sendMessage(em, player_id);
             return false; //idk about this maybe should be > and if == true
         }
-        if(curr_attacks == 0){
+        if(curr_attacks_ == 0){
             return true;
         }
         //check if card rank is in middle
-        if(curr_attacks < max_attacks){
+        if(curr_attacks_ < max_attacks_){
             //fetch middle if the card is in play
-            std::vector<std::pair<Card, Card>> middle = card_manager_ptr->getMiddle();
+            std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
             for(auto& card_in_middle : middle){
                 if(card_in_middle.first.rank == card.rank || card_in_middle.second.rank == card.rank){
                     return true;
@@ -217,6 +217,17 @@ void Battle::attack(){
 void Battle::defend(){ 
     //calls defendCard
 }
+
+
+const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
+    if(first_attacker_ == nullptr){
+        std::cerr << "Error: 'first attacker' not found" <<std::endl;
+        return nullptr;
+    }
+    return first_attacker_;
+}
+
+
 
 // (\(\ 
 // ( -.-)

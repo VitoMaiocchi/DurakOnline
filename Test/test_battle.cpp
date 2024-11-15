@@ -8,7 +8,7 @@
 class DurakBattleTest : public ::testing::Test {
 protected:
     CardManager card_manager;
-    std::vector<std::pair<int, PlayerRole>> players_bs;
+    std::unordered_map<ClientID, PlayerRole> players_bs;
     Battle battle;
     std::vector<ClientID> clients ;
 

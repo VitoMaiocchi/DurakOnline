@@ -20,8 +20,8 @@ private:
     std::vector<std::vector<Card>> player_hands_;
     std::vector<unsigned int> player_number_of_cards_;
 
-    Card empty_card = Card(RANK_NONE, SUIT_NONE);
-    std::vector<std::pair<Card,Card>> middle_ = std::vector<std::pair<Card, Card>>(6, {empty_card, empty_card}); //represents the battlefield in the middle
+    Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
+    std::vector<std::pair<Card,Card>> middle_ = std::vector<std::pair<Card, Card>>(6, {empty_card_, empty_card_}); //represents the battlefield in the middle
     unsigned int number_cards_middle_ = 0; //Number of cards in the middle
     
 

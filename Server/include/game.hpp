@@ -1,9 +1,9 @@
-#pragma once
 #ifndef GAME_HPP
 #define GAME_HPP
 
 #include "card_manager.hpp"
 #include "../../Networking/include/Networking/util.hpp"
+#include "../../Networking/include/Networking/message.hpp"
 
 #include <vector>
 #include <tuple>
@@ -35,7 +35,7 @@ class Game{
         bool resetGame();
         bool updateTurnOrder();
         bool handleClientActionEvent();
-        bool handleClientCardEvent();
+        bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
 };
 
 

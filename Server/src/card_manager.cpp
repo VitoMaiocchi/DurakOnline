@@ -18,6 +18,8 @@ CardManager::CardManager(std::vector<ClientID> player_ids){
     //Trumpf bestimme
     determineTrump();
 
+    // at the end of the constructor card manager should communicate the current status of the cards in play
+    // for this we use the message CARD_UPDATE
 }
 
 //dtor

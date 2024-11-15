@@ -48,6 +48,13 @@ Game::Game(std::vector<ClientID> player_ids){
     // - Start the first battle
     // only decomment this when constructor of battle user map
     // current_battle_ = new Battle(true, player_roles_, *card_manager_);
+    // the constructor of Battle will then communicate to the clients the roles of the players
+}
+
+// destructor
+Game::~Game(){
+    delete card_manager_;
+    delete current_battle_;
 }
 
 bool Game::createBattle(){
@@ -83,6 +90,10 @@ bool Game::handleClientActionEvent(){
     return false;
 }
 
-bool Game::handleClientCardEvent(){
+bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID client){
+    if(current_battle_ != nullptr){
+        // there is a battle and we need to handle the card event
+        // current_battle_->handleCardEvent(message, client);
+    }
     return false;
 }

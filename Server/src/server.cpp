@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <iostream>
 
-Game* currentGame = nullptr;
 
 struct Player{
     //string name
@@ -22,7 +21,6 @@ void broadcastMessage(std::unique_ptr<Message> message) {
     //for all in map
     //send Network::message
 }
-
 
 int main() {
 
@@ -44,7 +42,15 @@ int main() {
         }
         clients.insert(client);
 
-        handleMessage(std::move(msg_r),client /*, clients, currentGame*/);
+        // if all clients have pressed ready, start the game
+        std::vector<ClientID> player_ids;
+        for(auto client : clients){
+            player_ids.push_back(client);
+        }
+        Game current_game(player_ids);
+        
+
+        handleMessage(std::move(msg_r), client, &current_game /*, clients*/);
         
         //the handleMessage send message will be called somewhere else
     }

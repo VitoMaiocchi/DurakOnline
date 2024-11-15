@@ -29,7 +29,6 @@ class Game{
         // destructor, should nominate the durak
         ~Game();
 
-        bool makeFirstBattle();
         bool createBattle();
         bool isStarted();
         bool endGame();

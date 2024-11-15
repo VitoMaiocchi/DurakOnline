@@ -54,14 +54,14 @@ TEST_F(DurakBattleTest, TestIsValidMove_DefenderValid) {
 
     // Place the attack card in the middle to simulate an ongoing battle
     // card_manager.placeAttackCard(attackCard, slot);
-
     card_manager.addCardToPlayerHand(attacker_id, attackCard);
     card_manager.attackCard(attackCard, attacker_id);
+
     // ASSERT_TRUE(card_manager.attackCard(attackCard, attacker_id));
     // Call isValidMove to check the defender's move
     bool result = battle.isValidMove(defendCard, defender_id, slot);
 
-    std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
+    // std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
     // std::cout << "Captured output: " << output << std::endl;
     // Check if the defender's move is valid
     EXPECT_TRUE(result);

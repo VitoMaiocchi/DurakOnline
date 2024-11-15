@@ -177,6 +177,9 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     }
     if(role == ATTACKER || role == CO_ATTACKER){
         if(curr_attacks == max_attacks){
+            err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
+            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
+            Network::sendMessage(em, player_id);
             return false; //idk about this maybe should be > and if == true
         }
         if(curr_attacks == 0){

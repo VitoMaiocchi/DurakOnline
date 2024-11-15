@@ -55,7 +55,7 @@ void CardManager::shuffleCards(){
 //POST: Sets the trump suit according to last card in the deck
 void CardManager::determineTrump(){
     // Check if deck has been initialized properly
-    assert(deck_.size() == 52/*-6*Number Players*/ && "Deck must contain exactly 52 cards before determining trump");
+    assert(deck_.size() == 52 - (6 * player_hands_.size()) && "Deck must contain exactly 52 cards before determining trump");
 
     // Assign pointer
     last_card_ = std::make_shared<Card>(deck_.back());
@@ -120,9 +120,11 @@ bool CardManager::attackCard(Card card, unsigned int PlayerID){
         return false;
     }
 
+    // Place the card in the identified slot
+    middle_[free_slot].first = card;
     //Update middle number of cards in middle & in player hand
     ++number_cards_middle_;
-    --player_number_of_cards_[PlayerID];
+    // --player_number_of_cards_[PlayerID];
 
     return 0;
 }
@@ -198,7 +200,7 @@ Suit CardManager::getTrump(){
 void CardManager::fillDeck() {
     for (int suit = SUIT_CLUBS; suit <= SUIT_HEARTS; ++suit) {  // Iterate over all suits
         for (int rank = RANK_TWO; rank <= RANK_ACE; ++rank) {    // Iterate over all ranks
-            deck_.emplace_back(static_cast<Rank>(rank), static_cast<Suit>(suit));
+            deck_.push_back(Card(static_cast<Rank>(rank), static_cast<Suit>(suit)));
         }
     }
 }

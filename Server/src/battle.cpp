@@ -11,6 +11,7 @@ Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> player
                                     first_battle_(first_battle), players_bs(players), card_manager_ptr(&card_manager) /*,current_game(&game)*/,curr_attacks(0){
     
     max_attacks = first_battle ? 5 : 6;
+    // you will need to adapt this for a map, but you can use the same logic
     //set the first attacker pointer to the one that attacks first
     for(auto& pl : players){
         if(pl.second == ATTACKER){
@@ -23,6 +24,11 @@ Battle::Battle(bool first_battle, std::vector<std::pair<int, PlayerRole>> player
     if(first_attacker == nullptr){
         std::cerr << "Error: 'attacker' not found" <<std::endl;
     }
+    // the constructor of battle should at the end communicate the roles of the players to the clients
+    // for this we use the message BATTLE_STATE_UPDATE
+    // it should also send a GAME_STATE_UPDATE informing the client to switch to game screen
+    // i dont know in what order these messages have to be sent or if it does make a difference
+    // but probably the GAME_STATE_UPDATE should be sent first
 };
 
 //default dtor

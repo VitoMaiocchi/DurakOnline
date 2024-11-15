@@ -1,7 +1,7 @@
 #include "../include/msg_handler.hpp"
 #include <iostream>
 
-void handleMessage(std::unique_ptr<Message> message, ClientID client /*, const std::unordered_set<ClientID>& clients, Game* current_game*/){
+void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* game /*, const std::unordered_set<ClientID>& clients*/){
     //da message handle dies das
     switch (message->messageType) {
         case MESSAGETYPE_TEST: {
@@ -15,32 +15,14 @@ void handleMessage(std::unique_ptr<Message> message, ClientID client /*, const s
             Network::sendMessage(message, client);
         }
         break;
-        case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-            //something
-        break;
-        case MESSAGETYPE_CARD_UPDATE:
-            //do something
-            //Network::sendMessage(client, goo goo gagag);
-        break;
-        case MESSAGETYPE_PLAYER_UPDATE:
-            //something
-        break;
-        case MESSAGETYPE_BATTLE_STATE_UPDATE:
-            //something
-            // Network::sendMessage(message, client);
-            //has to send a message from either game or from battle to the client
-        break;
-        case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
-            //something
-        break;
-        case MESSAGETYPE_GAME_STATE_UPDATE:
-            //something
-        break;
         case MESSAGETYPE_PLAYCARD_EVENT: {
             //something
-            PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
+            // PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
             /*get_playcard_msg(return_pce, client, current_game);*/
             //calls game function handleClientCardEvent();
+            if(game != nullptr){
+                game->handleClientCardEvent(std::move(message), client);
+            }
         }
         break;
         case MESSAGETYPE_CLIENT_ACTION_EVENT:

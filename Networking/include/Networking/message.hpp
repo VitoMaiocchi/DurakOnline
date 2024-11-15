@@ -11,16 +11,18 @@
 
 enum MessageType {
     MESSAGETYPE_TEST, //NUR FÜR TEST GRÜND DI CHÖMMER NACHER WEG NEH
-    MESSAGETYPE_ILLEGAL_MOVE_NOTIFY,
-    MESSAGETYPE_CARD_UPDATE,
-    MESSAGETYPE_PLAYER_UPDATE,
-    MESSAGETYPE_BATTLE_STATE_UPDATE,
-    MESSAGETYPE_AVAILABLE_ACTION_UPDATE,
-    MESSAGETYPE_GAME_STATE_UPDATE,
-    MESSAGETYPE_PLAYCARD_EVENT,
-    MESSAGETYPE_CLIENT_ACTION_EVENT,
-    MESSAGETYPE_CLIENT_CONNECT_EVENT,
-    MESSAGETYPE_CLIENT_DISCONNECT_EVENT
+    // Server:* to Client:MasterNode
+    MESSAGETYPE_ILLEGAL_MOVE_NOTIFY, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
+    MESSAGETYPE_CARD_UPDATE, // Server:CardManager to Client:MasterNode, communicates the current status of the cards in play
+    MESSAGETYPE_PLAYER_UPDATE, // Server:Game to Client:MasterNode, provides an update on the players in the game
+    MESSAGETYPE_BATTLE_STATE_UPDATE, // Server:Battle to Client:MasterNode, contains info on player roles (attackers, defender, idle)
+    MESSAGETYPE_AVAILABLE_ACTION_UPDATE, // Server:Battle to Client:MasterNode, tells the client what actions are available
+    MESSAGETYPE_GAME_STATE_UPDATE, // Server:* to Client:MasterNode, update game screen (lobby, game, spectator, game over, Durak screen)
+    // Client:MasterNode to Server:*
+    MESSAGETYPE_PLAYCARD_EVENT, // Client:MasterNode to Server:Server->Game->Battle, informs server that a player is trying to play a card
+    MESSAGETYPE_CLIENT_ACTION_EVENT, // Client:MasterNode to Server:Server->Game->Battle, info about which client action was performed
+    MESSAGETYPE_CLIENT_CONNECT_EVENT, // Client:MasterNode to Server:Server->Game, info about the player
+    MESSAGETYPE_CLIENT_DISCONNECT_EVENT // Client:MasterNode to Server:Server->Game, informs server that a player has disconnected
 };
 
 typedef rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> Allocator;

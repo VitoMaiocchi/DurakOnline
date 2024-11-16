@@ -9,6 +9,8 @@
 #include <string>
 
 int main() {
+    Network::openConnection("localhost", 42069);
+
     std::cout << "TEST MESSAGETYPE_ILLEGAL_MOVE_NOTIFY" << std::endl;
     /*testing illegal notify message*/
     IllegalMoveNotify err_message;
@@ -85,10 +87,10 @@ int main() {
 
     std::unique_ptr<Message> bam = std::make_unique<BattleStateUpdate>(battle_message);
     std::string battlestr = bam->toJson();
-
     std::unique_ptr<Message> bamsol = deserialiseMessage(battlestr);
-
+    // std::unique_ptr<Message> bamsol = Network::reciveMessage(); //added a recieve msg 
     BattleStateUpdate* return_bam = dynamic_cast<BattleStateUpdate*>(bamsol.get());
+
     std::cout << "defender id: " << return_bam->defender
               /*<< "\nattacker 1 id: " << return_bam->attackers[0] 
               << "\nattacker 2 id: " << return_bam->attackers[1]
@@ -108,18 +110,22 @@ int main() {
     std::cout << "TEST MESSAGETYPE_AVAILABLE_ACTION_UPDATE" << std::endl;
     /*testing available action update message*/
     AvailableActionUpdate aa_message;
-    aa_message.pass_on = true;
-    aa_message.ok = false;
-    aa_message.pick_up = false;
+    aa_message.pass_on = false;
+    aa_message.ok = true;
+    aa_message.pick_up = true;
 
     std::unique_ptr<Message> aam = std::make_unique<AvailableActionUpdate>(aa_message);
-    std::string string_aa = aam->toJson();
+    Network::sendMessage(aam);
+    // std::string string_aa = aam->toJson();
+    // std::unique_ptr<Message> answer_aa = deserialiseMessage(string_aa);
 
-    std::unique_ptr<Message> answer_aa = deserialiseMessage(string_aa);
-    AvailableActionUpdate* return_aa = dynamic_cast<AvailableActionUpdate*>(answer_aa.get());
-    std::cout << "pass on: " << return_aa->pass_on 
-              << "\nok: "      << return_aa->ok
-              << "\npick up: " << return_aa->pick_up << std::endl;
+        std::unique_ptr<Message> answer_aa = nullptr;
+        while(!answer_aa) answer_aa = Network::reciveMessage();
+        AvailableActionUpdate* return_aa = dynamic_cast<AvailableActionUpdate*>(answer_aa.get());
+        std::cout << "pass on: " << return_aa->pass_on 
+                << "\nok: "      << return_aa->ok
+                << "\npick up: " << return_aa->pick_up << std::endl;
+    
 
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
@@ -208,7 +214,7 @@ int main() {
     message.y = 7;
     message.string = "mhh trash i like trash";
     std::unique_ptr<Message> m = std::make_unique<TestMessage>(message);
-    Network::openConnection("localhost", 42069);
+    // Network::openConnection("localhost", 42069);
     Network::sendMessage(m);
     while(true) {
 

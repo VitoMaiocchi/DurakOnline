@@ -3,7 +3,7 @@
 
 
 /**
-* QUESTIONS: 
+* QUESTIONS: do i need a game pointer?
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
@@ -32,13 +32,9 @@ Battle::Battle(bool first_battle, std::unordered_map<ClientID, PlayerRole> playe
         }
     }
     std::unique_ptr<Message> bsu = std::make_unique<BattleStateUpdate>(bsu_msg);
-    Network::sendMessage(bsu, 0); //need the client id vector or even better broadcast the messag
-
-    // the constructor of battle should at the end communicate the roles of the players to the clients
-    // for this we use the message BATTLE_STATE_UPDATE
-    // it should also send a GAME_STATE_UPDATE informing the client to switch to game screen
-    // i dont know in what order these messages have to be sent or if it does make a difference
-    // but probably the GAME_STATE_UPDATE should be sent first
+    for(auto& pl : players_bs_){
+        Network::sendMessage(bsu, pl.first); //maybe make function to broadcast to all
+    }
 
 };
 

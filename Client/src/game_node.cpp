@@ -190,14 +190,11 @@ class MiddleNode : public TreeNode {
                 auto &c2 = cast(LinearStackNode, c[i])->children;
                 c2.resize(3);
                 for(uint j = 0; j < 3; j++) {
-                    c2[j] = std::make_unique<ImageNode>(Card(RANK_ACE, SUIT_SPADES).getFileName());
-                    /* das chammer den mache wenns funktioniert
                     c2[j] = std::make_unique<CardStackNode>();
                     cast(CardStackNode, c2[j])->setCard(false, Card(RANK_ACE, SUIT_SPADES));
                     cast(CardStackNode, c2[j])->setCard(true, Card(RANK_ACE, SUIT_HEARTS));
-                    */
                 }
-            }            
+            }
         }
 
         void updateExtends(Extends ext) {
@@ -230,7 +227,7 @@ void GameNode::updateExtends(Extends ext) {
 
     Extends middle_ext = {
         extends.x + extends.width / 4,
-        extends.y + extends.height / 2,
+        extends.y + extends.height * 3.0f / 8.0f,
         extends.width / 2,
         extends.height / 2,
         0

@@ -161,8 +161,34 @@ void BufferNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
 }
 
 //LINEAR STACK NODE
-//TODO STACKTYPE
+
+#define MAX_FLOAT 10E10 //todo
+
 void LinearStackNode::updateExtends(Extends ext) {
+
+    if(stackType == STACKTYPE_COMPACT) {
+        ext = getCompactExtends(ext);
+
+        float y = ext.y;
+        float x = ext.x;
+        Extends cext;
+        for(auto& child : children) {
+            if(stackDirection == STACKDIRECTION_VERTICAL) cext = child->getCompactExtends({0,0, ext.width, MAX_FLOAT});
+            else cext = child->getCompactExtends({0,0, MAX_FLOAT, ext.height});
+
+            cext.y = y;
+            cext.x = x;
+            child->updateExtends(cext);
+
+            if(stackDirection == STACKDIRECTION_VERTICAL) y += cext.height;
+            else x += cext.width;
+        }
+        return;
+    }
+
+
+    //legacy eric code (funktioniert wahschinlich immer nonig)
+
     float divisor = 2.0f;
     float offset = 0.0f;
     float offset_space = 0.0f;
@@ -244,7 +270,6 @@ void LinearStackNode::updateExtends(Extends ext) {
     }
 }
 
-//TODO STACKTYPE
 Extends LinearStackNode::getCompactExtends(Extends ext) {
     float totalWidth = 0.0f;
     float totalHeight = 0.0f;
@@ -254,17 +279,17 @@ Extends LinearStackNode::getCompactExtends(Extends ext) {
     switch(stackType){
         case(STACKTYPE_COMPACT):
             if (stackDirection == STACKDIRECTION_HORIZONTAL) {
-                for (const auto& child : children) {
-                    Extends childExt = child->getCompactExtends(ext);
-                    totalWidth += childExt.width;
-                    totalHeight = std::max(totalHeight, childExt.height);
-                }
+                for (const auto& child : children) totalWidth += child->getCompactExtends({0,0, MAX_FLOAT, ext.height}).width;
+                if(totalWidth > ext.width) {
+                    totalHeight = ext.height * ext.width / totalWidth;
+                    totalWidth = ext.width;
+                } else totalHeight = ext.height;
             } else {
-                for (const auto& child : children) {
-                    Extends childExt = child->getCompactExtends(ext);
-                    totalHeight += childExt.height;
-                    totalWidth = std::max(totalWidth, childExt.width);
-                }
+                for (const auto& child : children) totalHeight += child->getCompactExtends({0,0, ext.width, MAX_FLOAT}).height;
+                if(totalHeight > ext.height) {
+                    totalWidth = ext.width * ext.height / totalHeight;
+                    totalHeight = ext.height;
+                } else totalWidth = ext.width;
             }
             compact_x = ext.x + (ext.width - totalWidth)/2;
             compact_y = ext.y + (ext.height - totalHeight)/2;

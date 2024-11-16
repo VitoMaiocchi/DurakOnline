@@ -14,6 +14,7 @@ namespace OpenGL {
     struct Texture;
 
     void drawImage(std::string path, Extends ext);
+    void drawRectangle(Extends ext, glm::vec4 color);
 
     //TODO: ALL DIE CLASSES SIND UNNÖTIG
     //DAS CHAMMER ALLES I NORMALI GLOBALI FUNCTIONS UMWANDLE

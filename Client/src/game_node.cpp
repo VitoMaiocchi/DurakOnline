@@ -3,7 +3,11 @@
 #include <iostream>
 #include <unordered_set>
 #include <optional>
+#include "viewport.hpp"
 
+#define HOVER_OFFSET_FACTOR 0.08f
+#define CARD_DELTA_FACTOR 0.7f
+#define CARD_OFFSET_FACTOR 0.2f
 //TODO 
 //da chunt alles ine wo grendered wird während es game lauft
 //endscreen und so nöd nur das mit de charte i de mitti und so
@@ -13,8 +17,6 @@ void sortCards(std::list<Card> &cards) {
     //da muss mer wüsse was trumpf isch und so
 }
 
-#define HOVER_OFFSET_FACTOR 0.08
-#define CARD_DELTA_FACTOR 0.7
 
 class HandNode : public LeafNode {
     private:
@@ -111,9 +113,106 @@ class HandNode : public LeafNode {
 
 };
 
+//TODO: das schönner mache
+Extends computeCompactExtends(Extends ext, float height, float width);
+
+class CardStackNode : public LeafNode {
+    private:
+        std::optional<Card> bottom_card;
+        std::optional<Card> top_card;
+    public:
+        void setCard(bool top, Card card) {
+            if(top) top_card = card;
+            else bottom_card = card;
+        }
+
+        Extends getCompactExtends(Extends ext) {
+            constexpr float h = (float)CARD_TEXTURE_HEIGHT/(1-CARD_OFFSET_FACTOR);
+            constexpr float w = CARD_TEXTURE_WIDTH  + h*CARD_OFFSET_FACTOR;
+            return computeCompactExtends(ext, h, w);
+        }
+
+        void draw() {
+            OpenGL::drawRectangle(extends, glm::vec4(0,1,0,1));
+
+            if(top_card.has_value() && !bottom_card.has_value()) {
+                //print warning oder so
+                return;
+            }
+
+            const float offset = extends.height*CARD_OFFSET_FACTOR;
+
+            if(bottom_card.has_value() && !top_card.has_value()) {
+                OpenGL::drawImage(bottom_card.value().getFileName(), {
+                    extends.x + 0.5f*offset,
+                    extends.y + 0.5f*offset,
+                    extends.width - offset,
+                    extends.height - offset,
+                    0
+                });
+                return;
+            }
+
+            if(bottom_card.has_value()) OpenGL::drawImage(bottom_card.value().getFileName(), {
+                extends.x + offset,
+                extends.y,
+                extends.width - offset,
+                extends.height - offset,
+                0
+            });
+
+            if(top_card.has_value()) OpenGL::drawImage(top_card.value().getFileName(), {
+                extends.x,
+                extends.y + offset,
+                extends.width - offset,
+                extends.height - offset,
+                0
+            });
+        }
+};
+
+class MiddleNode : public TreeNode {
+    private:
+        std::unique_ptr<Node> stack; 
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+            function(stack);
+        }
+
+    public:
+        MiddleNode() {
+            stack = std::make_unique<LinearStackNode>();
+            cast(LinearStackNode, stack)->setStackType(STACKDIRECTION_VERTICAL, STACKTYPE_COMPACT);
+            auto &c = cast(LinearStackNode, stack) -> children;
+            c.resize(2);
+            for(uint i = 0; i < 2; i++) {
+                c[i] = std::make_unique<LinearStackNode>();
+                cast(LinearStackNode, c[i])->setStackType(STACKDIRECTION_HORIZONTAL, STACKTYPE_COMPACT);
+                auto &c2 = cast(LinearStackNode, c[i])->children;
+                c2.resize(3);
+                for(uint j = 0; j < 3; j++) {
+                    c2[j] = std::make_unique<ImageNode>(Card(RANK_ACE, SUIT_SPADES).getFileName());
+                    /* das chammer den mache wenns funktioniert
+                    c2[j] = std::make_unique<CardStackNode>();
+                    cast(CardStackNode, c2[j])->setCard(false, Card(RANK_ACE, SUIT_SPADES));
+                    cast(CardStackNode, c2[j])->setCard(true, Card(RANK_ACE, SUIT_HEARTS));
+                    */
+                }
+            }            
+        }
+
+        void updateExtends(Extends ext) {
+            stack->updateExtends(ext);
+        }
+
+        Extends getCompactExtends(Extends ext) {
+            return stack->getCompactExtends(ext);
+        }
+};
+
 
 GameNode::GameNode() {
     handNode = std::make_unique<HandNode>();
+    middleNode = std::make_unique<MiddleNode>();
     //TODO
 }
 
@@ -128,12 +227,22 @@ void GameNode::updateExtends(Extends ext) {
         0
     };
     handNode->updateExtends(hand_ext);
+
+    Extends middle_ext = {
+        extends.x + extends.width / 4,
+        extends.y + extends.height / 2,
+        extends.width / 2,
+        extends.height / 2,
+        0
+    };
+    middleNode->updateExtends(middle_ext);
     //TODO
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //TODO
     function(handNode);
+    function(middleNode);
 }
 
 Extends GameNode::getCompactExtends(Extends ext) {

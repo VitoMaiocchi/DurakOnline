@@ -14,6 +14,8 @@
 #include <Networking/network.hpp>
 // #include <Networking/util.hpp>
 
+#include <unordered_map>
+
 class Battle {
     private:
         //we might not need that because the other vector saves it already

@@ -19,4 +19,5 @@ class GameNode : public TreeNode {
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> handNode;
+        std::unique_ptr<Node> middleNode;
 };

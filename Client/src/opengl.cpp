@@ -144,6 +144,23 @@ namespace OpenGL {
 
 
     //Rectangle
+    void drawRectangle(Extends ext, glm::vec4 color) {
+        glUseProgram(rectangleShader->shader_program);
+
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
+
+        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
+        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
     Rectangle::Rectangle(float r, float g, float b) :
         color(glm::vec4(r, g, b, 1.0f)) {}
 

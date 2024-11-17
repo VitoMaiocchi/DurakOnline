@@ -6,6 +6,7 @@
 #include <memory>
 #include <list>
 #include <functional>
+#include <vector>
 
 class Node {
     public:
@@ -114,7 +115,7 @@ class LinearStackNode : public TreeNode {
         Extends getCompactExtends(Extends ext);
         void setStackType(StackDirection stack_direction, StackType stack_type);
 
-        std::list<std::unique_ptr<Node>> children;
+        std::vector<std::unique_ptr<Node>> children;
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         StackDirection stackDirection = STACKDIRECTION_HORIZONTAL;

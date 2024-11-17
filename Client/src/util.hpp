@@ -24,3 +24,8 @@ struct Player {
     bool durak = false;
     bool is_you = false;
 };
+
+inline void printExt(std::string name, Extends ext) {
+    std::cout << "Extends("<<name<<") x: " << ext.x << "; y: " << ext.y
+                << "; width: " << ext.width << "; height: " << ext.height << std::endl;
+}

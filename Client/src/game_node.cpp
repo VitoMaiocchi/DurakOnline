@@ -122,10 +122,16 @@ class CardStackNode : public LeafNode {
     private:
         std::optional<Card> bottom_card;
         std::optional<Card> top_card;
+        bool hover = false;
     public:
         void setCard(bool top, Card card) {
             if(top) top_card = card;
             else bottom_card = card;
+        }
+
+        void sendHoverEvent(float x, float y) override {
+            if(extends.contains(x,y)) hover = true;
+            else hover = false;
         }
 
         Extends getCompactExtends(Extends ext) {
@@ -148,7 +154,8 @@ class CardStackNode : public LeafNode {
         }
 
         void draw() {
-            OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.2));
+            if(hover) OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.4));
+            else OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.2));
 
             Extends ext = {
                 extends.x      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
@@ -176,16 +183,16 @@ class CardStackNode : public LeafNode {
             }
 
             if(bottom_card.has_value()) OpenGL::drawImage(bottom_card.value().getFileName(), {
-                ext.x + offset,
-                ext.y,
+                ext.x,
+                ext.y + offset,
                 ext.width - offset,
                 ext.height - offset,
                 0
             });
 
             if(top_card.has_value()) OpenGL::drawImage(top_card.value().getFileName(), {
-                ext.x,
-                ext.y + offset,
+                ext.x + offset,
+                ext.y,
                 ext.width - offset,
                 ext.height - offset,
                 0
@@ -241,6 +248,10 @@ class MiddleNode : public TreeNode {
                 width,
                 height
             };
+        }
+
+        void sendHoverEvent(float x, float y) override {
+            for(auto &stack : cardStacks) stack->sendHoverEvent(x,y);
         }
 };
 

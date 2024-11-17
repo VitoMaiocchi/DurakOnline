@@ -67,7 +67,8 @@ enum CardSlot {
     CARDSLOT_3_TOP,
     CARDSLOT_4_TOP,
     CARDSLOT_5_TOP,
-    CARDSLOT_6_TOP
+    CARDSLOT_6_TOP,
+    CARDSLOT_NONE
 };
 
 enum GameState {

@@ -1,30 +1,41 @@
 #ifndef GAME_HPP
 #define GAME_HPP
-#include "card_manager.hpp"
-#include "battle.hpp"
 
-#include <Networking/util.hpp>
+#include "card_manager.hpp"
+#include "../../Networking/include/Networking/util.hpp"
+#include "../../Networking/include/Networking/message.hpp"
 
 #include <vector>
 #include <tuple>
+#include <map>
 
 using player_id = unsigned int;
+class Battle; //forward declaration to avoid circular dependencies
 
 class Game{
+
     private:
-        std::vector<std::pair<int, PlayerRole>> players_bs; //attacking, defending, spectating
-        Battle* current_battle;
-        CardManager card_manager;
+        // vector of pairs containing the player ids and their roles
+        // has to be stored here because battle might be destructed
+        std::map<ClientID, PlayerRole> player_roles_;
+        // pointer to the current battle
+        Battle* current_battle_;
+        // pointer to the card manager
+        CardManager* card_manager_;
+
     public:
-        bool createGame();
-        bool makeFirstBattle();
+        // constructor taking in an array of player ids
+        Game(std::vector<ClientID> player_ids);
+        // destructor, should nominate the durak
+        ~Game();
+
         bool createBattle();
         bool isStarted();
         bool endGame();
         bool resetGame();
         bool updateTurnOrder();
         bool handleClientActionEvent();
-        bool handleClientCardEvent();
+        bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
 };
 
 

@@ -9,6 +9,7 @@ typedef unsigned int uint;
 typedef uint ClientID;
 
 enum Suit {
+    SUIT_NONE,
     SUIT_CLUBS,
     SUIT_SPADES,
     SUIT_DIAMONDS,
@@ -16,10 +17,11 @@ enum Suit {
 };
 
 enum Rank {
-    RANK_TWO, //0
-    RANK_THREE, //1
-    RANK_FOUR, //2
-    RANK_FIVE, //3
+    RANK_NONE, //0
+    RANK_TWO, //1
+    RANK_THREE, //2
+    RANK_FOUR, //3
+    RANK_FIVE, //4
     RANK_SIX, 
     RANK_SEVEN,
     RANK_EIGHT,
@@ -89,9 +91,7 @@ enum PlayerRole {
     ATTACKER,
     DEFENDER,
     CO_ATTACKER,
-    IDLE_1,
-    IDLE_2,
-    IDLE_3
+    IDLE // there can be multiple of those right?
 }; //max 6 players
 
 #define PRINT_DEBUG(msg) \

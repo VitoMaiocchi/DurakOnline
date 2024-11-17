@@ -23,6 +23,17 @@ find_package(Freetype REQUIRED)
 set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(OpenGL REQUIRED)
 
+# If on Apple Silicon, use the Homebrew version of GLM
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+        # M1 Mac (Apple Silicon)
+        include_directories("/opt/homebrew/include")
+    else()
+        # Intel Mac
+        include_directories("/usr/local/include")
+    endif()
+endif()
+
 #Networking
 include_directories(${CMAKE_SOURCE_DIR}/Networking/include)
 include_directories(${CMAKE_SOURCE_DIR}/Networking/rapidjson/include)

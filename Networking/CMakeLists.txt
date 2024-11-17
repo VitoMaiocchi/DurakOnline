@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/sockpp/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/rapidjson/include)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/Networking/include)
 
 add_subdirectory(sockpp)
 

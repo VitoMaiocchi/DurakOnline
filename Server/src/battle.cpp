@@ -7,8 +7,9 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::unordered_map<ClientID, PlayerRole> players, CardManager &card_manager /*,Game &game*/) : 
-                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) /*,current_game(&game)*/,curr_attacks_(0){
+Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager /*,Game &game*/) : 
+                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) 
+                                    /*,current_game(&game)*/,curr_attacks_(0){
     
     max_attacks_ = first_battle ? 5 : 6;
     // you will need to adapt this for a map, but you can use the same logic
@@ -41,7 +42,7 @@ Battle::Battle(bool first_battle, std::unordered_map<ClientID, PlayerRole> playe
 //default dtor
 Battle::~Battle() = default;
 
-bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot slot){
+bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot){
 
     std::cout << "handleCardEvent was called" << std::endl;
 
@@ -62,14 +63,28 @@ bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot sl
         }
     }
     if(role == ATTACKER || role == CO_ATTACKER){
-        for(auto card : cards){
-            if(!isValidMove(card, player_id, slot)) return false;
-            else attacks_to_defend_++;
+        //first loop checks that all cards are valid to play
+        //if only 1 card with which is being attacked
+        if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
+            attack(player_id, card);
+            attacks_to_defend_++;
+            return true;
         }
-        attack(); // calls attack function
-        return true;
+        else if(cards.size() > 1){
+            for(auto card : cards){
+                if(!isValidMove(card, player_id, slot)) {
+                    return false;
+                }
+                else attacks_to_defend_++;
+            }
+            //second loop actually plays the cards
+            for(auto card : cards){
+                attack(player_id, card); // calls attack function
+            }
+            return true;
+        }
     }
-    else{ //defending only 1 card at a time
+    else if(role == DEFENDER){ //defending only 1 card at a time
         if(isValidMove(cards.at(0), player_id, slot)) {
             attacks_to_defend_--;
             return true;
@@ -79,9 +94,14 @@ bool Battle::handleCardEvent(std::vector<Card> cards, int player_id, CardSlot sl
 
     return false;
 }
-
+/**
+ * PRE: takes the message (already broken down)
+ * POST: calls the next functions, either pick_up or pass_on, returns true if this succeeded
+ */
 bool Battle::handleActionEvent(){
     //this is going to be a big one
+
+    
     return false;
 }
 
@@ -217,12 +237,14 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
     return false;
 }
 
-void Battle::attack(){
+void Battle::attack(ClientID client, Card card){
     //calls attack
+    card_manager_ptr_->attackCard(card, client);
 }
 
-void Battle::defend(){ 
+void Battle::defend(ClientID client, Card card, CardSlot slot){ 
     //calls defendCard
+    card_manager_ptr_->defendCard(card, client, slot);
 }
 
 

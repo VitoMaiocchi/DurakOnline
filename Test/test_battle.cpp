@@ -8,7 +8,7 @@
 class DurakBattleTest : public ::testing::Test {
 protected:
     CardManager card_manager;
-    std::unordered_map<ClientID, PlayerRole> players_bs;
+    std::map<ClientID, PlayerRole> players_bs;
     Battle battle;
     std::vector<ClientID> clients ;
 
@@ -67,23 +67,6 @@ TEST_F(DurakBattleTest, TestIsValidMove_DefenderValid) {
     EXPECT_TRUE(result);
 }
 
-
-
-TEST_F(DurakBattleTest, TestHandleCardEvent_Attacker) {
-    // Test handleCardEvent with an attacker scenario
-    Card cardPlayed(RANK_QUEEN, SUIT_HEARTS); // Attacker's card
-    int player_id = 1;                        // Attacker ID
-    CardSlot slot = CARDSLOT_1;               // Slot for attack
-
-    std::vector<Card> cards = { cardPlayed };
-
-    // Call handleCardEvent for an attack scenario
-    bool result = battle.handleCardEvent(cards, player_id, slot);
-
-    // Validate that handleCardEvent processes a valid attack
-    EXPECT_TRUE(result);
-}
-
 TEST_F(DurakBattleTest, TestIsValidMove_AttackLimitExceeded) {
     Card cardPlayed(RANK_QUEEN, SUIT_HEARTS);
     int player_id = 1;
@@ -93,5 +76,80 @@ TEST_F(DurakBattleTest, TestIsValidMove_AttackLimitExceeded) {
     battle.setCurrAttacks(battle.getMaxAttacks());
 
     bool result = battle.isValidMove(cardPlayed, player_id, slot);
+    EXPECT_FALSE(result);
+}
+
+TEST_F(DurakBattleTest, TestHandleCardEvent_Attacker) {
+    // Test handleCardEvent with an attacker scenario
+    Card cardPlayed(RANK_QUEEN, SUIT_HEARTS); // Attacker's card
+    ClientID player_id = 1;                        // Attacker ID
+    CardSlot slot = CARDSLOT_1;               // Slot for attack
+
+    std::vector<Card> cards = { cardPlayed };
+
+    card_manager.addCardToPlayerHand(player_id, cardPlayed);
+    // Call handleCardEvent for an attack scenario
+    bool result = battle.handleCardEvent(cards, player_id, slot);
+
+    // Validate that handleCardEvent processes a valid attack
+    EXPECT_TRUE(result);
+}
+
+
+TEST_F(DurakBattleTest, TestHandleCardEvent_Defender){
+    // ::testing::internal::CaptureStdout();
+    // Mock setup for a defender’s valid move
+    Card attackCard(RANK_QUEEN, SUIT_HEARTS); // Attacker's card on the table
+    Card defendCard(RANK_KING, SUIT_HEARTS);  // Defender's card, assumed valid for defense
+
+    std::vector<Card> cards = { defendCard };
+
+    int attacker_id = 1;        // Attacker ID
+    int defender_id = 2;        // Defender ID
+    CardSlot slot = CARDSLOT_1_TOP; // Slot for the defender's response
+
+    // Place the attack card in the middle to simulate an ongoing battle
+    // card_manager.placeAttackCard(attackCard, slot);
+    card_manager.addCardToPlayerHand(attacker_id, attackCard);
+    card_manager.addCardToPlayerHand(defender_id, defendCard);
+
+    card_manager.attackCard(attackCard, attacker_id);
+
+    // ASSERT_TRUE(card_manager.attackCard(attackCard, attacker_id));
+    // Call isValidMove to check the defender's move
+    bool result = battle.handleCardEvent(cards, defender_id, slot);
+
+    // std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
+    // std::cout << "Captured output: " << output << std::endl;
+    // Check if the defender's move is valid
+    EXPECT_TRUE(result);
+}
+
+TEST_F(DurakBattleTest, TestHandleCardEvent_DefenderIsWrong){
+    // ::testing::internal::CaptureStdout();
+    // Mock setup for a defender’s valid move
+    Card attackCard(RANK_QUEEN, SUIT_CLUBS); // Attacker's card on the table
+    Card defendCard(RANK_KING, SUIT_HEARTS);  // Defender's card, assumed valid for defense
+
+    std::vector<Card> cards = { defendCard };
+
+    int attacker_id = 1;        // Attacker ID
+    int defender_id = 2;        // Defender ID
+    CardSlot slot = CARDSLOT_1_TOP; // Slot for the defender's response
+
+    // Place the attack card in the middle to simulate an ongoing battle
+    // card_manager.placeAttackCard(attackCard, slot);
+    card_manager.addCardToPlayerHand(attacker_id, attackCard);
+    card_manager.addCardToPlayerHand(defender_id, defendCard);
+
+    card_manager.attackCard(attackCard, attacker_id);
+
+    // ASSERT_TRUE(card_manager.attackCard(attackCard, attacker_id));
+    // Call isValidMove to check the defender's move
+    bool result = battle.handleCardEvent(cards, defender_id, slot);
+
+    // std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
+    // std::cout << "Captured output: " << output << std::endl;
+    // Check if the defender's move is valid
     EXPECT_FALSE(result);
 }

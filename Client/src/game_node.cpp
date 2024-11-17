@@ -124,7 +124,7 @@ class CardStackNode : public LeafNode {
         std::optional<Card> top_card;
         bool hover = false;
     public:
-        void setCard(bool top, Card card) {
+        void setCard(bool top, std::optional<Card> card) {
             if(top) top_card = card;
             else bottom_card = card;
         }
@@ -171,6 +171,16 @@ class CardStackNode : public LeafNode {
 
             const float offset = ext.height*CARD_OFFSET_FACTOR;
 
+            if(!top_card.has_value() && !bottom_card.has_value()) {
+                OpenGL::drawRectangle({
+                    ext.x + 0.5f*offset,
+                    ext.y + 0.5f*offset,
+                    ext.width - offset,
+                    ext.height - offset,
+                    0
+                }, glm::vec4(0.4,0.2,0.2,0.2));
+            }
+
             if(bottom_card.has_value() && !top_card.has_value()) {
                 OpenGL::drawImage(bottom_card.value().getFileName(), {
                     ext.x + 0.5f*offset,
@@ -212,11 +222,7 @@ class MiddleNode : public TreeNode {
 
     public:
         MiddleNode() {
-            for(auto &stack : cardStacks) {
-                stack = std::make_unique<CardStackNode>();
-                cast(CardStackNode, stack)->setCard(false, Card(RANK_ACE, SUIT_SPADES));
-                cast(CardStackNode, stack)->setCard(true, Card(RANK_ACE, SUIT_HEARTS));
-            }
+            for(auto &stack : cardStacks) stack = std::make_unique<CardStackNode>();
         }
 
         void updateExtends(Extends ext) {
@@ -252,6 +258,16 @@ class MiddleNode : public TreeNode {
 
         void sendHoverEvent(float x, float y) override {
             for(auto &stack : cardStacks) stack->sendHoverEvent(x,y);
+        }
+
+        void setCards(std::map<CardSlot, Card> &cards) {
+            for(uint slot = 0; slot < (uint)CARDSLOT_NONE; slot++) {
+                uint stack = slot % 6;
+                bool top = slot/6;
+                std::optional<Card> card;
+                if(cards.find((CardSlot)slot) != cards.end()) card = cards[(CardSlot)slot];
+                cast(CardStackNode, cardStacks[stack])->setCard(top, card);
+            }
         }
 };
 
@@ -298,6 +314,7 @@ Extends GameNode::getCompactExtends(Extends ext) {
 void GameNode::handleCardUpdate(CardUpdate update) {
     //TODO
     cast(HandNode, handNode)->updateHand(update.hand);
+    cast(MiddleNode, middleNode)->setCards(update.middle_cards);
 }
 
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {

@@ -45,7 +45,7 @@ class Battle {
         ~Battle(); //default Destructor
         
 
-        bool handleCardEvent(std::vector<Card> cards, int player_id, CardSlot slot);
+        bool handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot);
         bool handleActionEvent();
         bool successfulDefend();
         bool passOn(Card card, int player_id, CardSlot slot);

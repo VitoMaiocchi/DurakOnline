@@ -66,7 +66,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         //first loop checks that all cards are valid to play
         //if only 1 card with which is being attacked
         if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
-            attack(player_id, card);
+            attack(player_id, cards.at(0));
             attacks_to_defend_++;
             return true;
         }

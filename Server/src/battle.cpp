@@ -49,44 +49,59 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
     //calls isvalidmove and gives the message parameters with the function,
     //here we should handle the list and maybe break it down? by card, then we can call isValidMove multiple 
     //times and check if each card is valid, and if yes, then we give to go
-    
-    //if(isValidMove()){
-    // check role and call attack() or defend()}
-    //do i need to check if the slot is empty? or can i just say hey the message has no slot, 
-    //which means its an attack, or there is a slot, meaning its defending
 
-    // if(card_manager_ptr_->getMiddle().at(slot).first == NULL){}
+
+    //set initial player role to IDLE
     PlayerRole role = IDLE;
-    for(auto& pl : players_bs_){
-        if(pl.first == player_id){
-            role = pl.second;
-        }
-    }
+    //access the role with the key player_id
+    role = players_bs_[player_id];
+
+    //attacker or coattacker
     if(role == ATTACKER || role == CO_ATTACKER){
-        //first loop checks that all cards are valid to play
-        //if only 1 card with which is being attacked
+        //if only 1 card with which is being attacked, check if valid move
         if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
+            //if valid move then attack with this card
             attack(player_id, cards.at(0));
-            attacks_to_defend_++;
+            //send available action msg
+            // TODO
+
             return true;
         }
-        else if(cards.size() > 1){
+        //else if more than one card is being played at the same time
+        //also checks for if the max_attacks are reached
+        else if(cards.size() > 1 && (cards.size() + curr_attacks_ <= max_attacks_)){
             for(auto card : cards){
                 if(!isValidMove(card, player_id, slot)) {
                     return false;
                 }
-                else attacks_to_defend_++;
-            }
-            //second loop actually plays the cards
-            for(auto card : cards){
-                attack(player_id, card); // calls attack function
+                else {attacks_to_defend_++;}
+                std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
             }
             return true;
         }
     }
-    else if(role == DEFENDER){ //defending only 1 card at a time
+    else if(role == DEFENDER && cards.size() == 1){ //defending only 1 card at a time
+        //we need to check which slot the defender is placing the card
+        //if the slot is empty then it means defender is trying to pass the attack on
+        //this is only possble when:
+        /**
+         * defender hasn't defended any other cards yet
+         * defender has a valid card & places said valid card to pass on
+         * edge case: defender places two cards to pass_on
+         */
+        std::vector<std::pair<Card,Card>> middle = card_manager_ptr_->getMiddle();
+        if(middle[slot % 6].first.rank == RANK_NONE && middle[slot % 6].first.suit == SUIT_NONE){
+            //now we know the slot is empty, now we need to call pass_on()
+            passOn(cards.at(0), player_id, slot);
+            //check if the middle has been updated
+            middle = card_manager_ptr_->getMiddle(); //get it again
+            if(middle[slot%6].first.rank == cards[0].rank && middle[slot%6].first.suit == cards[0].suit){
+                return true;
+            }
+            // return true;
+        } 
         if(isValidMove(cards.at(0), player_id, slot)) {
-            attacks_to_defend_--;
+            // defend(player_id, cards.at(0), slot); //this function causes an address boundary error
             return true;
         }
     }
@@ -119,7 +134,7 @@ bool Battle::successfulDefend(){
     *PRE: 
     *POST: it shifts the player battle states and sends message to client and returns true
  */
-bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slot){
+bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     //check if isValidMove() -> there cannot be anything defended
     //                       -> the defender has to lay down the card on a free card slot
     //                       -> card has to be valid (i.e same number)
@@ -139,6 +154,33 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
     p4 <-- p3
     
     */
+    // players_bs_[player_id] this guy is still defender currently
+
+    
+    //check if valid move
+    //this should happen before the player roles are moved
+    if(!isValidMove(card, player_id, slot)){
+        return false; //if the move is not valid
+    }
+    else {
+        //moves player roles one up/next
+        movePlayerRoles();
+        //player_bs_[player_id] is now attacker
+        attack(player_id, card);
+        
+        //check if everything worked
+        std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
+        for(auto slotM : middle){
+            if(slotM.first == card && players_bs_[player_id] == ATTACKER){
+                return true;
+            }
+        }
+    } 
+
+
+
+
+
     return false;
 }
 
@@ -160,7 +202,7 @@ bool Battle::passOn(/*unsigned player_id*/Card card, int player_id, CardSlot slo
 //     std::list<Card> cards; // can be multiple if multiple cards are played at once, max 4
 //     CardSlot slot; //place of the card
 // };
-bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
+bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
 
     //initialize the error message which will be sent if an invalid move is found
     IllegalMoveNotify err_message;
@@ -188,6 +230,7 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
         
         //check the slot, if there is a valid card, if its empty return false
         if(first.suit == SUIT_NONE || first.rank == RANK_NONE){
+            std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
             //notify the illegal move
             err_message.error = "Illegal move: 'empty slot'";
             std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
@@ -201,6 +244,7 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
         }
 
         else {
+            std::cout << "ERROR MESSAGE: Illegal move: compare cards is not correct" <<std::endl;
             //notify the illegal move
             err_message.error = "Illegal move";
             std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
@@ -240,11 +284,17 @@ bool Battle::isValidMove( const Card &card, int player_id, CardSlot slot){
 void Battle::attack(ClientID client, Card card){
     //calls attack
     card_manager_ptr_->attackCard(card, client);
+    attacks_to_defend_++;
+    curr_attacks_++;
+    std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
+
 }
 
 void Battle::defend(ClientID client, Card card, CardSlot slot){ 
     //calls defendCard
     card_manager_ptr_->defendCard(card, client, slot);
+    attacks_to_defend_--;
+    std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
 }
 
 
@@ -256,6 +306,23 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
+void Battle::movePlayerRoles(){
+    PlayerRole last_value = players_bs_.rbegin()->second;
+
+    for(auto it = players_bs_.rbegin(); it != players_bs_.rend(); ++it){
+        if(std::next(it) != players_bs_.rend()){
+            it->second = std::next(it)->second;
+        }
+    }
+    players_bs_.begin()->second = last_value;
+
+    // std::cout <<std::endl;
+    // std::cout << "SHIFTED\t" << "FIRST\t" << "SECOND"<<std::endl; 
+    
+    // for(auto i : players_bs_){
+    //     std::cout << "entry:\t" << i.first << "\t" << i.second<<std::endl;
+    // }
+}
 
 
 // (\(\ 

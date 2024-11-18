@@ -324,7 +324,18 @@ void Battle::movePlayerRoles(){
     // }
 }
 
-
+/**
+ * POST: returns the current defenders player id
+ */
+ClientID Battle::getCurrentDefender(){
+    ClientID player_id = -1;
+    for(auto player : players_bs_){
+        if(player.second == DEFENDER){
+            player_id = player.first;
+        }
+    }
+    return player_id;
+}
 // (\(\ 
 // ( -.-)
 // o_(")(")

@@ -53,6 +53,11 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
 
     //set initial player role to IDLE
     PlayerRole role = IDLE;
+
+    //check if the key exists in the map
+    if (players_bs_.find(player_id) == players_bs_.end()) {
+        return false; // or handle error
+    }
     //access the role with the key player_id
     role = players_bs_[player_id];
 
@@ -95,7 +100,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
             passOn(cards.at(0), player_id, slot);
             //check if the middle has been updated
             middle = card_manager_ptr_->getMiddle(); //get it again
-            if(middle[slot%6].first.rank == cards[0].rank && middle[slot%6].first.suit == cards[0].suit){
+            if(middle[slot % 6].first.rank == cards[0].rank && middle[slot % 6].first.suit == cards[0].suit){
                 return true;
             }
             // return true;
@@ -213,29 +218,44 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     //else if its two or more cards at the same time check that all of the cards are the same number
     //else if the card is the same number as one of the cards in the middle then it is ok to play
 
+    //check if the card is in the players hand 
+    const std::vector<Card>& player_hand = card_manager_ptr_->getPlayerHand(player_id);
+    if(std::find(player_hand.begin(), player_hand.end(), card) == player_hand.end()){
+        std::cout << "the card was not found in the players hand" << std::endl;
+        return false; // card not found in the hand
+    }
+    else{
+        std::cout << "the card was found in the players hand" << std::endl;
+    }
     //set the role per default to idle and it will return false if this is not changed
     int role = IDLE;
 
     //get the role of the player that is trying to play the card
-    for(auto& player : players_bs_ ){
-        if(player.first == player_id){
-            role = player.second;
-            break;
-        }
-    }
+    role = players_bs_[player_id];
+
     if(role == DEFENDER){
         //fetch middle from cardmanager 
         std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
+        std::cout << "slot: " << slot << std::endl;
         Card first = middle[slot % 6].first;
         
-        //check the slot, if there is a valid card, if its empty return false
-        if(first.suit == SUIT_NONE || first.rank == RANK_NONE){
-            std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
-            //notify the illegal move
-            err_message.error = "Illegal move: 'empty slot'";
-            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
-            Network::sendMessage(em, player_id);
-            return false;
+        //check the slot, if its empty and the defense was already started return false
+        if(first == empty_card_){
+
+            if(defense_started_){
+                std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
+                //notify the illegal move
+                err_message.error = "Illegal move: 'empty slot'";
+                std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
+                Network::sendMessage(em, player_id);
+                return false;
+            }
+            else{
+                std::cout << "TRYING TO PASS THE ATTACK ON" << std::endl;
+
+
+            }
+
         }
 
         //check if the card is higher with card_compare

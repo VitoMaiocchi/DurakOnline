@@ -1,21 +1,23 @@
 #ifndef BATTLE_HPP
 #define BATTLE_HPP
 
-#include "../../Networking/include/Networking/util.hpp"
+#include <vector>
+#include <tuple>
+#include <unordered_map>
+#include <map>
+#include <algorithm>
+
 #include "card_manager.hpp"
 // #include "game.hpp"
 #include "msg_handler.hpp"
 
-#include <vector>
-#include <tuple>
-
+#include "../../Networking/include/Networking/util.hpp"
 #include <Networking/message.hpp>
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
 // #include <Networking/util.hpp>
 
-#include <unordered_map>
-#include <map>
+
 
 class Battle {
     private:
@@ -27,12 +29,15 @@ class Battle {
         int curr_attacks_ = 0;
         int attacks_to_defend_ = 0;
         bool first_battle_ = false;
-        bool defense_started_ = false; //important flag for passOn function
+        bool defense_started_ = false; //important flag for passOn function and validating pass on
         //pointer to the player that first layed down a card
         const std::pair<const ClientID, PlayerRole>* first_attacker_ = nullptr;
 
         //pointer to cardmanager
         CardManager *card_manager_ptr_;
+
+        //empty card so we can find empty slots
+        Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
 
         //pointer to current game
         // Game *current_game;

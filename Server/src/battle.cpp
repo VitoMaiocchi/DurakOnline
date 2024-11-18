@@ -224,9 +224,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         std::cout << "the card was not found in the players hand" << std::endl;
         return false; // card not found in the hand
     }
-    else{
-        std::cout << "the card was found in the players hand" << std::endl;
-    }
+
     //set the role per default to idle and it will return false if this is not changed
     int role = IDLE;
 

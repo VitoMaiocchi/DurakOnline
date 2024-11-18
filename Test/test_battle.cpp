@@ -68,9 +68,10 @@ TEST_F(DurakBattleTest, TestIsValidMove_DefenderValid) {
 
 TEST_F(DurakBattleTest, TestIsValidMove_AttackLimitExceeded) {
     Card cardPlayed(RANK_QUEEN, SUIT_HEARTS);
-    int player_id = 1;
+    ClientID player_id = 1;
     CardSlot slot = CARDSLOT_1;
 
+    card_manager->addCardToPlayerHand(player_id, cardPlayed);
     // Direct access due to friend declaration
     battle->setCurrAttacks(battle->getMaxAttacks());
 
@@ -153,7 +154,13 @@ TEST_F(DurakBattleTest, TestHandleCardEvent_DefenderIsWrong){
     // std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
     // std::cout << "Captured output: " << output << std::endl;
     // Check if the defender's move is valid
-    EXPECT_FALSE(result);
+    if(card_manager->getTrump() == SUIT_HEARTS){
+        EXPECT_TRUE(result);
+    }
+    else{
+        EXPECT_FALSE(result); 
+    }
+
 }
 
 TEST_F(DurakBattleTest, TestHandleCardEvent_MultipleAttacks){

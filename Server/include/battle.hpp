@@ -27,7 +27,7 @@ class Battle {
         int curr_attacks_ = 0;
         int attacks_to_defend_ = 0;
         bool first_battle_ = false;
-        
+        bool defense_started_ = false; //important flag for passOn function
         //pointer to the player that first layed down a card
         const std::pair<const ClientID, PlayerRole>* first_attacker_ = nullptr;
 
@@ -48,12 +48,15 @@ class Battle {
         bool handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot);
         bool handleActionEvent();
         bool successfulDefend();
-        bool passOn(Card card, int player_id, CardSlot slot);
-        bool isValidMove( const Card &card, int player_id, CardSlot slot);
+        bool passOn(Card card, ClientID player_id, CardSlot slot);
+        bool isValidMove( const Card &card, ClientID player_id, CardSlot slot);
 
         // helper functions
-        void attack(ClientID client, Card card); 
-        void defend(ClientID client, Card card, CardSlot slot);
+        void attack(ClientID client, Card card); //calls the cardmanagers attack function
+        void defend(ClientID client, Card card, CardSlot slot); //calls the cardmanagers defend function
+
+        //moves the player roles one to the right and circles around again
+        void movePlayerRoles();
 
 //setter and getter functions
         void setCurrAttacks(int attacks) { curr_attacks_ = attacks; }
@@ -61,6 +64,11 @@ class Battle {
 
         void setMaxAttacks(int max) { max_attacks_ = max; }
         int getMaxAttacks() const { return max_attacks_; }
+
+        //returns the id of the defender
+        ClientID getCurrentDefender();
+
+        void setAttacksToDefend(int atd){attacks_to_defend_ = atd;}
 
         //returns a pointer to the person who laid down the card the first
         const std::pair<const ClientID, PlayerRole>* getFirstAttackerPtr();

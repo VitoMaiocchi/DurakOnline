@@ -145,7 +145,7 @@ void CardManager::defendCard(Card card, unsigned int PlayerID, unsigned int slot
     
     //Update number of cards in middle & in player hand
     ++number_cards_middle_;
-    --player_number_of_cards_[PlayerID];
+    // --player_number_of_cards_[PlayerID];
 }
 
 //PRE:
@@ -219,8 +219,9 @@ void CardManager::addCardToPlayerHand(unsigned int PlayerID, const Card& card) {
                 break;
             }
         }
+        if(flag == false){
+            player_hands_[PlayerID].push_back(card);
+        }
     }
-    if(flag == false){
-        player_hands_[PlayerID].push_back(card);
-    }
+
 }

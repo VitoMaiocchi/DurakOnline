@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <deque>
+#include <map>
 #include <memory>
 #include <algorithm>
 #include "../../Networking/include/Networking/util.hpp"
@@ -17,7 +18,7 @@ private:
     std::vector<Card> discarded_cards_;  //Charte wo "weg" sind
     unsigned int number_discarded_cards_; // azahl charte wo "weg" sind
     Suit trump_;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
-    std::vector<std::vector<Card>> player_hands_;
+    std::map<ClientID, std::vector<Card>> player_hands_;
     std::vector<unsigned int> player_number_of_cards_;
 
     Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
@@ -37,25 +38,25 @@ public:
     void determineTrump();
 
     //getter functions
-    std::vector<Card> getPlayerHand (unsigned int PlayerID);
+    std::vector<Card> getPlayerHand (ClientID PlayerID);
     std::vector<std::pair<Card,Card>> getMiddle();
     unsigned int getNumberActivePlayers();
-    unsigned int getNumberOfCardsInHand(unsigned int PlayerID);
+    unsigned int getNumberOfCardsInHand(ClientID PlayerID);
     Suit getTrump();
 
-    bool attackCard(Card card, unsigned int PlayerID);
-    void defendCard(Card card, unsigned int PlayerID, unsigned int slot);
+    bool attackCard(Card card, ClientID PlayerID);
+    void defendCard(Card card, ClientID PlayerID, unsigned int slot);
 
     // game actions
-    bool playCard(Card card, unsigned int PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
+    bool playCard(Card card, ClientID PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
     bool clearMiddle();         //When attack is succesfully defended
-    void pickUp(unsigned int PlayerID_def);              //When attack wasn't succesfully defended
+    void pickUp(ClientID PlayerID_def);              //When attack wasn't succesfully defended
     bool distributeNewCards();
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();
     void placeAttackCard(Card card, int slot);
-    void addCardToPlayerHand(unsigned int PlayerID, const Card& card);
+    void addCardToPlayerHand(ClientID PlayerID, const Card& card);
 
 };
 

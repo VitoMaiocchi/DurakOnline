@@ -44,6 +44,8 @@ struct Card {
     const uint toInt() const;
 
     bool operator==(const Card& other) const;
+
+    bool operator!=(const Card& other) const;
 };
 
 namespace std {
@@ -85,7 +87,8 @@ enum GameState {
 enum ClientAction {
     CLIENTACTION_OK,
     CLIENTACTION_PASS_ON,
-    CLIENTACTION_PICK_UP
+    CLIENTACTION_PICK_UP,
+    CLIENTACTION_READY
 };
 
 enum PlayerRole {

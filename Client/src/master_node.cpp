@@ -1,6 +1,7 @@
 #include "master_node.hpp"
 #include "drawable.hpp"
 #include "game_node.hpp"
+#include "viewport.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -42,13 +43,14 @@ Extends MasterNode::getCompactExtends(Extends ext) {
 
 void handleGameStateUpdate(GameStateUpdate update) {
     if(GlobalState::game_state == update.state) return;
+    Extends ext = {0,0,(float)Viewport::width, (float)Viewport::height};
 
     if(GlobalState::game_state == GAMESTATE_GAME) {
         game_node = nullptr;
     }
 
     if(update.state == GAMESTATE_GAME) {
-        game_node = std::make_unique<GameNode>();
+        game_node = std::make_unique<GameNode>(ext);
     }
 
     GlobalState::game_state = update.state;
@@ -84,6 +86,7 @@ void handleMessage(std::unique_ptr<Message> message) {
             //print to console for debugs
         break;
         case MESSAGETYPE_CARD_UPDATE:
+            assert(game_node);
             cast(GameNode, game_node)->handleCardUpdate(*dynamic_cast<CardUpdate*>(message.get()));
         break;
         case MESSAGETYPE_PLAYER_UPDATE:

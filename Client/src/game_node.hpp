@@ -6,7 +6,7 @@
 
 class GameNode : public TreeNode {
     public:
-        GameNode();
+        GameNode(Extends ext);
         virtual ~GameNode() = default;
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);

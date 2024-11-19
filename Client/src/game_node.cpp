@@ -278,7 +278,7 @@ class MiddleNode : public TreeNode {
 };
 
 
-GameNode::GameNode() {
+GameNode::GameNode(Extends ext) {
     handNode = std::make_unique<HandNode>();
     middleNode = std::make_unique<MiddleNode>();
     Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
@@ -289,16 +289,16 @@ GameNode::GameNode() {
             PlayCardEvent event;
             event.cards = cards;
             event.slot = slot;
-            std::cout << "SEND EVENT: \n" << event.toJson() << std::endl; //DEBUG
-            //Network::sendMessage(std::make_unique<PlayCardEvent>(event));
+            Network::sendMessage(std::make_unique<PlayCardEvent>(event));
         });
     }
     
+    updateExtends(ext);
     //TODO
 }
 
 void GameNode::updateExtends(Extends ext) {
-    extends = ext; //TODO so mache das mer das nöd immer selber mache muess
+    extends = ext;
 
     Extends hand_ext = {
         extends.x + extends.width / 4,

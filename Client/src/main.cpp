@@ -7,34 +7,17 @@ ClientID clientID = 0;
 
 int main() {
    if(!OpenGL::setup()) return -1;
-   //clientID = Network::openConnection("localhost", 42069);
+   clientID = Network::openConnection("localhost", 42069);
 
-   //für debug vo GameNode
-   GameStateUpdate update;
-   update.state = GAMESTATE_GAME;
-   MessagePtr message = std::make_unique<GameStateUpdate>(update);
-   handleMessage(std::move(message));
-
-   CardUpdate update2;
-   update2.hand = {
-      Card(RANK_ACE, SUIT_SPADES),
-      Card(RANK_KING, SUIT_DIAMONDS),
-      Card(RANK_QUEEN, SUIT_HEARTS),
-      Card(RANK_JACK, SUIT_CLUBS)
-   };
-   update2.middle_cards[CARDSLOT_1] = Card(RANK_ACE, SUIT_SPADES);
-   update2.middle_cards[CARDSLOT_3] = Card(RANK_QUEEN, SUIT_SPADES);
-   update2.middle_cards[CARDSLOT_5] = Card(RANK_JACK, SUIT_HEARTS);
-   update2.middle_cards[CARDSLOT_6] = Card(RANK_KING, SUIT_DIAMONDS);
-   update2.middle_cards[CARDSLOT_3_TOP] = Card(RANK_TEN, SUIT_CLUBS);
-   update2.middle_cards[CARDSLOT_5_TOP] = Card(RANK_KING, SUIT_HEARTS);
-   message = std::make_unique<CardUpdate>(update2);
-   handleMessage(std::move(message));
-   //end debug
+   //debug
+   ClientConnectEvent event;
+   event.username = "Booger Eater";
+   Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+   //debug end
 
    while(!OpenGL::windowShouldClose()) {
-      //auto m = Network::reciveMessage();
-      //if(m) handleMessage(std::move(m));
+      auto m = Network::reciveMessage();
+      if(m) handleMessage(std::move(m));
       OpenGL::drawFrame();
    }
    OpenGL::cleanup();

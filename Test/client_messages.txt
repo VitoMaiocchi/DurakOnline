@@ -1,0 +1,10 @@
+        const std::string keyString = itr->name.GetString();
+        if (!std::all_of(keyString.begin(), keyString.end(), ::isdigit)) {
+            throw std::invalid_argument("Invalid key in opponent_cards: " + keyString);
+        }
+
+
+
+
+            rapidjson::Value(std::to_string(pair.first).c_str(), allocator).Move(),
+            // rapidj

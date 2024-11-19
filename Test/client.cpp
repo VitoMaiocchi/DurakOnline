@@ -35,33 +35,64 @@ int main() {
     std::cout << "---------------------------------------------" <<std::endl;
     std::cout << "TEST MESSAGETYPE_CARD_UPDATE" << std::endl;
     // /*testing card update message*/
-    // CardUpdate card_message;
-    // card_message.opponent_cards[1] =  3; //player with id=1 has 3 cards
-    // card_message.opponent_cards[2] = 5; //player 2 has 5 cards
-    // card_message.opponent_cards[3] = 7; //player 3 has 7
-    // card_message.draw_pile_cards = 5; //5 cards on the pile
-    // card_message.trump_card = 10; // trump card = 10
-    // card_message.trump_suit = SUIT_HEARTS; //trump suit is spades or whatever 
-    // card_message.middle_cards[CARDSLOT_2] = 9; //on slot 2 the card 9
-    // card_message.middle_cards[CARDSLOT_6] = 6; //on slot 2 the card 6
-    // //hand vector with 5 cards
-    // card_message.hand.push_front(21);
-    // card_message.hand.push_front(31);
-    // card_message.hand.push_front(25);
-    // card_message.hand.push_front(24);
 
-    // std::unique_ptr<Message> cardupdatemesg = std::make_unique<CardUpdate>(card_message);
-    // std::string scumsg = cardupdatemesg->toJson();
+    // std::map<ClientID, unsigned int> opponent_cards; //Map ClientID to card count 
+    // unsigned int draw_pile_cards; 
+    // Card trump_card; //the one that is on the bottom of the pile, can also be NULL
+    // Suit trump_suit;
+    // std::map<CardSlot, Card> middle_cards; //map of slot to card
+    // std::list<Card> hand; //list of cards in hand
 
-    // std::unique_ptr<Message> answercumsg = deserialiseMessage(scumsg);
-    // CardUpdate* return_cumsg = dynamic_cast<CardUpdate*>(answercumsg.get());
-    // //es wirds da nöd identisch use cho wil card.toInt nonig implementiert isch
-    // std::cout //<< "opponent_cards: " << return_cumsg->opponent_cards    das chammer nöd eif so printe
-    //           << "\ndraw_pile_cards: " << return_cumsg->draw_pile_cards
-    //           << "\ntrump_card: " << return_cumsg->trump_card.toInt()
-    //           << "\ntrump_suit: " << return_cumsg->trump_suit
-    //           //<< "\nmiddle_cards: "<< return_cumsg->middle_cards
-    //           /*<< "\nhand: " << return_cumsg->hand */<< std::endl;
+    CardUpdate card_message;
+    card_message.opponent_cards[1] =  3; //player with id=1 has 3 cards
+    card_message.opponent_cards[2] = 5; //player 2 has 5 cards
+    card_message.opponent_cards[3] = 7; //player 3 has 7
+    card_message.draw_pile_cards = 5; //5 cards on the pile
+    Card trump_card_ = Card(RANK_TEN, SUIT_HEARTS);
+    card_message.trump_card = trump_card_; // trump card = 10 of hearts
+    card_message.trump_suit = SUIT_HEARTS; //trump suit is spades or whatever
+    Card nine_spades = Card(RANK_NINE, SUIT_SPADES);
+    Card nine_clubs =  Card(RANK_NINE, SUIT_CLUBS);
+    card_message.middle_cards[CARDSLOT_1] = nine_spades; //on slot 1 the card nine of spades
+    card_message.middle_cards[CARDSLOT_2] = nine_clubs; //on slot 2 the card nine of clubs
+    //hand vector with 5 cards
+    card_message.hand.push_front(21);
+    card_message.hand.push_front(31);
+    card_message.hand.push_front(25);
+    card_message.hand.push_front(24);
+
+    std::unique_ptr<Message> cardupdatemesg = std::make_unique<CardUpdate>(card_message);
+    std::string scumsg = cardupdatemesg->toJson();
+
+try {
+        std::unique_ptr<Message> answercumsg = deserialiseMessage(scumsg);
+        CardUpdate* return_cumsg = dynamic_cast<CardUpdate*>(answercumsg.get());
+        // Further processing
+
+
+    std::cout << "Opponent Cards:\t" << "ID\t" << "Card amount\n"; 
+    for(auto& opps : return_cumsg->opponent_cards){
+        std::cout << "opp:\t\t" << opps.first<<"\t\t" << opps.second <<"\n";
+    }
+
+    std::cout << "\ndraw_pile_cards: \t" << return_cumsg->draw_pile_cards
+              << "\ntrump_card: \t" << return_cumsg->trump_card.rank << "-"<< return_cumsg->trump_card.suit
+              << "\ntrump_suit: \t" << return_cumsg->trump_suit <<std::endl;
+
+    std::cout << "Middle Cards:\t" << "Slot\t" << "Card\n"; 
+    for(auto& cards : return_cumsg->middle_cards){
+        std::cout << "slot:\t\t" << cards.first <<"\t" << cards.second.rank << "-"<< cards.second.suit<<"\n"; 
+    }
+
+    std::cout << "My hand:\t";
+    for(auto& card : return_cumsg->hand){
+        std::cout << "\t" << card.rank << "-" << card.suit << " ";
+    }
+
+} catch (const std::exception& e) {
+        std::cerr << "Error during deserialization: " << e.what() << std::endl;
+}
+    std::cout << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "TEST MESSAGETYPE_PLAYER_UPDATE" << std::endl;

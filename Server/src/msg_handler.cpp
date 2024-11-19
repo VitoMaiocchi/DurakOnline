@@ -17,7 +17,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_
                       << "\nx: " <<ret_test->x
                       << "\ny: " <<ret_test->y << std::endl;
             dynamic_cast<TestMessage*>(msg_r.get())->x = client;
-            Network::sendMessage(msg_r, client);
+            Network::sendMessage(std::move(msg_r), client);
         }
         break;
 

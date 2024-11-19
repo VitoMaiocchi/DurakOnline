@@ -9,19 +9,19 @@ typedef unsigned int uint;
 typedef uint ClientID;
 
 enum Suit {
-    SUIT_NONE,
     SUIT_CLUBS,
     SUIT_SPADES,
     SUIT_DIAMONDS,
-    SUIT_HEARTS
+    SUIT_HEARTS,
+    SUIT_count,
+    SUIT_NONE //obsolet sött removed werde
 };
 
 enum Rank {
-    RANK_NONE, //0
-    RANK_TWO, //1
-    RANK_THREE, //2
-    RANK_FOUR, //3
-    RANK_FIVE, //4
+    RANK_TWO,
+    RANK_THREE,
+    RANK_FOUR,
+    RANK_FIVE,
     RANK_SIX, 
     RANK_SEVEN,
     RANK_EIGHT,
@@ -30,7 +30,9 @@ enum Rank {
     RANK_JACK,
     RANK_QUEEN,
     RANK_KING,
-    RANK_ACE
+    RANK_ACE,
+    RANK_count,
+    RANK_NONE //obsolet sött removed werde
 };
 
 struct Card {
@@ -52,7 +54,7 @@ namespace std {
     template <>
     struct hash<Card> {
         size_t operator()(const Card& card) const {
-            return hash<int>()(static_cast<int>(card.suit) * 13 + static_cast<int>(card.rank));
+            return hash<int>()(static_cast<int>(card.suit) * RANK_count + static_cast<int>(card.rank));
         }
     };
 }

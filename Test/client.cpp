@@ -190,8 +190,8 @@ try {
     piqueQ.suit = SUIT_SPADES;
     piqueQ.rank = RANK_QUEEN;
     Card heartK(RANK_KING, SUIT_HEARTS);
-    pce_message.cards.push_back(piqueQ); 
-    pce_message.cards.push_back(heartK);
+    pce_message.cards.insert(piqueQ); 
+    pce_message.cards.insert(heartK);
 
     pce_message.slot = CARDSLOT_2_TOP;
 
@@ -317,8 +317,7 @@ void sendTestMessage(ClientID client_id) {
     message.x = 42;
     message.y = 24;
 
-    std::unique_ptr<Message> msg = std::make_unique<TestMessage>(message);
-    Network::sendMessage(msg);
+    Network::sendMessage(std::make_unique<TestMessage>(message));
     std::cout << "Sent test message to server." << std::endl;
 }
 
@@ -327,8 +326,7 @@ void sendReadyMessage(ClientID client_id) {
     ClientActionEvent action;
     action.action = CLIENTACTION_READY;
 
-    std::unique_ptr<Message> msg = std::make_unique<ClientActionEvent>(action);
-    Network::sendMessage(msg);
+    Network::sendMessage(std::make_unique<ClientActionEvent>(action));
     std::cout << "Sent ready message to server." << std::endl;
 }
 
@@ -338,12 +336,11 @@ void sendPlayCardEvent(ClientID client_id) {
     Card card1(RANK_QUEEN, SUIT_SPADES);
     Card card2(RANK_KING, SUIT_HEARTS);
 
-    card_event.cards.push_back(card1);
-    card_event.cards.push_back(card2);
+    card_event.cards.insert(card1);
+    card_event.cards.insert(card2);
     card_event.slot = CARDSLOT_2_TOP;
 
-    std::unique_ptr<Message> msg = std::make_unique<PlayCardEvent>(card_event);
-    Network::sendMessage(msg);
+    Network::sendMessage(std::make_unique<PlayCardEvent>(card_event));
     std::cout << "Sent play card event to server." << std::endl;
 }
 

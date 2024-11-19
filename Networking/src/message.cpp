@@ -4,6 +4,8 @@
 #include <algorithm> // for std::all_of for debugging purposes
 
 std::unique_ptr<Message> deserialiseMessage(std::string string) {
+    std::cout << "Trying to deserialise Message: \n" << string << std::endl;
+    
     rapidjson::Document document;
     // assert(!document.Parse(string.c_str()).HasParseError());
     if(document.Parse(string.c_str()).HasParseError()){
@@ -132,12 +134,9 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
     //as a member of JSON
     rapidjson::Value opponentCardsJson(rapidjson::kObjectType);
     for(const auto &pair : opponent_cards){
-        opponentCardsJson.AddMember(
-            //player id (key) as string
-            rapidjson::StringRef(std::to_string(pair.first).c_str()),
-            rapidjson::Value(pair.second).Move(), //count
-            allocator
-        );
+        rapidjson::Value key(std::to_string(pair.first).c_str(), allocator);
+        rapidjson::Value value(pair.second);
+        opponentCardsJson.AddMember(key, value, allocator);
     }
     content.AddMember("opponent_cards", opponentCardsJson, allocator);
 
@@ -148,8 +147,7 @@ void CardUpdate::getContent(rapidjson::Value &content, Allocator &allocator) con
     rapidjson::Value middleCardJson(rapidjson::kObjectType);
     for(const auto &pair : middle_cards){
         middleCardJson.AddMember(
-            // the slot as the key, as string
-            rapidjson::StringRef(std::to_string(pair.first).c_str()),
+            rapidjson::Value(std::to_string(pair.first).c_str(), allocator), //slot
             rapidjson::Value(pair.second.toInt()).Move(), //card
             allocator
         );
@@ -338,14 +336,14 @@ void PlayCardEvent::fromJson(const rapidjson::Value& obj) {
     const rapidjson::Value& cardsJson = obj["cards"];
     cards.clear();
     for(rapidjson::SizeType i = 0; i < cardsJson.Size(); ++i){
-        cards.push_back(cardsJson[i].GetUint());
+        cards.insert(cardsJson[i].GetUint());
     }
     if(obj.HasMember("cards") && obj["cards"].IsArray()){
         const rapidjson::Value& cardsJson = obj["cards"];
         cards.clear();
         for(rapidjson::SizeType i = 0; i < cardsJson.Size(); ++i){
             uint cardInt = cardsJson[i].GetUint();
-            cards.emplace_back(cardInt);
+            cards.insert(cardInt);
         }
     }
     else{

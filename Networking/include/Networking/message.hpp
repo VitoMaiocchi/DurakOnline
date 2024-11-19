@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <unordered_set>
 #include <list>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -131,7 +132,7 @@ struct PlayCardEvent : public Message {
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::list<Card> cards; // can be multiple if multiple cards are played at once, max 4
+    std::unordered_set<Card> cards; // can be multiple if multiple cards are played at once, max 4
     CardSlot slot; //place of the card
 };
 

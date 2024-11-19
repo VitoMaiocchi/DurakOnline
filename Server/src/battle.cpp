@@ -38,9 +38,9 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             bsu_msg.idle.push_back(pl.first);
         }
     }
-    std::unique_ptr<Message> bsu = std::make_unique<BattleStateUpdate>(bsu_msg);
+
     for(auto& pl : players_bs_){
-        Network::sendMessage(bsu, pl.first); //maybe make function to broadcast to all
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
     }
 
 };
@@ -282,8 +282,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     const std::vector<Card>& player_hand = card_manager_ptr_->getPlayerHand(player_id);
     if(std::find(player_hand.begin(), player_hand.end(), card) == player_hand.end()){
         err_message.error = "Illegal move: 'card was not found in your hand'";
-        std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
-        Network::sendMessage(em, player_id);
+        Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
         std::cout << "the card was not found in the players hand" << std::endl;
         return false; // card not found in the hand
     }
@@ -307,8 +306,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
                 std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
                 //notify the illegal move
                 err_message.error = "Illegal move: 'empty slot'";
-                std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
-                Network::sendMessage(em, player_id);
+                Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
                 return false;
             }
             else{
@@ -334,16 +332,14 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             std::cout << "ERROR MESSAGE: Illegal move: compare cards is not correct" <<std::endl;
             //notify the illegal move
             err_message.error = "Illegal move";
-            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
-            Network::sendMessage(em, player_id);
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
             return false;
         } 
     }
     if(role == ATTACKER || role == CO_ATTACKER){
         if(curr_attacks_ == max_attacks_){
             err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
-            std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
-            Network::sendMessage(em, player_id);
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
             return false; //idk about this maybe should be > and if == true
         }
         if(curr_attacks_ == 0){

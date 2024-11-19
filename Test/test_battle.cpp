@@ -213,3 +213,32 @@ TEST_F(DurakBattleTest, TestHandleCardEvent_MultipleCOAttacks){
     // Check if the defender's move is valid
     EXPECT_TRUE(result);
 }
+
+TEST_F(DurakBattleTest, TestHandleCardEvent_PasssingOn){
+    // ::testing::internal::CaptureStdout();
+    // Mock setup for passing on the attack
+    Card attackCard(RANK_QUEEN, SUIT_CLUBS); 
+    Card passOnCard(RANK_QUEEN, SUIT_HEARTS);  
+
+    std::vector<Card> cards = { passOnCard };
+
+    ClientID attacker_id = 1;        // Attacker ID
+    ClientID defender_id = 2;        // Defender ID
+    CardSlot slot = CARDSLOT_2; // Slot for the defender's response
+
+    // Place the attack card in the middle to simulate an ongoing battle
+    // card_manager.placeAttackCard(attackCard, slot);
+    card_manager->addCardToPlayerHand(attacker_id, attackCard);
+    card_manager->addCardToPlayerHand(defender_id, passOnCard);
+
+    battle->attack(attacker_id, attackCard);
+    // ASSERT_TRUE(card_manager.attackCard(attackCard, attacker_id));
+    // Call isValidMove to check the defender's move
+    bool result = battle->handleCardEvent(cards, defender_id, slot);
+
+    // std::string output = ::testing::internal::GetCapturedStdout();  // Stop capturing and get output
+    // std::cout << "Captured output: " << output << std::endl;
+
+    EXPECT_TRUE(result);
+
+}

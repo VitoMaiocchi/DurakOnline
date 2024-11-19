@@ -1,66 +1,75 @@
 #include "../include/msg_handler.hpp"
+#include <unordered_set>
 #include <iostream>
 
-void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* game /*, const std::unordered_set<ClientID>& clients*/){
+
+// Minimum number of players required to start a game
+constexpr size_t MIN_PLAYERS = 3;
+
+void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_ptr<Game>& current_game, std::unordered_set<ClientID> clients, std::unordered_set<ClientID>& ready_clients){
     //da message handle dies das
-    switch (message->messageType) {
+    switch (msg_r->messageType) {
         case MESSAGETYPE_TEST: {
             std::cout << "just a test message from client: " << client <<std::endl;
             // TestMessage* return_test = dynamic_cast<TestMessage*>(message.get());
-            TestMessage* ret_test = dynamic_cast<TestMessage*>(message.get());
+            TestMessage* ret_test = dynamic_cast<TestMessage*>(msg_r.get());
             std::cout << "string: " << ret_test->string
                       << "\nx: " <<ret_test->x
                       << "\ny: " <<ret_test->y << std::endl;
-            dynamic_cast<TestMessage*>(message.get())->x = client;
-            Network::sendMessage(message, client);
+            dynamic_cast<TestMessage*>(msg_r.get())->x = client;
+            Network::sendMessage(msg_r, client);
         }
         break;
-        case MESSAGETYPE_PLAYCARD_EVENT: {
-            //something
-            // PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
-            /*get_playcard_msg(return_pce, client, current_game);*/
-            //calls game function handleClientCardEvent();
-            if(game != nullptr){
-                game->handleClientCardEvent(std::move(message), client);
+
+        case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
+            // Client connected; update readiness or broadcast
+            std::cout << "Client connected: " << client << std::endl;
+            break;
+        }
+
+        case MESSAGETYPE_CLIENT_ACTION_EVENT: {
+            // Example: Ready action from the client
+            ClientActionEvent* action = dynamic_cast<ClientActionEvent*>(msg_r.get());
+            if (action && action->action == CLIENTACTION_READY) {
+                ready_clients.insert(client);
+                std::cout << "Client " << client << " is ready." << std::endl;
             }
+
+            // Check if enough players are ready to start the game
+            if (ready_clients.size() >= MIN_PLAYERS && current_game == nullptr) {
+                std::cout << "Starting a new game..." << std::endl;
+                std::vector<ClientID> player_ids(ready_clients.begin(), ready_clients.end());
+                current_game = std::make_unique<Game>(player_ids);
+            }
+            break;
         }
-        break;
-        case MESSAGETYPE_CLIENT_ACTION_EVENT:
-            //something
-        break;
-        case MESSAGETYPE_CLIENT_CONNECT_EVENT:
-            //something
-        break;
-        case MESSAGETYPE_CLIENT_DISCONNECT_EVENT:
-            std::cout << "CLIENT DISCONNECTED: "<< client << std::endl;
-            //if this happens the game should receive the message and tell the cardmanager to burn 
-            //the players cards
-        break;
-        default:
-            std::cout << "messagetype not found" << std::endl;
-        break;
+
+        case MESSAGETYPE_PLAYCARD_EVENT: {
+            // Handle card play event if a game is active
+            if (current_game) {
+                current_game->handleClientCardEvent(std::move(msg_r), client);
+            } else {
+                std::cerr << "No active game to handle play card event!" << std::endl;
+            }
+            break;
+        }
+
+        case MESSAGETYPE_CLIENT_DISCONNECT_EVENT: {
+            std::cout << "Client disconnected: " << client << std::endl;
+            clients.erase(client);
+            ready_clients.erase(client);
+
+            // Handle cleanup if a client disconnects mid-game
+            if (current_game) {
+                // Implement logic to handle a player leaving
+                // e.g., burn their cards, adjust turn order, etc.
+            }
+            break;
+        }
+
+        default: {
+            std::cerr << "Unhandled message type: " << msg_r->messageType << std::endl;
+            break;
+        }
     }
 }
-
-
-void get_playcard_msg(PlayCardEvent* ret_msg, ClientID client, Game* current_game){
-    //now we take the message and break it down into the corresponding components
-    std::vector<Card> vector_of_cards;
-    for(auto card : ret_msg->cards){
-        vector_of_cards.push_back(card);
-    }
-    CardSlot slot = ret_msg->slot;
-    //here we should call the Game function handleClientCardEvent()
-    
-}
-
-// void send_test_msg(TestMessage* ret_test, ClientID client, Game* current_game){
-//     Network::sendMessage();
-// }
-            // case MESSAGETYPE_TEST:
-            //     dynamic_cast<TestMessage*>(m.get())->x = id;
-            //     for(auto client : clients) {
-            //         Network::sendMessage(m, client);
-            //         std::cout << "message sending with type: " << m->messageType << std::endl;
-            //     }
-            // break;

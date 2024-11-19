@@ -22,6 +22,10 @@ bool Card::operator==(const Card& other) const {
     return rank==other.rank && suit==other.suit;
 }
 
+bool Card::operator!=(const Card& other) const{
+    return rank!=other.rank || suit!=other.suit;
+}
+
 std::string Card::getFileName() {
     std::string s;
     std::string r;

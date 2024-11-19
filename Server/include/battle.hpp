@@ -1,21 +1,23 @@
 #ifndef BATTLE_HPP
 #define BATTLE_HPP
 
-#include "../../Networking/include/Networking/util.hpp"
+#include <vector>
+#include <tuple>
+#include <unordered_map>
+#include <map>
+#include <algorithm>
+
 #include "card_manager.hpp"
 // #include "game.hpp"
 #include "msg_handler.hpp"
 
-#include <vector>
-#include <tuple>
-
+#include "../../Networking/include/Networking/util.hpp"
 #include <Networking/message.hpp>
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
 // #include <Networking/util.hpp>
 
-#include <unordered_map>
-#include <map>
+
 
 class Battle {
     private:
@@ -27,12 +29,15 @@ class Battle {
         int curr_attacks_ = 0;
         int attacks_to_defend_ = 0;
         bool first_battle_ = false;
-        
+        bool defense_started_ = false; //important flag for passOn function and validating pass on
         //pointer to the player that first layed down a card
         const std::pair<const ClientID, PlayerRole>* first_attacker_ = nullptr;
 
         //pointer to cardmanager
         CardManager *card_manager_ptr_;
+
+        //empty card so we can find empty slots
+        Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
 
         //pointer to current game
         // Game *current_game;
@@ -46,14 +51,17 @@ class Battle {
         
 
         bool handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot);
-        bool handleActionEvent();
+        bool handleActionEvent(ClientID player_id, ClientAction action);
         bool successfulDefend();
-        bool passOn(Card card, int player_id, CardSlot slot);
-        bool isValidMove( const Card &card, int player_id, CardSlot slot);
+        bool passOn(Card card, ClientID player_id, CardSlot slot);
+        bool isValidMove( const Card &card, ClientID player_id, CardSlot slot);
 
         // helper functions
-        void attack(ClientID client, Card card); 
-        void defend(ClientID client, Card card, CardSlot slot);
+        void attack(ClientID client, Card card); //calls the cardmanagers attack function
+        void defend(ClientID client, Card card, CardSlot slot); //calls the cardmanagers defend function
+
+        //moves the player roles one to the right and circles around again
+        void movePlayerRoles();
 
 //setter and getter functions
         void setCurrAttacks(int attacks) { curr_attacks_ = attacks; }
@@ -61,6 +69,11 @@ class Battle {
 
         void setMaxAttacks(int max) { max_attacks_ = max; }
         int getMaxAttacks() const { return max_attacks_; }
+
+        //returns the id of the defender
+        ClientID getCurrentDefender();
+
+        void setAttacksToDefend(int atd){attacks_to_defend_ = atd;}
 
         //returns a pointer to the person who laid down the card the first
         const std::pair<const ClientID, PlayerRole>* getFirstAttackerPtr();

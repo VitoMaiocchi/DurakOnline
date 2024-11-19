@@ -7,10 +7,19 @@
 #define NETWORKTYPE_CLIENT
 #include <Networking/network.hpp>
 #include <string>
+#include <thread>
+#include <chrono>
+
+
+// Function prototypes
+void sendTestMessage(ClientID client_id);
+void sendReadyMessage(ClientID client_id);
+void sendPlayCardEvent(ClientID client_id);
+void receiveMessages();
+
+ClientID client_id;
 
 int main() {
-    Network::openConnection("localhost", 42069);
-
     std::cout << "TEST MESSAGETYPE_ILLEGAL_MOVE_NOTIFY" << std::endl;
     /*testing illegal notify message*/
     IllegalMoveNotify err_message;
@@ -115,14 +124,11 @@ int main() {
     aa_message.pick_up = true;
 
     std::unique_ptr<Message> aam = std::make_unique<AvailableActionUpdate>(aa_message);
-    Network::sendMessage(std::move(aam));
-    // std::string string_aa = aam->toJson();
-    // std::unique_ptr<Message> answer_aa = deserialiseMessage(string_aa);
+    std::string string_aa = aam->toJson();
+    std::unique_ptr<Message> answer_aa = deserialiseMessage(string_aa);
 
-        std::unique_ptr<Message> answer_aa = nullptr;
-        while(!answer_aa) answer_aa = Network::reciveMessage();
-        AvailableActionUpdate* return_aa = dynamic_cast<AvailableActionUpdate*>(answer_aa.get());
-        std::cout << "pass on: " << return_aa->pass_on 
+    AvailableActionUpdate* return_aa = dynamic_cast<AvailableActionUpdate*>(answer_aa.get());
+    std::cout << "pass on: " << return_aa->pass_on 
                 << "\nok: "      << return_aa->ok
                 << "\npick up: " << return_aa->pick_up << std::endl;
     
@@ -208,22 +214,170 @@ int main() {
     std::cout << "---------------------------------------------------" << std::endl;
     std::cout << "---------------------------------------------------" << std::endl;
 
-    std::cout << "TEST MESSAGETYPE_TEST"<<std::endl;
-    TestMessage message;
-    message.x = 3;
-    message.y = 7;
-    message.string = "mhh trash i like trash";
-    std::unique_ptr<Message> m = std::make_unique<TestMessage>(message);
+    // std::cout << "TEST MESSAGETYPE_TEST and sending a client card update msg"<<std::endl;
+
+
+    // TestMessage message;
+    // message.x = 3;
+    // message.y = 7;
+    // message.string = "mhh trash i like trash";
+    // std::unique_ptr<Message> m = std::make_unique<TestMessage>(message);
     // Network::openConnection("localhost", 42069);
-    Network::sendMessage(std::move(m));
-    while(true) {
+    // Network::sendMessage(m);
+    // while(true) {
 
-        std::unique_ptr<Message> awnser = nullptr;
-        while(!awnser) awnser = Network::reciveMessage();
-        TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
-        std::cout   << "string: " << ret->string
-                    << "\nx: "<< ret->x  
-                    << "\ny: " << ret->y << std::endl;
+    //     std::unique_ptr<Message> awnser = nullptr;
+    //     while(!awnser) awnser = Network::reciveMessage();
+    //     TestMessage* ret = dynamic_cast<TestMessage*>(awnser.get());
+    //     std::cout   << "string: " << ret->string
+    //                 << "\nx: "<< ret->x  
+    //                 << "\ny: " << ret->y << std::endl;
 
+    // }
+try {
+        // Connect to the server
+        std::cout << "Connecting to server..." << std::endl;
+        client_id = Network::openConnection("127.0.0.1", 42069);
+        std::cout << "Connected to server with client ID: " << client_id << std::endl;
+
+        // Spawn a thread to handle incoming messages
+        std::thread receiver_thread(receiveMessages);
+
+        // Main loop to send test messages to the server
+        while (true) {
+            std::cout << "\nChoose an action to send to the server:\n";
+            std::cout << "1. Send Test Message\n";
+            std::cout << "2. Send Ready Message\n";
+            std::cout << "3. Send Play Card Event\n";
+            std::cout << "4. Exit\n";
+            std::cout << "Enter your choice: ";
+            int choice;
+            std::cin >> choice;
+
+            switch (choice) {
+                case 1:
+                    sendTestMessage(client_id);
+                    break;
+                case 2:
+                    sendReadyMessage(client_id);
+                    break;
+                case 3:
+                    sendPlayCardEvent(client_id);
+                    break;
+                case 4:
+                    std::cout << "Exiting client." << std::endl;
+                    receiver_thread.detach(); // Let the thread clean itself up
+                    return 0;
+                default:
+                    std::cout << "Invalid choice. Please try again." << std::endl;
+                    break;
+            }
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return -1;
     }
+}
+
+// Function to send a test message
+void sendTestMessage(ClientID client_id) {
+    TestMessage message;
+    message.string = "This is a test message";
+    message.x = 42;
+    message.y = 24;
+
+    std::unique_ptr<Message> msg = std::make_unique<TestMessage>(message);
+    Network::sendMessage(msg);
+    std::cout << "Sent test message to server." << std::endl;
+}
+
+// Function to send a ready message
+void sendReadyMessage(ClientID client_id) {
+    ClientActionEvent action;
+    action.action = CLIENTACTION_READY;
+
+    std::unique_ptr<Message> msg = std::make_unique<ClientActionEvent>(action);
+    Network::sendMessage(msg);
+    std::cout << "Sent ready message to server." << std::endl;
+}
+
+// Function to send a play card event
+void sendPlayCardEvent(ClientID client_id) {
+    PlayCardEvent card_event;
+    Card card1(RANK_QUEEN, SUIT_SPADES);
+    Card card2(RANK_KING, SUIT_HEARTS);
+
+    card_event.cards.push_back(card1);
+    card_event.cards.push_back(card2);
+    card_event.slot = CARDSLOT_2_TOP;
+
+    std::unique_ptr<Message> msg = std::make_unique<PlayCardEvent>(card_event);
+    Network::sendMessage(msg);
+    std::cout << "Sent play card event to server." << std::endl;
+}
+
+// Thread function to receive messages from the server
+void receiveMessages() {
+    try {
+        while (true) {
+            std::unique_ptr<Message> msg = Network::reciveMessage();
+            if (!msg) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Sleep briefly to avoid busy-waiting
+                continue;
+            }
+
+            // Print received message details
+            switch (msg->messageType) {
+                case MESSAGETYPE_TEST: {
+                    TestMessage* test_msg = dynamic_cast<TestMessage*>(msg.get());
+                    std::cout << "\nReceived Test Message: " << test_msg->string
+                              << " | x: " << test_msg->x << " | y: " << test_msg->y << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY: {
+                    IllegalMoveNotify* err_msg = dynamic_cast<IllegalMoveNotify*>(msg.get());
+                    std::cout << "\nReceived Illegal Move Notify: " << err_msg->error << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_CARD_UPDATE: {
+                    std::cout << "\nReceived Card Update Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_PLAYER_UPDATE: {
+                    std::cout << "\nReceived Player Update Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_BATTLE_STATE_UPDATE: {
+                    std::cout << "\nReceived Battle State Update Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_AVAILABLE_ACTION_UPDATE: {
+                    std::cout << "\nReceived Available Action Update Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_GAME_STATE_UPDATE: {
+                    std::cout << "\nReceived Game State Update Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_PLAYCARD_EVENT: {
+                    std::cout << "\nReceived Play Card Event Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_CLIENT_ACTION_EVENT: {
+                    std::cout << "\nReceived Client Action Event Message." << std::endl;
+                    break;
+                }
+                case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
+                    std::cout << "\nReceived Client Connect Event Message." << std::endl;
+                    break;
+                }
+                default:
+                    std::cout << "\nUnknown message type received from server." << std::endl;
+                    break;
+            }
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "Receiver Thread Exception: " << e.what() << std::endl;
+    }
+
 }

@@ -10,8 +10,13 @@
 CardManager::CardManager(std::vector<ClientID> player_ids){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
-    //adjust the size of the player hands
-    player_hands_ = std::vector<std::vector<Card>>(player_ids.size());
+
+    //initialize the map playerHands with empty vectors to the corresponding players 
+    //so we dont access a empty map
+    for(ClientID& id : player_ids){
+        player_hands_[id] = std::vector<Card>();
+    }
+    
     //charte mische & usteile
     shuffleCards();
 
@@ -72,9 +77,8 @@ void CardManager::determineTrump(){
 
 //PRE: A valid PlayerID (unsigned int between 0 and #players-1)
 //POST: A vector containing all the players cards sorted
-std::vector<Card> CardManager::getPlayerHand (unsigned int PlayerID){
-    assert(PlayerID >= 6);
-    return player_hands_.at(PlayerID);
+std::vector<Card> CardManager::getPlayerHand (ClientID PlayerID){
+    return player_hands_[PlayerID];
 }
 
 //PRE:
@@ -86,22 +90,22 @@ std::vector<std::pair<Card,Card> > CardManager::getMiddle(){
 //PRE:
 //POST: Returns number of active players (players that haven't finished yet)
 unsigned int CardManager::getNumberActivePlayers(){
-    unsigned int activePlayers = std::count_if(player_hands_.begin(), player_hands_.end(), [](std::vector<Card>& v) {
-        return v.empty();
+    unsigned int activePlayers = std::count_if(player_hands_.begin(), player_hands_.end(), [](const std::pair<const ClientID, std::vector<Card>>& pair) {
+        return !pair.second.empty();
     });
     return activePlayers;
 }
 
 //PRE: A valid PlayerID (unsigned int between 0 and #players-1)
 //PROST: Returns the number of cards that player currently has in his hands
-unsigned int CardManager::getNumberOfCardsInHand(unsigned int PlayerID){
-    return player_hands_.at(PlayerID).size();
+unsigned int CardManager::getNumberOfCardsInHand(ClientID PlayerID){
+    return player_hands_[PlayerID].size();
 }
 
 
 //PRE:A valid move 
 //POST:Middle, Playerhand & numberofcards in hand updated
-bool CardManager::attackCard(Card card, unsigned int PlayerID){
+bool CardManager::attackCard(Card card, ClientID PlayerID){
     //Check that this card is actually in the players Hands (We might want to move this to the isValidMove function in battle)
     assert (std::find(player_hands_[PlayerID].begin(), player_hands_[PlayerID].end(), card) != player_hands_[PlayerID].end() && "Card not found in the players hand");
     //save position of the card in the players hand
@@ -110,7 +114,7 @@ bool CardManager::attackCard(Card card, unsigned int PlayerID){
 
     //Position of next free slot in the middle should be passed to this function
     int free_slot = -1;
-    for (size_t i = 0; i < middle_.size(); ++i) {
+    for (size_t i = 0; i < 6; ++i) {
         if (middle_[i].first.rank == RANK_NONE && middle_[i].first.suit == SUIT_NONE) {
             free_slot = i;
             break;
@@ -133,19 +137,19 @@ bool CardManager::attackCard(Card card, unsigned int PlayerID){
 
 //PRE: A valid move 
 //POST: Middle, Playerhand & numberofcards in hand updated
-void CardManager::defendCard(Card card, unsigned int PlayerID, unsigned int slot){
+void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
     //Check that this card is actually in the players Hands (We might want to move this to the isValidMove function in battle)
     assert (std::find(player_hands_[PlayerID].begin(), player_hands_[PlayerID].end(), card) != player_hands_[PlayerID].end() && "Card not found in the players hand");
     //save position of the card in the players hand
     auto cardPosition = std::find(player_hands_[PlayerID].begin(), player_hands_[PlayerID].end(), card);
     //Place Card
-    middle_[slot].second=card;
+    middle_[slot % 6].second=card;
     //Remove card from the players hand
     player_hands_[PlayerID].erase(cardPosition);
     
     //Update number of cards in middle & in player hand
     ++number_cards_middle_;
-    --player_number_of_cards_[PlayerID];
+    // --player_number_of_cards_[PlayerID];
 }
 
 //PRE:
@@ -166,7 +170,7 @@ bool CardManager::clearMiddle(){
 
 //PRE:
 //POST: All cards in the middle are assigned to the defenders hands
-void CardManager::pickUp(unsigned int PlayerID_def){
+void CardManager::pickUp(ClientID PlayerID_def){
     //Danil söll ID vom defender mitgeh
     assert(middle_.size()<=6 && "middle shouldn't have more than six slots");
     //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
@@ -210,7 +214,7 @@ void CardManager::fillDeck() {
 void CardManager::placeAttackCard(Card card, int slot){
     middle_[slot % 6].first = card;
 }
-void CardManager::addCardToPlayerHand(unsigned int PlayerID, const Card& card) {
+void CardManager::addCardToPlayerHand(ClientID PlayerID, const Card& card) {
     bool flag = false;
     if (PlayerID < player_hands_.size()) {
         for(int i = 0; i < player_hands_[PlayerID].size(); ++i){
@@ -219,8 +223,9 @@ void CardManager::addCardToPlayerHand(unsigned int PlayerID, const Card& card) {
                 break;
             }
         }
+        if(flag == false){
+            player_hands_[PlayerID].push_back(card);
+        }
     }
-    if(flag == false){
-        player_hands_[PlayerID].push_back(card);
-    }
+
 }

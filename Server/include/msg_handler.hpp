@@ -12,7 +12,6 @@
 #include <unordered_set>
 #include <memory>
 
-void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* game /*,const std::unordered_set<ClientID>& clients*/);
+void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_ptr<Game>& current_game, std::unordered_set<ClientID> clients, std::unordered_set<ClientID>& ready_clients);
 
-void get_playcard_msg(PlayCardEvent* ret_msg, ClientID client, Game* current_game);
 #endif

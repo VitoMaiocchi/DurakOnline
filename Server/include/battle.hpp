@@ -51,7 +51,7 @@ class Battle {
         
 
         bool handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot);
-        bool handleActionEvent();
+        bool handleActionEvent(ClientID player_id, ClientAction action);
         bool successfulDefend();
         bool passOn(Card card, ClientID player_id, CardSlot slot);
         bool isValidMove( const Card &card, ClientID player_id, CardSlot slot);

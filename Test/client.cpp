@@ -115,7 +115,7 @@ int main() {
     aa_message.pick_up = true;
 
     std::unique_ptr<Message> aam = std::make_unique<AvailableActionUpdate>(aa_message);
-    Network::sendMessage(aam);
+    Network::sendMessage(std::move(aam));
     // std::string string_aa = aam->toJson();
     // std::unique_ptr<Message> answer_aa = deserialiseMessage(string_aa);
 
@@ -153,8 +153,8 @@ int main() {
     piqueQ.suit = SUIT_SPADES;
     piqueQ.rank = RANK_QUEEN;
     Card heartK(RANK_KING, SUIT_HEARTS);
-    pce_message.cards.push_back(piqueQ); 
-    pce_message.cards.push_back(heartK);
+    pce_message.cards.insert(piqueQ); 
+    pce_message.cards.insert(heartK);
 
     pce_message.slot = CARDSLOT_2_TOP;
 
@@ -215,7 +215,7 @@ int main() {
     message.string = "mhh trash i like trash";
     std::unique_ptr<Message> m = std::make_unique<TestMessage>(message);
     // Network::openConnection("localhost", 42069);
-    Network::sendMessage(m);
+    Network::sendMessage(std::move(m));
     while(true) {
 
         std::unique_ptr<Message> awnser = nullptr;

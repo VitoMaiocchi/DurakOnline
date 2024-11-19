@@ -338,14 +338,14 @@ void PlayCardEvent::fromJson(const rapidjson::Value& obj) {
     const rapidjson::Value& cardsJson = obj["cards"];
     cards.clear();
     for(rapidjson::SizeType i = 0; i < cardsJson.Size(); ++i){
-        cards.push_back(cardsJson[i].GetUint());
+        cards.insert(cardsJson[i].GetUint());
     }
     if(obj.HasMember("cards") && obj["cards"].IsArray()){
         const rapidjson::Value& cardsJson = obj["cards"];
         cards.clear();
         for(rapidjson::SizeType i = 0; i < cardsJson.Size(); ++i){
             uint cardInt = cardsJson[i].GetUint();
-            cards.emplace_back(cardInt);
+            cards.insert(cardInt);
         }
     }
     else{

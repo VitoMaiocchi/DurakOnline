@@ -5,6 +5,9 @@
 #include <optional>
 #include "viewport.hpp"
 
+#define NETWORKTYPE_CLIENT
+#include <Networking/network.hpp>
+
 #define HOVER_OFFSET_FACTOR 0.08f
 #define CARD_DELTA_FACTOR 0.7f
 
@@ -111,6 +114,12 @@ class HandNode : public LeafNode {
         void updateHand(std::list<Card> &cards) {
             sortCards(cards);
             this->cards = cards;
+        }
+
+        std::unordered_set<Card> resetSelected() {
+            auto ret = selected;
+            selected = {};
+            return ret;
         }
 
 };
@@ -240,14 +249,6 @@ class MiddleNode : public TreeNode {
             float height = 2*cardStacks[0]->getCompactExtends({0,0, ext.width/3, MAX_FLOAT}).height;
             if(width > ext.width) width = ext.width;
             else height = ext.height;
-            printExt("original", ext);
-            std::cout << "height: " << height << "width: " << width << std::endl;
-            printExt("compact",{
-                ext.x + (ext.width - width)/2,
-                ext.y + (ext.height - height)/2,
-                width,
-                height
-            });
             return {
                 ext.x + (ext.width - width)/2,
                 ext.y + (ext.height - height)/2,
@@ -269,12 +270,30 @@ class MiddleNode : public TreeNode {
                 cast(CardStackNode, cardStacks[stack])->setCard(top, card);
             }
         }
+
+        void setStackClickCallback(CardSlot slot, std::function<void(float, float)> callback) {
+            assert(slot < CARDSLOT_1_TOP);
+            cardStacks[slot]->setClickEventCallback(callback);
+        }
 };
 
 
 GameNode::GameNode() {
     handNode = std::make_unique<HandNode>();
     middleNode = std::make_unique<MiddleNode>();
+    Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
+    for(uint s = CARDSLOT_1; s != CARDSLOT_1_TOP; s++) {
+        const CardSlot slot = (CardSlot) s;
+        cast(MiddleNode, middleNode)->setStackClickCallback(slot, [slot, hand_ptr](float x, float y){
+            std::unordered_set<Card> cards = dynamic_cast<HandNode*>(hand_ptr)->resetSelected();
+            PlayCardEvent event;
+            event.cards = cards;
+            event.slot = slot;
+            std::cout << "SEND EVENT: \n" << event.toJson() << std::endl; //DEBUG
+            //Network::sendMessage(std::make_unique<PlayCardEvent>(event));
+        });
+    }
+    
     //TODO
 }
 

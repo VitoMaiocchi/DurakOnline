@@ -12,7 +12,7 @@ void handleMessage(std::unique_ptr<Message> message, ClientID client, Game* game
                       << "\nx: " <<ret_test->x
                       << "\ny: " <<ret_test->y << std::endl;
             dynamic_cast<TestMessage*>(message.get())->x = client;
-            Network::sendMessage(message, client);
+            Network::sendMessage(std::move(message), client);
         }
         break;
         case MESSAGETYPE_PLAYCARD_EVENT: {

@@ -23,7 +23,7 @@ int main() {
             case MESSAGETYPE_TEST:
                 dynamic_cast<TestMessage*>(m.get())->x = id;
                 for(auto client : clients) {
-                    Network::sendMessage(m, client);
+                    Network::sendMessage(std::move(m), client);
                     std::cout << "message sending with type: " << m->messageType << std::endl;
                 }
             break;
@@ -33,10 +33,9 @@ int main() {
                 aa_message.ok = false;
                 aa_message.pick_up = false;
 
-                std::unique_ptr<Message> aam = std::make_unique<AvailableActionUpdate>(aa_message);
                 for(auto client : clients){
-                    Network::sendMessage(aam,client);
-                    std::cout <<"message sending with type: " << aam->messageType << std::endl;
+                    Network::sendMessage(std::make_unique<AvailableActionUpdate>(aa_message),client);
+                    std::cout <<"message sending with type: " << aa_message.messageType << std::endl;
                 }
             }
             break;

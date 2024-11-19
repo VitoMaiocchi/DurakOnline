@@ -110,7 +110,7 @@ namespace Network {
     }
 
     std::chrono::system_clock::time_point last_message;
-    bool sendMessage(std::unique_ptr<Message> &message, ClientID id) {
+    bool sendMessage(std::unique_ptr<Message> message, ClientID id) {
         if(!clientConnected(id, false)) return false;
 
         //Message frequency limiter 

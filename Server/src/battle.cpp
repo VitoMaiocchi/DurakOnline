@@ -4,6 +4,12 @@
 
 /**
 * QUESTIONS: do i need a game pointer?
+* TODO: - implement a check for how many cards are already in middle (handleCardEvent)
+        - send messages AvailableActionUpdate
+        - send messages BattleStateUpdate when pass_on is called
+        - save the first attacker and who all played cards for the card manager
+        - implement handleActionEvent()
+        - test pass on function
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
@@ -103,7 +109,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
             if(middle[slot % 6].first.rank == cards[0].rank && middle[slot % 6].first.suit == cards[0].suit){
                 return true;
             }
-            // return true;
+            // return false;
         } 
         if(isValidMove(cards.at(0), player_id, slot)) {
             // defend(player_id, cards.at(0), slot); //this function causes an address boundary error
@@ -118,9 +124,67 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
  * PRE: takes the message (already broken down)
  * POST: calls the next functions, either pick_up or pass_on, returns true if this succeeded
  */
-bool Battle::handleActionEvent(){
-    //this is going to be a big one
+bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
+    std::vector<Card> hand = card_manager_ptr_->getPlayerHand(player_id); 
+    Suit trump = card_manager_ptr_->getTrump();
+    std::vector<std::pair<Card, Card>> field = card_manager_ptr_->getMiddle();
+
+    //pass on -> check for trump -> if valid card we can passOn() but without playing the card
+    if(action == CLIENTACTION_PASS_ON && players_bs_[player_id] == DEFENDER){
+        if(defense_started_){ //cannot pass the attack on if already started defending
+            //send illegal action notification
+            return false;
+        }
+        //for every card in the middle i want to test the whole hand if there is a card that is trump
+        //and that matches the rank of the card, if yes then we can say break and then call 
+        //moveplayer roles, but if not then if it reaches the end of the middle vector without finding
+        //anything it should send an IllegalNotify message = illegal action
+        bool valid = false;
+        for(auto& slot : field){
+            for(auto& card : hand){
+                if(card.suit == trump){
+                    if(card.rank == slot.first.rank){
+                        //correct
+                        valid = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if(valid){
+            movePlayerRoles(); //moves player roles one to the right
+            return true;
+        }
+    }
+
+
+    //pick up
+    else if(action == CLIENTACTION_PICK_UP){
+        //check if theres at least one card not defended -> flag defended unnecessary? or maybe function
+        // for(auto& slot : field){
+        //     if(slot.first != empty_card_ && slot.second == empty_card_){
+        //         card_manager_ptr_->pickUp(player_id);
+        //         return true;
+        //     }
+        // }
+        if(!successfulDefend()){
+            card_manager_ptr_->pickUp(player_id);
+            return true;
+        }
+        if(successfulDefend()){
+            //notify with illegal move (studid, why pick up when you defended everything lol)
+            return false;
+        }
+
+        return false;
+    }
+
+    //ok
+    else if(action == CLIENTACTION_OK){
+        //what should happen here? 
+        return true;
+    }
     
     return false;
 }
@@ -128,15 +192,21 @@ bool Battle::handleActionEvent(){
 bool Battle::successfulDefend(){
     //fetches middle from the cardmanager, loops over the middle checks if all the attacks have been
     //defended, or we do
+    std::vector<std::pair<Card, Card>> field = card_manager_ptr_->getMiddle();
+    for(auto& slot : field){
+        if(slot.first != empty_card_ && slot.second == empty_card_){
+            return false;
+        }
+    }
     if(attacks_to_defend_ == 0){
         // ----------> send message
         return true;
     }
-    return false;
+    return true;
 }
 
 /**
-    *PRE: 
+    *PRE: the defender clicks his card/cards and then an empty slot on the battlefield
     *POST: it shifts the player battle states and sends message to client and returns true
  */
 bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
@@ -172,7 +242,6 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
         movePlayerRoles();
         //player_bs_[player_id] is now attacker
         attack(player_id, card);
-        
         //check if everything worked
         std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
         for(auto slotM : middle){
@@ -198,15 +267,6 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
                 being played? 
 
  */ 
-//informs server that a player is trying to play a card -> specific slot?
-// struct PlayCardEvent : public Message {
-//     PlayCardEvent();
-//     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-//     void fromJson(const rapidjson::Value& obj);
-
-//     std::list<Card> cards; // can be multiple if multiple cards are played at once, max 4
-//     CardSlot slot; //place of the card
-// };
 bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
 
     //initialize the error message which will be sent if an invalid move is found
@@ -221,6 +281,9 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     //check if the card is in the players hand 
     const std::vector<Card>& player_hand = card_manager_ptr_->getPlayerHand(player_id);
     if(std::find(player_hand.begin(), player_hand.end(), card) == player_hand.end()){
+        err_message.error = "Illegal move: 'card was not found in your hand'";
+        std::unique_ptr<Message> em = std::make_unique<IllegalMoveNotify>(err_message);
+        Network::sendMessage(em, player_id);
         std::cout << "the card was not found in the players hand" << std::endl;
         return false; // card not found in the hand
     }
@@ -250,7 +313,13 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             }
             else{
                 std::cout << "TRYING TO PASS THE ATTACK ON" << std::endl;
-
+                //need checks here
+                for(auto& s : middle){
+                    if(s.first.rank == card.rank){
+                        std::cout << "passing on is valid" << std::endl;
+                        return true;
+                    }
+                }
 
             }
 

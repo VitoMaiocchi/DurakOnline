@@ -3,7 +3,7 @@
 #include <exception>
 #include <iostream>
 
-#define CLIENT_RES_DIR "../Client/resources"
+#define CLIENT_RES_DIR std::string("../Client/resources/")
 
 typedef unsigned int uint;
 typedef uint ClientID;

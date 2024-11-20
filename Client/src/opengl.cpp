@@ -16,7 +16,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#define FONT_PATH "../Client/resources/fonts/OpenSans-Regular.ttf"
+#define FONT_PATH "../Client/resources/fonts/OpenSans-Bold.ttf"
 
 
 uint Viewport::height = 600;
@@ -126,6 +126,11 @@ namespace OpenGL {
         height = texture->height;
     }
 
+    std::pair<uint, uint> getImageDimensions(std::string path) {
+        Texture* texture = getTexture(path);
+        return {texture->width, texture->height};
+    }
+
     void drawImage(std::string path, Extends ext) {
         Texture* texture = getTexture(path);
 
@@ -204,7 +209,7 @@ namespace OpenGL {
         Viewport::height = height;
         Viewport::width = width;
 
-        Viewport::global_scalefactor = width / 1000.0f; //das chammer no besser mache
+        Viewport::global_scalefactor = (width < 1.2*height ? width : height) / 1000.0f; //das chammer no besser mache
 
         Extends viewport_ext = {0, 0, static_cast<float>(width), static_cast<float>(height), 0};
         masterNode->updateExtends(viewport_ext);
@@ -447,6 +452,26 @@ namespace OpenGL {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    void drawText(std::string text, Extends ext, glm::vec3 color, TextSize size) {
+        float scale = Viewport::global_scalefactor * size / 60.0f;
+
+        float width, height;
+        computeTextSize(text, scale, width, height);
+
+        if(width > ext.width) {
+            scale *= ext.width / width;
+            height *= ext.width / width;
+            width = ext.width;
+        }
+        if(height > ext.height) {
+            scale *= ext.height / height;
+            width *= ext.height / height;
+            height = ext.height;
+        }
+
+        renderText(text, ext.x + (ext.width - width)/2, ext.y + (ext.height - height)/2, scale, color);
+    }
+
     //Texture creator
     std::map<std::string, Texture> textures;
 
@@ -468,7 +493,8 @@ namespace OpenGL {
         unsigned char *data = stbi_load(path.c_str(), &tex.width, &tex.height, &nrChannels, 0);
 
         if (data){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            if(nrChannels == 4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            if(nrChannels == 3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
         } else throw std::runtime_error("OpenGL: error loading the following texture: "+path);
         

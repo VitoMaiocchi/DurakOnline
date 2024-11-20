@@ -2,7 +2,14 @@
 #include "util.hpp"
 
 #include <string>
+#include <utility>
 #include <glm/glm.hpp>
+
+enum TextSize {
+    TEXTSIZE_SMALL = 10,
+    TEXTSIZE_MEDIUM = 25,
+    TEXTSIZE_LARGE = 50
+};
 
 namespace OpenGL {
     bool setup();
@@ -15,8 +22,11 @@ namespace OpenGL {
 
     void drawImage(std::string path, Extends ext);
     void drawRectangle(Extends ext, glm::vec4 color);
+    void drawText(std::string, Extends ext, glm::vec3 color, TextSize size);
 
-    //TODO: ALL DIE CLASSES SIND UNNÖTIG
+    std::pair<uint, uint> getImageDimensions(std::string path);
+
+    //TODO: ALL DIE CLASSES SIND OBSOLET
     //DAS CHAMMER ALLES I NORMALI GLOBALI FUNCTIONS UMWANDLE
     //aka fuck Object Oriented boilerplate cancer
     class Image {

@@ -86,5 +86,5 @@ std::string Card::getFileName() {
         break;
     }
 
-    return std::string(CLIENT_RES_DIR) + "/cards/" + r + "_of_" + s + ".png";
+    return CLIENT_RES_DIR + "cards/" + r + "_of_" + s + ".png";
 }

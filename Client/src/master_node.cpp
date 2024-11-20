@@ -76,7 +76,7 @@ void handlePlayerUpdate(PlayerUpdate update) {
         return a.id > b.id;
     });
 
-    cast(GameNode, game_node)->playerUpdateNotify();
+    if(GlobalState::game_state == GAMESTATE_GAME)cast(GameNode, game_node)->playerUpdateNotify();
 }
 
 void handleMessage(std::unique_ptr<Message> message) {

@@ -277,9 +277,108 @@ class MiddleNode : public TreeNode {
         }
 };
 
+class PlayerNode : public LeafNode {
+
+    Player player;
+    uint cards;
+    PlayerState player_state;
+
+    public:
+
+    PlayerNode(Player player) {
+        this->player = player;
+        cards = 0;
+    }
+
+    Extends getCompactExtends(Extends ext) {
+        if(ext.height >  ext.width) {
+            ext.y += (ext.height-ext.width)/2;
+            ext.height = ext.width;
+        } else {
+            ext.x += (ext.width-ext.height)/2;
+            ext.width = ext.height;
+        }
+        return ext;
+    }
+
+    void draw() {
+        //OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
+
+        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "icons/player.png");
+        Extends ext = computeCompactExtends({
+            extends.x,
+            extends.y + extends.height * 0.4f,
+            extends.width,
+            extends.height * 0.6f
+        }, size.second, size.first);
+        OpenGL::drawImage(CLIENT_RES_DIR + "icons/player.png", ext);
+        OpenGL::drawText(player.name, {
+            extends.x,
+            extends.y + extends.height * 0.2f,
+            extends.width,
+            extends.height * 0.2f
+        }, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+    }
+};
+
+class PlayerBarNode : public TreeNode {
+    std::list<std::unique_ptr<Node>> playerNodes;
+
+    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+        for(auto &player : playerNodes) function(player);
+    }
+
+    public:
+
+    PlayerBarNode() {
+        Player player;
+        player.name = "Garbage Goober";
+        playerNodes.push_back(std::make_unique<PlayerNode>(player));
+        player.name = "Booger Eater";
+        playerNodes.push_back(std::make_unique<PlayerNode>(player));
+        player.name = "Copper Trader";
+        playerNodes.push_back(std::make_unique<PlayerNode>(player));
+        player.name = "Joe Mama";
+        playerNodes.push_back(std::make_unique<PlayerNode>(player));
+    }
+
+    void updateExtends(Extends ext) {
+        ext = getCompactExtends(ext);
+
+        const uint N = playerNodes.size();
+        if(N == 0) return;
+        if(N == 1) {
+            (*playerNodes.begin())->updateExtends(ext);
+            return;
+        }
+
+        const float s = ext.height;
+        const float delta = (ext.width - s) / (N -1);
+        float x = ext.x;
+        for(auto &player : playerNodes) {
+            player->updateExtends({x, ext.y, s, s});
+            x += delta;
+        }
+    }
+
+    Extends getCompactExtends(Extends ext) {
+        const uint N = playerNodes.size();
+        if(ext.width > ext.height * N) return ext;
+        const float h = ext.width / N;
+        return {
+            ext.x,
+            ext.y + (ext.height - h)/2,
+            ext.width,
+            h
+        };
+    }
+};
+
 
 GameNode::GameNode(Extends ext) {
     handNode = std::make_unique<HandNode>();
+    playerBarNode = std::make_unique<PlayerBarNode>();
+
     middleNode = std::make_unique<MiddleNode>();
     Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
     for(uint s = CARDSLOT_1; s != CARDSLOT_1_TOP; s++) {
@@ -294,7 +393,6 @@ GameNode::GameNode(Extends ext) {
     }
     
     updateExtends(ext);
-    //TODO
 }
 
 void GameNode::updateExtends(Extends ext) {
@@ -304,26 +402,35 @@ void GameNode::updateExtends(Extends ext) {
         extends.x + extends.width / 4,
         extends.y,
         extends.width / 2,
-        extends.height / 3,
+        extends.height * 0.2f,
         0
     };
     handNode->updateExtends(hand_ext);
 
+    Extends playerbar_ext {
+        extends.x,
+        extends.y + extends.height * 0.775f,
+        extends.width,
+        extends.height * 0.2f,
+        0
+    };
+    playerBarNode->updateExtends(playerbar_ext);
+
     Extends middle_ext = {
-        extends.x + extends.width / 4,
-        extends.y + extends.height * 3.0f / 8.0f,
-        extends.width / 2,
-        extends.height / 2,
+        extends.x + extends.width * 0.1f,
+        extends.y + extends.height * 0.25f,
+        extends.width * 0.8f,
+        extends.height * 0.5f,
         0
     };
     middleNode->updateExtends(middle_ext);
-    //TODO
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //TODO
     function(handNode);
     function(middleNode);
+    function(playerBarNode);
 }
 
 Extends GameNode::getCompactExtends(Extends ext) {

@@ -22,8 +22,18 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_
         break;
 
         case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
-            // Client connected; update readiness or broadcast
-            std::cout << "Client connected: " << client << std::endl;
+            // Client connected, add name to a datastructure maybe a map
+            if (clients.find(client) == clients.end()) {
+                clients.insert(client);
+                std::cout << "New client connected: " << client << std::endl;
+            }
+            // Gamestate update message
+            GameStateUpdate update;
+            update.state = GAMESTATE_LOBBY;
+            Network::sendMessage(std::make_unique<GameStateUpdate>(update), client);
+            std::cout << std::endl;
+
+
             break;
         }
 
@@ -33,13 +43,17 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_
             if (action && action->action == CLIENTACTION_READY) {
                 ready_clients.insert(client);
                 std::cout << "Client " << client << " is ready." << std::endl;
+                std::cout << std::endl;
             }
 
-            // Check if enough players are ready to start the game
+            // Check if enough and all players are ready to start the game
             if (ready_clients.size() >= MIN_PLAYERS && current_game == nullptr) {
                 std::cout << "Starting a new game..." << std::endl;
                 std::vector<ClientID> player_ids(ready_clients.begin(), ready_clients.end());
                 current_game = std::make_unique<Game>(player_ids);
+                GameStateUpdate update;
+                update.state = GAMESTATE_GAME;
+                Network::sendMessage(std::make_unique<GameStateUpdate>(update), client);
             }
             break;
         }

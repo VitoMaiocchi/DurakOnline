@@ -51,10 +51,10 @@ int main() {
         std::cout << "Message received from client: " << client << std::endl;
 
         // Handle new client connections
-        if (clients.find(client) == clients.end()) {
-            clients.insert(client);
-            std::cout << "New client connected: " << client << std::endl;
-        }
+        // if (clients.find(client) == clients.end()) {
+        //     clients.insert(client);
+        //     std::cout << "New client connected: " << client << std::endl;
+        // }
         handleMessage(std::move(msg_r), client, current_game, clients, ready_clients);
         // switch (msg_r->messageType) {
         //     case MESSAGETYPE_CLIENT_CONNECT_EVENT: {

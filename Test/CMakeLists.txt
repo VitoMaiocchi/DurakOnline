@@ -31,6 +31,8 @@ enable_testing()
 
 # Add test executable
 # add_executable(hello_world_test ${CMAKE_SOURCE_DIR}/Test/hello_world_test.cpp)
+
+# Test for Battle
 add_executable(test_battle test_battle.cpp
                ${CMAKE_SOURCE_DIR}/Server/src/battle.cpp
                ${CMAKE_SOURCE_DIR}/Server/src/card_manager.cpp)
@@ -38,9 +40,22 @@ add_executable(test_battle test_battle.cpp
 # target_link_libraries(hello_world_test gtest_main)
 target_link_libraries(test_battle gtest_main durak_networking)
 
+# Test for Game
+add_executable(test_game
+    test_game.cpp
+    ${CMAKE_SOURCE_DIR}/Server/src/game.cpp
+    ${CMAKE_SOURCE_DIR}/Server/src/battle.cpp
+    ${CMAKE_SOURCE_DIR}/Server/src/card_manager.cpp
+)
+target_link_libraries(test_game gtest_main durak_networking)
+
 # add_test(NAME hello_world_test COMMAND hello_world_test)
+
+# Register tests
 add_test(NAME DurakTests COMMAND test_battle)
+add_test(NAME DurakGameTests COMMAND test_game)
 
 include(GoogleTest)
 gtest_discover_tests(test_battle)
+gtest_discover_tests(test_game)
 

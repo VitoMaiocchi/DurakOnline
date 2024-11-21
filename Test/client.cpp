@@ -161,23 +161,38 @@ void receiveMessages() {
                     std::cout << "\nReceived Battle State Update Message:" << std::endl;
 
                     if(bsu_msg->attackers.front() == client_id){
-                        std::cout << "You are the attacker!" << std::endl;
+                        std::cout << "You are the attacker!\n" << std::endl;
                     }
                     else if(bsu_msg->attackers.back() == client_id){
-                        std::cout << "You are the co-attacker!" << std::endl;
+                        std::cout << "You are the co-attacker!\n" << std::endl;
                     }
                     else if(bsu_msg->defender == client_id){
-                        std::cout << "You are the defender!" << std::endl;
+                        std::cout << "You are the defender!\n" << std::endl;
                     }
                     else{
-                        std::cout << "You are only observer in this battle" << std::endl;
+                        std::cout << "You are only observer in this battle\n" << std::endl;
                     }
 
                     
                     break;
                 }
                 case MESSAGETYPE_AVAILABLE_ACTION_UPDATE: {
-                    std::cout << "\nReceived Available Action Update Message." << std::endl;
+                    std::cout << "\nReceived Available Action Update Message:" << std::endl;
+                    AvailableActionUpdate* action_msg = dynamic_cast<AvailableActionUpdate*>(msg.get());
+                    std::cout << "action: " << std::endl;
+                    // action_msg->pass_on << 
+                    if(action_msg->ok){
+                        std::cout << "CLIENTACTION_OK" << std::endl;
+                    }
+                    if(action_msg->pass_on){
+                        std::cout << "CLIENTACTION_PASS_ON" << std::endl;
+                    }
+                    if(action_msg->pick_up){
+                        std::cout << "CLIENTACTION_PICK_UP" << std::endl;
+                    }
+                    else{
+                        std::cout << "no action is available currently" <<std::endl;
+                    }
                     break;
                 }
                 case MESSAGETYPE_GAME_STATE_UPDATE: {
@@ -189,14 +204,18 @@ void receiveMessages() {
                 }
                 case MESSAGETYPE_PLAYCARD_EVENT: {
                     std::cout << "\nReceived Play Card Event Message." << std::endl;
+                    //client doesnt receive this
                     break;
                 }
                 case MESSAGETYPE_CLIENT_ACTION_EVENT: {
                     std::cout << "\nReceived Client Action Event Message." << std::endl;
+                    //client doesnt receive this
                     break;
                 }
                 case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
                     std::cout << "\nReceived Client Connect Event Message." << std::endl;
+                    //client doesnt receive this
+
                     break;
                 }
                 default:

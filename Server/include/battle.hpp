@@ -43,12 +43,14 @@ class Battle {
         // Game *current_game;
 
     public:
-        friend class DurakBattleTest;
         
         Battle(); //default Constructor
         Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager /*,Game &game*/);
         ~Battle(); //default Destructor
         
+        //add friend class
+        friend class DurakBattleTest;
+        friend class DurakGameTest;
 
         bool handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot);
         bool handleActionEvent(ClientID player_id, ClientAction action);
@@ -69,6 +71,9 @@ class Battle {
 
         void setMaxAttacks(int max) { max_attacks_ = max; }
         int getMaxAttacks() const { return max_attacks_; }
+
+        //getter function for testing purposes
+        PlayerRole getPlayerRole(ClientID client) { return players_bs_[client];}
 
         //returns the id of the defender
         ClientID getCurrentDefender();

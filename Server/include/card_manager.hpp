@@ -58,6 +58,8 @@ public:
     void placeAttackCard(Card card, int slot);
     void addCardToPlayerHand(ClientID PlayerID, const Card& card);
 
+    //getter function for testing purposes
+    Card getLastCard(){ return *last_card_;}
 };
 
 

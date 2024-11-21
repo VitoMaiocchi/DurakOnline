@@ -29,6 +29,9 @@ class Game{
         // destructor, should nominate the durak
         ~Game();
 
+        //add friend class
+        friend class DurakGameTest;
+
         bool createBattle();
         bool isStarted();
         bool endGame();
@@ -36,6 +39,12 @@ class Game{
         bool updateTurnOrder();
         bool handleClientActionEvent();
         bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
+
+        //getter function for testing purposes
+        Battle* getCurrentBattle(){ return current_battle_;}
+        CardManager* getCardManager(){ return card_manager_;}
+        std::map<ClientID, PlayerRole> getPlayerRoles(){ return player_roles_;}
+
 };
 
 

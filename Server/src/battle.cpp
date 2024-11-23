@@ -43,6 +43,37 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
     }
 
+    for(auto& pl : players_bs_){
+        AvailableActionUpdate update;
+        if(pl.second == ATTACKER){
+            update.ok = true;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+        if(pl.second == DEFENDER){
+            update.ok = false;
+            update.pass_on = true;
+            update.pick_up = true;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+        if(pl.second == CO_ATTACKER){
+            update.ok = true;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+        if(pl.second == IDLE){
+            update.ok = false;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+
+    }
+
+
+
 };
 
 //default dtor
@@ -134,6 +165,10 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
     if(action == CLIENTACTION_PASS_ON && players_bs_[player_id] == DEFENDER){
         if(defense_started_){ //cannot pass the attack on if already started defending
             //send illegal action notification
+            IllegalMoveNotify notify;
+            notify.error = "Illegal move: 'Cannot pass the attack on if already started defending'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+
             return false;
         }
         //for every card in the middle i want to test the whole hand if there is a card that is trump

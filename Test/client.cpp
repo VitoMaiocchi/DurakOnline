@@ -184,13 +184,13 @@ void receiveMessages() {
                     if(action_msg->ok){
                         std::cout << "CLIENTACTION_OK" << std::endl;
                     }
-                    if(action_msg->pass_on){
+                    else if(action_msg->pass_on){
                         std::cout << "CLIENTACTION_PASS_ON" << std::endl;
                     }
-                    if(action_msg->pick_up){
+                    else if(action_msg->pick_up){
                         std::cout << "CLIENTACTION_PICK_UP" << std::endl;
                     }
-                    else{
+                    else if(!action_msg->ok && !action_msg->pass_on && !action_msg->pick_up){
                         std::cout << "no action is available currently" <<std::endl;
                     }
                     break;

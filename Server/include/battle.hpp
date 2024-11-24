@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <map>
 #include <algorithm>
+#include <optional>
+#include <iostream>
 
 #include "card_manager.hpp"
 // #include "game.hpp"
@@ -36,8 +38,10 @@ class Battle {
         //pointer to cardmanager
         CardManager *card_manager_ptr_;
 
+        // std::optional 
         //empty card so we can find empty slots
-        Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
+        // Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
+        std::optional<Card> slot_ = std::nullopt; //now we can check if slot.hasValue() means there is a card
 
         //pointer to current game
         // Game *current_game;

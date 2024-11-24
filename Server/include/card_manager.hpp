@@ -6,6 +6,7 @@
 #include <map>
 #include <memory>
 #include <algorithm>
+#include <optional>
 #include "../../Networking/include/Networking/util.hpp"
 
 class CardManager
@@ -21,8 +22,10 @@ private:
     std::map<ClientID, std::vector<Card>> player_hands_;
     std::vector<unsigned int> player_number_of_cards_;
 
-    Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
-    std::vector<std::pair<Card,Card>> middle_ = std::vector<std::pair<Card, Card>>(6, {empty_card_, empty_card_}); //represents the battlefield in the middle
+    //middle has always six slot pairs, top and bottom, it is initialized as std::nullopt meaning it has no value
+    std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle_ = 
+                                        std::vector<std::pair<std::optional<Card>, std::optional<Card>>>(6, {std::nullopt, std::nullopt}); //represents the battlefield in the middle
+    
     unsigned int number_cards_middle_ = 0; //Number of cards in the middle
     
 
@@ -39,7 +42,7 @@ public:
 
     //getter functions
     std::vector<Card> getPlayerHand (ClientID PlayerID);
-    std::vector<std::pair<Card,Card>> getMiddle();
+    std::vector<std::pair<std::optional<Card>,std::optional<Card>>> getMiddle();
     unsigned int getNumberActivePlayers();
     unsigned int getNumberOfCardsInHand(ClientID PlayerID);
     Suit getTrump();
@@ -55,6 +58,8 @@ public:
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();
+
+    // functions for testing purposes
     void placeAttackCard(Card card, int slot);
     void addCardToPlayerHand(ClientID PlayerID, const Card& card);
 

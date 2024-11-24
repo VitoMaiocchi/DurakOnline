@@ -81,9 +81,10 @@ std::vector<Card> CardManager::getPlayerHand (ClientID PlayerID){
     return player_hands_[PlayerID];
 }
 
-//PRE:
-//POST: Returns a vector of pairs returning all the cards in the middle
-std::vector<std::pair<Card,Card> > CardManager::getMiddle(){
+/**  
+POST: Returns a vector of optional pairs with all the slots in the middle, empty and non empty
+*/
+std::vector<std::pair<std::optional<Card>,std::optional<Card>> > CardManager::getMiddle(){
     return middle_;
 }
 
@@ -115,7 +116,7 @@ bool CardManager::attackCard(Card card, ClientID PlayerID){
     //Position of next free slot in the middle should be passed to this function
     int free_slot = -1;
     for (size_t i = 0; i < 6; ++i) {
-        if (middle_[i].first.rank == RANK_NONE && middle_[i].first.suit == SUIT_NONE) {
+        if (!middle_[i].first.has_value()) {
             free_slot = i;
             break;
         }
@@ -157,11 +158,30 @@ void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
 bool CardManager::clearMiddle(){
     assert(middle_.size()<=6 && "middle_ shouldn't have more than six slots");
     //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
-    while(!middle_.empty()){
-        discarded_cards_.push_back(middle_[0].first);
-        discarded_cards_.push_back(middle_[0].second);
-        middle_.erase(middle_.begin());
+    // while(!middle_.empty()){
+    //     if(middle_[0])
+    //     discarded_cards_.push_back(middle_[0].first.value()); 
+    //     discarded_cards_.push_back(middle_[0].second.value());
+    //     middle_.erase(middle_.begin());
+    // }
+    //if the middle is not empty 
+    if(!middle_.empty()){
+        //iterate over the middle
+        for(auto& slot : middle_){
+            //discard the bottom card
+            if(slot.first.has_value()){
+                discarded_cards_.push_back(slot.first.value());
+            }
+            //discard the top card
+            if(slot.second.has_value()){
+                discarded_cards_.push_back(slot.second.value());
+            }
+            //clear the pair 
+            slot = {std::nullopt, std::nullopt};
+        }
+        return true;
     }
+
 
     //Azahl charte i de mitti apasse
     number_cards_middle_ = middle_.size();
@@ -174,10 +194,26 @@ void CardManager::pickUp(ClientID PlayerID_def){
     //Danil söll ID vom defender mitgeh
     assert(middle_.size()<=6 && "middle shouldn't have more than six slots");
     //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
-    while(!middle_.empty()){
-        player_hands_[PlayerID_def].push_back(middle_[0].first);
-        discarded_cards_.push_back(middle_[0].second);
-        middle_.erase(middle_.begin());
+    // while(!middle_.empty()){
+    //     player_hands_[PlayerID_def].push_back(middle_[0].first);
+    //     discarded_cards_.push_back(middle_[0].second);
+    //     middle_.erase(middle_.begin());
+    // }
+    //if the middle is not empty
+    if(!middle_.empty()){
+        //iterate over the middle
+        for(auto& slot : middle_){
+            //place the bottom card into the defenders hand
+            if(slot.first.has_value()){
+                player_hands_[PlayerID_def].push_back(slot.first.value());
+            }
+            //place the top card into the defenders hand
+            if(slot.second.has_value()){
+                player_hands_[PlayerID_def].push_back(slot.second.value());
+            }
+            //set slot to no value top and bottom 
+            slot = {std::nullopt, std::nullopt};
+        }
     }
 }   
 

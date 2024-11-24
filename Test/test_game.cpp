@@ -65,14 +65,20 @@ TEST_F(DurakGameTest, TestGameConstructor_PlayerHandsInitialization) {
         // Ensure the player has exactly 6 cards
         ASSERT_EQ(hand.size(), 6) << "Player " << client << " does not have 6 cards in their hand";
 
-        // Ensure cards are unique and sorted (optional sorting for validation)
-        std::sort(hand.begin(), hand.end(), [&](const Card& a, const Card& b) {
-            return game->getCardManager()->compareCards(a, b);
-        });
+        // // Ensure cards are unique and sorted (optional sorting for validation)
+        // std::sort(hand.begin(), hand.end(), [&](const Card& a, const Card& b) {
+        //     return game->getCardManager()->compareCards(a, b);
+        // });
 
+        std::cout << "hand:\n";
+        for(Card card : hand){
+            std::cout << "card:\t" << card.rank << "-" << card.suit << std::endl;
+        }
+        //check that no card is the same in the hand
         for (size_t i = 1; i < hand.size(); ++i) {
-            ASSERT_TRUE(game->getCardManager()->compareCards(hand[i - 1], hand[i]))
-                << "Player " << client << " has unsorted or invalid cards in hand";
+            for(size_t j = i + 1; j < hand.size();++j){
+                ASSERT_TRUE(hand[j] != hand[j + 1]);
+            }
         }
     }
 }

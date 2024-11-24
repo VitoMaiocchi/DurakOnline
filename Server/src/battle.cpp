@@ -93,6 +93,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
 
     //check if the key exists in the map
     if (players_bs_.find(player_id) == players_bs_.end()) {
+        std::cerr << "player id not found in the role vector" << std::endl;
         return false; // or handle error
     }
     //access the role with the key player_id
@@ -104,8 +105,6 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
             attack(player_id, cards.at(0));
-            //send available action msg
-            // TODO
 
             return true;
         }
@@ -131,13 +130,15 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
          * defender has a valid card & places said valid card to pass on
          * edge case: defender places two cards to pass_on
          */
-        std::vector<std::pair<Card,Card>> middle = card_manager_ptr_->getMiddle();
-        if(middle[slot % 6].first.rank == RANK_NONE && middle[slot % 6].first.suit == SUIT_NONE){
+        std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
+        if(!middle[slot % 6].first.has_value()){
             //now we know the slot is empty, now we need to call pass_on()
             passOn(cards.at(0), player_id, slot);
             //check if the middle has been updated
             middle = card_manager_ptr_->getMiddle(); //get it again
-            if(middle[slot % 6].first.rank == cards[0].rank && middle[slot % 6].first.suit == cards[0].suit){
+            if(middle[slot % 6].first.has_value() && 
+               middle[slot % 6].first->rank == cards[0].rank && 
+               middle[slot % 6].first->suit == cards[0].suit){
                 return true;
             }
             // return false;
@@ -159,7 +160,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
     std::vector<Card> hand = card_manager_ptr_->getPlayerHand(player_id); 
     Suit trump = card_manager_ptr_->getTrump();
-    std::vector<std::pair<Card, Card>> field = card_manager_ptr_->getMiddle();
+    std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
 
     //pass on -> check for trump -> if valid card we can passOn() but without playing the card
     if(action == CLIENTACTION_PASS_ON && players_bs_[player_id] == DEFENDER){
@@ -176,10 +177,10 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         //moveplayer roles, but if not then if it reaches the end of the middle vector without finding
         //anything it should send an IllegalNotify message = illegal action
         bool valid = false;
-        for(auto& slot : field){
-            for(auto& card : hand){
+        for(auto slot : field){
+            for(auto card : hand){
                 if(card.suit == trump){
-                    if(card.rank == slot.first.rank){
+                    if(card.rank == slot.first->rank){
                         //correct
                         valid = true;
                         break;
@@ -190,6 +191,11 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         if(valid){
             movePlayerRoles(); //moves player roles one to the right
             return true;
+        }
+        else{
+            IllegalMoveNotify err_msg;
+            err_msg.error = "Illegal move: 'Cannot pass on with your cards'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
         }
     }
 
@@ -227,9 +233,9 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 bool Battle::successfulDefend(){
     //fetches middle from the cardmanager, loops over the middle checks if all the attacks have been
     //defended, or we do
-    std::vector<std::pair<Card, Card>> field = card_manager_ptr_->getMiddle();
-    for(auto& slot : field){
-        if(slot.first != empty_card_ && slot.second == empty_card_){
+    std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
+    for(const auto slot : field){
+        if(slot.first.has_value() && !slot.second.has_value()){
             return false;
         }
     }
@@ -278,7 +284,7 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
         //player_bs_[player_id] is now attacker
         attack(player_id, card);
         //check if everything worked
-        std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
+        std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         for(auto slotM : middle){
             if(slotM.first == card && players_bs_[player_id] == ATTACKER){
                 return true;
@@ -330,12 +336,12 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
 
     if(role == DEFENDER){
         //fetch middle from cardmanager 
-        std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
+        std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         std::cout << "slot: " << slot << std::endl;
-        Card first = middle[slot % 6].first;
+        std::optional<Card> first = middle[slot % 6].first;
         
         //check the slot, if its empty and the defense was already started return false
-        if(first == empty_card_){
+        if(!first.has_value()){
 
             if(defense_started_){
                 std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
@@ -347,8 +353,8 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             else{
                 std::cout << "TRYING TO PASS THE ATTACK ON" << std::endl;
                 //need checks here
-                for(auto& s : middle){
-                    if(s.first.rank == card.rank){
+                for(const auto s : middle){
+                    if(s.first->rank == card.rank){
                         std::cout << "passing on is valid" << std::endl;
                         return true;
                     }
@@ -359,7 +365,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         }
 
         //check if the card is higher with card_compare
-        else if(card_manager_ptr_->compareCards(first, card)){
+        else if(card_manager_ptr_->compareCards(*first, card)){
             return true;
         }
 
@@ -383,9 +389,9 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         //check if card rank is in middle
         if(curr_attacks_ < max_attacks_){
             //fetch middle if the card is in play
-            std::vector<std::pair<Card, Card>> middle = card_manager_ptr_->getMiddle();
-            for(auto& card_in_middle : middle){
-                if(card_in_middle.first.rank == card.rank || card_in_middle.second.rank == card.rank){
+            std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
+            for(auto card_in_middle : middle){
+                if(card_in_middle.first->rank == card.rank || card_in_middle.second->rank == card.rank){
                     return true;
                 }
             } 

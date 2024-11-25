@@ -1,13 +1,12 @@
-#include "../include/msg_handler.hpp"
+#include "../include/server.hpp"
 #include <unordered_set>
 #include <iostream>
 
 
-// Minimum number of players required to start a game
-constexpr size_t MIN_PLAYERS = 3;
 
-void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_ptr<Game>& current_game, std::unordered_set<ClientID> clients, std::unordered_set<ClientID>& ready_clients){
+void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
     //da message handle dies das
+    using namespace DurakServer;
     switch (msg_r->messageType) {
         case MESSAGETYPE_TEST: {
             std::cout << "just a test message from client: " << client <<std::endl;
@@ -23,9 +22,16 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_
 
         case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
             // Client connected, add name to a datastructure maybe a map
-            if (clients.find(client) == clients.end()) {
+            if (clients.find(client) == clients.end() && clients.size() < MAX_PLAYERS) {
                 clients.insert(client);
                 std::cout << "New client connected: " << client << std::endl;
+
+                Player p; //is there a way to name every player differently?
+                ClientConnectEvent* connect = dynamic_cast<ClientConnectEvent*>(msg_r.get());
+                p.name = connect->username;
+                p.player_id = client;
+                std::cout << "Client name: " << p.name <<  std::endl;
+
             }
             // Gamestate update message
             GameStateUpdate update;
@@ -47,7 +53,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client, std::unique_
             }
 
             // Check if enough and all players are ready to start the game
-            if (ready_clients.size() >= MIN_PLAYERS && current_game == nullptr) {
+            if (ready_clients.size() >= MIN_PLAYERS && ready_clients.size() == clients.size() && current_game == nullptr ) {
                 std::cout << "Starting a new game..." << std::endl;
                 std::vector<ClientID> player_ids(ready_clients.begin(), ready_clients.end());
                 current_game = std::make_unique<Game>(player_ids);

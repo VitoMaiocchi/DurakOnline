@@ -7,20 +7,29 @@
 #include <memory>
 #include <algorithm>
 #include <optional>
+
 #include "../../Networking/include/Networking/util.hpp"
+//include to send messages
+#include <Networking/message.hpp>
+#define NETWORKTYPE_SERVER
+#include <Networking/network.hpp>
 
 class CardManager
 {
 private:
     std::deque<Card> deck_;              //represents cards in the middle
-    std::shared_ptr<Card> last_card_=std::make_shared<Card>();                    //Pointer to the last card in the deck, maybe make it const
+    std::shared_ptr<Card> last_card_=std::make_shared<Card>(); //Pointer to the last card in the deck, maybe make it const
     unsigned int number_cards_in_deck_;  //Number of cards in the deck
     bool endgame_;                       //Could be useful for endgame functions, delete if it is not used
     std::vector<Card> discarded_cards_;  //Charte wo "weg" sind
     unsigned int number_discarded_cards_; // azahl charte wo "weg" sind
     Suit trump_;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
+    Card trump_card_;
+    
+    std::vector<ClientID> player_ids_; // saves the player ids as a private member of CardManager
     std::map<ClientID, std::vector<Card>> player_hands_;
-    std::vector<unsigned int> player_number_of_cards_;
+    std::map<ClientID, unsigned int> player_number_of_cards_;
+
 
     //middle has always six slot pairs, top and bottom, it is initialized as std::nullopt meaning it has no value
     std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle_ = 
@@ -58,6 +67,9 @@ public:
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();
+
+    //send card update message
+    void sendCardUpdateMsg(ClientID client_id);
 
     // functions for testing purposes
     void placeAttackCard(Card card, int slot);

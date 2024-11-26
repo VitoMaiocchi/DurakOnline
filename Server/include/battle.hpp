@@ -10,13 +10,11 @@
 #include <iostream>
 
 #include "card_manager.hpp"
-// #include "game.hpp"
 
 #include "../../Networking/include/Networking/util.hpp"
 #include <Networking/message.hpp>
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
-// #include <Networking/util.hpp>
 
 
 

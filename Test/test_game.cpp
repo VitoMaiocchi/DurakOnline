@@ -46,8 +46,8 @@ TEST_F(DurakGameTest, TestGameConstructor_BattleInitialization) {
 // Test to validate trump card and last card initialization
 TEST_F(DurakGameTest, TestGameConstructor_TrumpCardInitialization) {
     // Check if the trump card is correctly set
-    Suit trump = game->getCardManager()->getTrump();
-    ASSERT_NE(trump, SUIT_NONE)
+    std::optional<Suit> trump = std::make_optional<Suit>(game->getCardManager()->getTrump());
+    ASSERT_NE(trump, std::nullopt)
         << "Trump card suit was not set correctly";
 
     // Check the last card in the deck

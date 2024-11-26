@@ -9,17 +9,33 @@ msg_handler.cpp:
 - clean up the code -> good comments 
 
 game.cpp:
+- createBattle() function
+- isStarted() function
+- endGame() function
+- resetGame() function
+- updateTurnOrder() function
+- handleClientActionEvent() function
+
+- send GameStateUpdate messages
+- send PlayerUpdate messages 
+  
 - test all functions with google tests in Test/test_game.cpp, use `ctest` to run
-- implement all messages to be sent from the game. i.e. (GameStateUpdate, PlayerUpdate)
-- finish the implementation of the other functions
+  
+
 
 battle.cpp:
 - test all functions with google tests in Test/test_battle.cpp, use `ctest` to run
-- implement all messages to be sent from the game. i.e. (IllegalMoveNotify, BattleStateUpdate,
-AvailableActionUpdate)
+- send BattleStateUpdate messages after move turn (1)
+- send AvailableActionUpdate in handleActionEvent (2 - 3)
+- send IllegalMoveNotify messages (2)
+  
+- function: handleClientActionEvent() needs to be checked and improved
+  
 - check logic and clean up code
+  
 - implement a data structure that will save the whoever attacked first
 
 card_manager.cpp:
-- implement all messages to be sent from the card_manager. i.e. (CardUpdate)
-- 
+- send CardUpdate messages
+- test all functions with google tests
+- determine trump function should also take the trump card and send a message to the client to render it

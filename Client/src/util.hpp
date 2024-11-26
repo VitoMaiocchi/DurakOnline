@@ -18,18 +18,41 @@ struct Extends {
     bool contains(float x, float y);
 };
 
+enum PlayerState {
+    PLAYERSTATE_IDLE,
+    PLAYERSTATE_ATTACK,
+    PLAYERSTATE_DEFEND,
+    PLAYERSTATE_NONE
+};
+
+struct PlayerGameData {
+    PlayerState state = PLAYERSTATE_NONE;
+    int cards = -1;
+};
+
 struct Player {
     ClientID id = 0;
     std::string name = "";
     bool durak = false;
     bool is_you = false;
+    PlayerGameData* game;
+
+    bool operator<(const Player& other) const;
+    bool operator==(const Player& other) const;
 };
 
-enum PlayerState {
-    PLAYERSTATE_IDLE,
-    PLAYERSTATE_ATTACK,
-    PLAYERSTATE_DEFEND
-};
+
+inline std::string getPlayerStateIcon(PlayerState state) {
+    switch (state) {
+        case PLAYERSTATE_ATTACK:
+            return CLIENT_RES_DIR + "icons/attack.png";
+        case PLAYERSTATE_DEFEND:
+            return CLIENT_RES_DIR + "icons/defend.png";
+        case PLAYERSTATE_IDLE:
+            return CLIENT_RES_DIR + "icons/watch.png";
+    }
+    return "error";
+}
 
 inline void printExt(std::string name, Extends ext) {
     std::cout << "Extends("<<name<<") x: " << ext.x << "; y: " << ext.y

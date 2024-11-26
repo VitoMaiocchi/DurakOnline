@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <Networking/message.hpp>
 #include "drawable.hpp"
+#include <set>
 
 extern ClientID clientID; //client id of this client;
 
@@ -22,5 +22,5 @@ void handleMessage(std::unique_ptr<Message> message);
 namespace GlobalState {
     //all state information from the server is stored here
     extern GameState game_state;
-    extern std::vector<Player> players;
+    extern std::set<Player> players;
 }

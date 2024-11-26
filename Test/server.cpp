@@ -166,6 +166,14 @@ int main() {
             update.state = GAMESTATE_GAME;
             Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
 
+            PlayerUpdate update3;
+            update3.player_names[8] = "Garbage Goober";
+            update3.player_names[7] = "Booger Eater";
+            update3.player_names[10] = "Milfhunter";
+            update3.player_names[id] = "YOU";
+
+            Network::sendMessage(std::make_unique<PlayerUpdate>(update3), id);
+
             CardUpdate update2;
             update2.hand = {
                 Card(RANK_ACE, SUIT_SPADES),
@@ -181,11 +189,19 @@ int main() {
             update2.middle_cards[CARDSLOT_5_TOP] = Card(RANK_KING, SUIT_HEARTS);
 
             update2.draw_pile_cards = 1;
-            update2.opponent_cards[3] = 3;
+            update2.opponent_cards[8] = 3;
+            update2.opponent_cards[7] = 16;
+            update2.opponent_cards[10] = 5;
             update2.trump_card = Card();
             update2.trump_suit = SUIT_HEARTS;
 
             Network::sendMessage(std::make_unique<CardUpdate>(update2), id);
+
+            BattleStateUpdate update4;
+            update4.attackers = {8};
+            update4.defender = 7;
+            update4.idle = {10};
+            Network::sendMessage(std::make_unique<BattleStateUpdate>(update4), id);
         }
     }
 

@@ -14,7 +14,6 @@ enum Suit {
     SUIT_DIAMONDS,
     SUIT_HEARTS,
     SUIT_count,
-    SUIT_NONE //obsolet sött removed werde
 };
 
 enum Rank {
@@ -32,7 +31,6 @@ enum Rank {
     RANK_KING,
     RANK_ACE,
     RANK_count,
-    RANK_NONE //obsolet sött removed werde
 };
 
 struct Card {

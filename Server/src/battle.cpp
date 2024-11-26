@@ -1,5 +1,4 @@
 #include "../include/battle.hpp"
-#include <iostream>
 
 
 /**
@@ -13,16 +12,15 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager /*,Game &game*/) : 
+Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager) : 
                                     first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) 
-                                    /*,current_game(&game)*/,curr_attacks_(0){
+                                    ,curr_attacks_(0){
     
     max_attacks_ = first_battle ? 5 : 6;
-    // you will need to adapt this for a map, but you can use the same logic
-    //set the first attacker pointer to the one that attacks first
-    //while iterating also prepare the message BattleStateUpdate to send to the client, which client tho
-    BattleStateUpdate bsu_msg;
 
+    BattleStateUpdate bsu_msg;
+    //set the first attacker pointer to the one that attacks first
+    //while iterating prepare the message BattleStateUpdate to send to the client
     for(auto& pl : players_bs_){
         if(pl.second == ATTACKER){
             first_attacker_ = &pl;
@@ -325,6 +323,14 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         err_message.error = "Illegal move: 'card was not found in your hand'";
         Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
         std::cout << "the card was not found in the players hand" << std::endl;
+
+        //for debugging purposes we will print the player hand and the card we try to access
+        std::cout << "the card we try to play: " << card.rank << "-" << card.suit << std::endl;
+        std::cout << "player hand:  ";
+        for(Card c : player_hand){
+            std::cout << c.rank << "-" << c.suit << "  ";
+        }
+        std::cout << std::endl;
         return false; // card not found in the hand
     }
 
@@ -334,6 +340,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     //get the role of the player that is trying to play the card
     role = players_bs_[player_id];
 
+    //if the player is defender
     if(role == DEFENDER){
         //fetch middle from cardmanager 
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
@@ -343,10 +350,11 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         //check the slot, if its empty and the defense was already started return false
         if(!first.has_value()){
 
+            // the card was played on a slot that is empty
             if(defense_started_){
                 std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
                 //notify the illegal move
-                err_message.error = "Illegal move: 'empty slot'";
+                err_message.error = "Illegal move: 'Cannot place a card on an empty slot when defending'";
                 Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
                 return false;
             }
@@ -418,10 +426,12 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     //calls defendCard
     card_manager_ptr_->defendCard(card, client, slot);
     attacks_to_defend_--;
+    defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
 }
 
 
+// irrelevant?
 const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     if(first_attacker_ == nullptr){
         std::cerr << "Error: 'first attacker' not found" <<std::endl;
@@ -430,6 +440,9 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
+/**
+ * POST: moves the player roles one to the next 
+ */
 void Battle::movePlayerRoles(){
     PlayerRole last_value = players_bs_.rbegin()->second;
 
@@ -440,17 +453,41 @@ void Battle::movePlayerRoles(){
     }
     players_bs_.begin()->second = last_value;
 
-    // std::cout <<std::endl;
-    // std::cout << "SHIFTED\t" << "FIRST\t" << "SECOND"<<std::endl; 
-    
-    // for(auto i : players_bs_){
-    //     std::cout << "entry:\t" << i.first << "\t" << i.second<<std::endl;
-    // }
+    //send the new available action updates
+    for(auto pl : players_bs_){
+        AvailableActionUpdate update;
+        if(pl.second == ATTACKER){
+            update.ok = true;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+        if(pl.second == DEFENDER){
+            update.ok = false;
+            update.pass_on = true;
+            update.pick_up = true;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+        if(pl.second == CO_ATTACKER){
+            update.ok = true;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+        if(pl.second == IDLE){
+            update.ok = false;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
+        }
+
+    }
 }
 
 /**
  * POST: returns the current defenders player id
  */
+// irrelevant?
 ClientID Battle::getCurrentDefender(){
     ClientID player_id = -1;
     for(auto player : players_bs_){

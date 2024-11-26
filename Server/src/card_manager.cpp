@@ -7,18 +7,23 @@
 
 //constructors
 
-CardManager::CardManager(std::vector<ClientID> player_ids){
+CardManager::CardManager(std::vector<ClientID> player_ids) : player_ids_(player_ids){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
 
     //initialize the map playerHands with empty vectors to the corresponding players 
     //so we dont access a empty map
-    for(ClientID& id : player_ids){
+    for(ClientID& id : player_ids_){
         player_hands_[id] = std::vector<Card>();
     }
     
     //charte mische & usteile
     shuffleCards();
+
+    //send all the players the updates about their cards
+    for(auto id : player_ids_){
+        sendCardUpdateMsg(id);
+    }
 
     //Trumpf bestimme
     determineTrump();
@@ -45,12 +50,15 @@ void CardManager::shuffleCards(){
 
     
     //distribute cards to player
-    for (unsigned int i=0; i < player_hands_.size(); ++i){
+    for (auto pl : player_ids_){
         //Check if players hands are empty
-        assert(player_hands_[i].empty() && "Player's hand should be empty before dealing");
+        assert(player_hands_[pl].empty() && "Player's hand should be empty before dealing");
 
         //distribute the top 6 cards to the player
-        player_hands_[i].insert(player_hands_[i].begin(), deck_.begin(), deck_.begin()+6);
+        player_hands_[pl].insert(player_hands_[pl].begin(), deck_.begin(), deck_.begin()+6);
+
+        //initialize the player number of cards so each player has 6
+        player_number_of_cards_[pl] = 6;
 
         //remove cards from deck
         deck_.erase(deck_.begin(), deck_.begin()+6);
@@ -70,8 +78,8 @@ void CardManager::determineTrump(){
     // Check if pointer has been assigned
     assert(last_card_ && "Pointer to last card is void");
 
-    //Lueg mal öb ich de const mache chan
-    trump_ = last_card_->suit;
+    trump_card_ = *last_card_;
+    trump_ = trump_card_.suit;
     
 }
 
@@ -131,8 +139,12 @@ bool CardManager::attackCard(Card card, ClientID PlayerID){
     middle_[free_slot].first = card;
     //Update middle number of cards in middle & in player hand
     ++number_cards_middle_;
-    // --player_number_of_cards_[PlayerID];
+    --player_number_of_cards_[PlayerID];
 
+    //send message to clients
+    for(auto id : player_ids_){
+        sendCardUpdateMsg(id);
+    }
     return 0;
 }
 
@@ -150,7 +162,12 @@ void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
     
     //Update number of cards in middle & in player hand
     ++number_cards_middle_;
-    // --player_number_of_cards_[PlayerID];
+    --player_number_of_cards_[PlayerID];
+
+    //send message to clients
+    for(auto id : player_ids_){
+        sendCardUpdateMsg(id);
+    }
 }
 
 //PRE:
@@ -179,26 +196,28 @@ bool CardManager::clearMiddle(){
             //clear the pair 
             slot = {std::nullopt, std::nullopt};
         }
-        return true;
+
+        // send message to all clients
+        for(auto id : player_ids_){
+            sendCardUpdateMsg(id);
+        }
     }
-
-
+    else{
+        std::cerr << "middle was already empty" << std::endl;
+    }
     //Azahl charte i de mitti apasse
     number_cards_middle_ = middle_.size();
-    return 0;
+    return true;
 }   
 
-//PRE:
-//POST: All cards in the middle are assigned to the defenders hands
+
+/**
+ * POST: All cards in the middle are assigned to the defenders hands
+*/
 void CardManager::pickUp(ClientID PlayerID_def){
-    //Danil söll ID vom defender mitgeh
+
     assert(middle_.size()<=6 && "middle shouldn't have more than six slots");
-    //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
-    // while(!middle_.empty()){
-    //     player_hands_[PlayerID_def].push_back(middle_[0].first);
-    //     discarded_cards_.push_back(middle_[0].second);
-    //     middle_.erase(middle_.begin());
-    // }
+
     //if the middle is not empty
     if(!middle_.empty()){
         //iterate over the middle
@@ -206,15 +225,23 @@ void CardManager::pickUp(ClientID PlayerID_def){
             //place the bottom card into the defenders hand
             if(slot.first.has_value()){
                 player_hands_[PlayerID_def].push_back(slot.first.value());
+                player_number_of_cards_[PlayerID_def]++;
             }
             //place the top card into the defenders hand
             if(slot.second.has_value()){
                 player_hands_[PlayerID_def].push_back(slot.second.value());
+                player_number_of_cards_[PlayerID_def]++;
             }
             //set slot to no value top and bottom 
             slot = {std::nullopt, std::nullopt};
         }
     }
+
+    // send message to all clients
+    for(auto id : player_ids_){
+        sendCardUpdateMsg(id);
+    }
+    
 }   
 
 //PRE:
@@ -250,18 +277,53 @@ void CardManager::fillDeck() {
 void CardManager::placeAttackCard(Card card, int slot){
     middle_[slot % 6].first = card;
 }
+
 void CardManager::addCardToPlayerHand(ClientID PlayerID, const Card& card) {
     bool flag = false;
-    if (PlayerID < player_hands_.size()) {
-        for(int i = 0; i < player_hands_[PlayerID].size(); ++i){
-            if (player_hands_[PlayerID][i] == card){
-                flag = true; //card is already in the hand
-                break;
-            }
-        }
-        if(flag == false){
-            player_hands_[PlayerID].push_back(card);
+
+    for(int i = 0; i < player_hands_[PlayerID].size(); ++i){
+        if (player_hands_[PlayerID].at(i)== card){
+            flag = true; //card is already in the hand
+            break;
         }
     }
+    if(flag == false){
+        player_hands_[PlayerID].push_back(card);
+        player_number_of_cards_[PlayerID]++;
+    }
+
+    // send message to all clients
+    for(auto id : player_ids_){
+        sendCardUpdateMsg(id);
+    }
+}
+
+
+void CardManager::sendCardUpdateMsg(ClientID client_id){
+    CardUpdate card_message;
+    // card_message.opponent_cards is a map
+    for(auto pl : player_ids_){
+        card_message.opponent_cards[pl] = player_number_of_cards_[pl];
+    }
+    // card_message.draw_pile_cards is unsigned int
+    card_message.draw_pile_cards = deck_.size();
+    // card_message.trump_card is Card
+    card_message.trump_card = trump_card_;
+    // card_message.trump_suit is Suit
+    card_message.trump_suit = trump_;
+    // card_message.middle_cards is a map
+    for(int i = 0; i < middle_.size(); ++i){
+        if(middle_[i].first.has_value()){
+            card_message.middle_cards[static_cast<CardSlot>(i)] = middle_[i].first.value();
+        }
+        if(middle_[i].second.has_value()){
+            card_message.middle_cards[static_cast<CardSlot>(i + 6)] = middle_[i].second.value();
+        }
+    }
+    // card_message.hand is a list
+    for(Card c : player_hands_[client_id]){
+        card_message.hand.push_front(c);
+    }
+    Network::sendMessage(std::make_unique<CardUpdate>(card_message), client_id);
 
 }

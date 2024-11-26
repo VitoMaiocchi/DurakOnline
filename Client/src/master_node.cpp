@@ -12,7 +12,7 @@
 bool master_node_exists = false;
 
 GameState GlobalState::game_state = GAMESTATE_NONE;
-std::vector<Player> GlobalState::players;
+std::set<Player> GlobalState::players;
 
 std::unique_ptr<Node> game_node;
 
@@ -58,25 +58,25 @@ void handleGameStateUpdate(GameStateUpdate update) {
 } 
 
 void handlePlayerUpdate(PlayerUpdate update) {
-    GlobalState::players = {};
+    for(auto player : GlobalState::players) {
+        if(update.player_names.find(player.id) != update.player_names.end()) continue;
+        delete player.game;
+        GlobalState::players.erase(player);
+    }
+
     for(auto entry : update.player_names) {
-        Player p = {
+        if(GlobalState::players.find({entry.first}) != GlobalState::players.end()) continue;
+        const Player p = {
             entry.first,                                    //clientID
             entry.second,                                   //name
             entry.first == update.durak ? true : false,     //durak
             entry.first == clientID ? true : false,         //isYou
+            new PlayerGameData()
         };
-        GlobalState::players.push_back(p);
+        GlobalState::players.insert(p);
     }
 
-    //sort by player_id with you at the beginning
-    std::sort(GlobalState::players.begin(), GlobalState::players.end(), [](Player a, Player b) {
-        if(a.is_you) return true;
-        if(b.is_you) return false;
-        return a.id > b.id;
-    });
-
-    if(GlobalState::game_state == GAMESTATE_GAME)cast(GameNode, game_node)->playerUpdateNotify();
+    if(GlobalState::game_state == GAMESTATE_GAME) cast(GameNode, game_node)->playerUpdateNotify();
 }
 
 void handleMessage(std::unique_ptr<Message> message) {

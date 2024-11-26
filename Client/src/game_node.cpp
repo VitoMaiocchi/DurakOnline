@@ -279,16 +279,10 @@ class MiddleNode : public TreeNode {
 
 class PlayerNode : public LeafNode {
 
-    Player player;
-    uint cards;
-    PlayerState player_state;
+    const Player* player;
 
     public:
-
-    PlayerNode(Player player) {
-        this->player = player;
-        cards = 0;
-    }
+    PlayerNode(const Player* player) : player(player) {}
 
     Extends getCompactExtends(Extends ext) {
         if(ext.height >  ext.width) {
@@ -301,22 +295,49 @@ class PlayerNode : public LeafNode {
         return ext;
     }
 
-    void draw() {
+    void draw() { //TODO: mache das di zahle schön aligned sind
         //OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
 
-        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "icons/player.png");
+        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "skins/durak.png");
         Extends ext = computeCompactExtends({
             extends.x,
-            extends.y + extends.height * 0.4f,
+            extends.y + extends.height * 0.3f,
             extends.width,
-            extends.height * 0.6f
+            extends.height * 0.7f
         }, size.second, size.first);
-        OpenGL::drawImage(CLIENT_RES_DIR + "icons/player.png", ext);
-        OpenGL::drawText(player.name, {
+        OpenGL::drawImage(CLIENT_RES_DIR + "skins/durak.png", ext);
+
+        size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "icons/hand.png");
+        OpenGL::drawImage(CLIENT_RES_DIR + "icons/hand.png", computeCompactExtends({
+            extends.x + extends.width * 0.15f,
+            extends.y + extends.height * 0.15f,
+            extends.width * 0.2f,
+            extends.height * 0.15f
+        }, size.second, size.first));
+
+        OpenGL::drawText(std::to_string(player->game->cards), {
+            extends.x + extends.width * 0.35f,
+            extends.y + extends.height * 0.15f,
+            extends.width * 0.2f,
+            extends.height * 0.15f
+        }, glm::vec3(0,0,0), TEXTSIZE_LARGE);
+
+        if(player->game->state != PLAYERSTATE_NONE) {
+            const std::string s = getPlayerStateIcon(player->game->state);
+            size = OpenGL::getImageDimensions(s);
+            OpenGL::drawImage(s, computeCompactExtends({
+                extends.x + extends.width * 0.65f,
+                extends.y + extends.height * 0.15f,
+                extends.width * 0.2f,
+                extends.height * 0.15f
+            }, size.second, size.first));
+        }
+
+        OpenGL::drawText(player->name, {
             extends.x,
-            extends.y + extends.height * 0.2f,
+            extends.y,
             extends.width,
-            extends.height * 0.2f
+            extends.height * 0.15f
         }, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
     }
 };
@@ -329,23 +350,20 @@ class PlayerBarNode : public TreeNode {
     }
 
     public:
-
-    PlayerBarNode() {
-        Player player;
-        player.name = "Garbage Goober";
-        playerNodes.push_back(std::make_unique<PlayerNode>(player));
-        player.name = "Booger Eater";
-        playerNodes.push_back(std::make_unique<PlayerNode>(player));
-        player.name = "Copper Trader";
-        playerNodes.push_back(std::make_unique<PlayerNode>(player));
-        player.name = "Joe Mama";
-        playerNodes.push_back(std::make_unique<PlayerNode>(player));
+    void playerUpdateNotify() {
+        playerNodes.clear();
+        for(const Player& player : GlobalState::players) 
+            if(!player.is_you) playerNodes.push_back(std::make_unique<PlayerNode>(&player));
+        
+        updateExtends(extends);
     }
 
     void updateExtends(Extends ext) {
         ext = getCompactExtends(ext);
+        extends = ext; //TODO: das isch hässlich
 
         const uint N = playerNodes.size();
+        std::cout << "UPDATE PLAYWER EXT: "<<N<< std::endl;
         if(N == 0) return;
         if(N == 1) {
             (*playerNodes.begin())->updateExtends(ext);
@@ -427,7 +445,6 @@ void GameNode::updateExtends(Extends ext) {
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
-    //TODO
     function(handNode);
     function(middleNode);
     function(playerBarNode);
@@ -441,10 +458,30 @@ void GameNode::handleCardUpdate(CardUpdate update) {
     //TODO
     cast(HandNode, handNode)->updateHand(update.hand);
     cast(MiddleNode, middleNode)->setCards(update.middle_cards);
+
+    for(auto entry : update.opponent_cards) {
+        auto it = GlobalState::players.find({entry.first});
+        if(it == GlobalState::players.end()) continue;//TODO: print warning
+        it->game->cards = entry.second;
+    }
 }
 
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
-    //TODO
+    for(ClientID id : update.attackers) {
+        auto it = GlobalState::players.find({id});
+        if(it == GlobalState::players.end()) continue;//TODO: print warning
+        it->game->state = PLAYERSTATE_ATTACK;
+    }
+
+    for(ClientID id : update.idle) {
+        auto it = GlobalState::players.find({id});
+        if(it == GlobalState::players.end()) continue;//TODO: print warning
+        it->game->state = PLAYERSTATE_IDLE;
+    }
+
+    auto it = GlobalState::players.find({update.defender});
+    if(it == GlobalState::players.end()) return;//TODO: print warning
+    it->game->state = PLAYERSTATE_DEFEND;
 }
 
 void GameNode::handleAvailableActionUpdate(AvailableActionUpdate update) {
@@ -452,6 +489,5 @@ void GameNode::handleAvailableActionUpdate(AvailableActionUpdate update) {
 }
 
 void GameNode::playerUpdateNotify() {
-    //TODO
-    GlobalState::players;
+    cast(PlayerBarNode, playerBarNode)->playerUpdateNotify();
 }

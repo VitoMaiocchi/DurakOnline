@@ -86,7 +86,7 @@ void handleMessage(std::unique_ptr<Message> message) {
             //print to console for debugs
         break;
         case MESSAGETYPE_CARD_UPDATE:
-            assert(game_node);
+            throwServerErrorIF("card update can only be processed during game state", !game_node || GlobalState::game_state != GAMESTATE_GAME);
             cast(GameNode, game_node)->handleCardUpdate(*dynamic_cast<CardUpdate*>(message.get()));
         break;
         case MESSAGETYPE_PLAYER_UPDATE:

@@ -363,7 +363,6 @@ class PlayerBarNode : public TreeNode {
         extends = ext; //TODO: das isch hässlich
 
         const uint N = playerNodes.size();
-        std::cout << "UPDATE PLAYWER EXT: "<<N<< std::endl;
         if(N == 0) return;
         if(N == 1) {
             (*playerNodes.begin())->updateExtends(ext);
@@ -455,32 +454,32 @@ Extends GameNode::getCompactExtends(Extends ext) {
 }
 
 void GameNode::handleCardUpdate(CardUpdate update) {
-    //TODO
     cast(HandNode, handNode)->updateHand(update.hand);
     cast(MiddleNode, middleNode)->setCards(update.middle_cards);
 
     for(auto entry : update.opponent_cards) {
         auto it = GlobalState::players.find({entry.first});
-        if(it == GlobalState::players.end()) continue;//TODO: print warning
+        throwServerErrorIF("trying to update cards of non existent player", it == GlobalState::players.end());
         it->game->cards = entry.second;
     }
+    //TODO
 }
 
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
     for(ClientID id : update.attackers) {
         auto it = GlobalState::players.find({id});
-        if(it == GlobalState::players.end()) continue;//TODO: print warning
+        throwServerErrorIF("trying to assign attacking state to nonexistent player", it == GlobalState::players.end());
         it->game->state = PLAYERSTATE_ATTACK;
     }
 
     for(ClientID id : update.idle) {
         auto it = GlobalState::players.find({id});
-        if(it == GlobalState::players.end()) continue;//TODO: print warning
+        throwServerErrorIF("trying to assign idle battle state to nonexistent player", it == GlobalState::players.end());
         it->game->state = PLAYERSTATE_IDLE;
     }
 
     auto it = GlobalState::players.find({update.defender});
-    if(it == GlobalState::players.end()) return;//TODO: print warning
+    throwServerErrorIF("trying to assign defending state to nonexistent player", it == GlobalState::players.end());
     it->game->state = PLAYERSTATE_DEFEND;
 }
 

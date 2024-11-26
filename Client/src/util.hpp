@@ -1,6 +1,7 @@
 #pragma once 
 
 #include <string>
+#include <exception>
 #include "../../Networking/include/Networking/util.hpp"
 
 #define cast(type, ptr) dynamic_cast<type*>(ptr.get()) 
@@ -58,3 +59,7 @@ inline void printExt(std::string name, Extends ext) {
     std::cout << "Extends("<<name<<") x: " << ext.x << "; y: " << ext.y
                 << "; width: " << ext.width << "; height: " << ext.height << std::endl;
 }
+
+#define throwServerError(m) throw std::runtime_error(std::string("\nSERVER SIDE ERROR: ")+std::string(m)+std::string("\nat: ")+std::string(__FILE__)+std::string(" line: ")+std::to_string(__LINE__))
+#define throwGenericError(m) throw std::runtime_error(std::string("\nGENERIC RUNTIME ERROR: ")+std::string(m)+std::string("\nat: ")+std::string(__FILE__)+std::string(" line: ")+std::to_string(__LINE__))
+#define throwServerErrorIF(m, c) if(c) throwServerError(m)

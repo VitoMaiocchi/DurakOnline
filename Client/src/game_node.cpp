@@ -459,7 +459,7 @@ void GameNode::handleCardUpdate(CardUpdate update) {
 
     for(auto entry : update.opponent_cards) {
         auto it = GlobalState::players.find({entry.first});
-        throwServerErrorIF("trying to update cards of non existent player", it == GlobalState::players.end());
+        throwServerErrorIF("invalid ClientID in opponent cards entry", it == GlobalState::players.end());
         it->game->cards = entry.second;
     }
     //TODO

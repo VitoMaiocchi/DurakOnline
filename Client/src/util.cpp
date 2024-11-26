@@ -13,8 +13,6 @@ bool Extends::contains(float x, float y) {
 }
 
 bool Player::operator<(const Player& other) const {
-    if(is_you) return true;
-    if(other.is_you) return false;
     return id < other.id;
 }
 

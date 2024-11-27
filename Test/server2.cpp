@@ -84,6 +84,15 @@ int main() {
                     for(auto c : player_ids){
                         Network::sendMessage(std::make_unique<GameStateUpdate>(update), c);
                     }
+                    PlayerUpdate update3;
+                    update3.player_names[1] = "Garbage Goober";
+                    update3.player_names[2] = "Booger Eater";
+                    update3.player_names[3] = "Spider-man";
+                    // update3.player_names[id] = "YOU";
+                    for(auto c : player_ids){
+                        Network::sendMessage(std::make_unique<PlayerUpdate>(update3), c);
+                    }
+
                     current_game = std::make_unique<Game>(player_ids);
                     std::cout << "Starting a new game..." << std::endl;
                 }

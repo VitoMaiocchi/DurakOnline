@@ -95,3 +95,62 @@ TEST_F(DurakGameTest, TestGameConstructor_PlayerRolesAndBattleConsistency) {
             << "Role mismatch for player " << id << " between Game and Battle";
     }
 }
+// Test to validate the correctness of defender and second attacker logic
+TEST_F(DurakGameTest, TestGameConstructor_DefenderAndSecondAttacker) {
+    // Retrieve the player roles from the game
+    const auto& player_roles = game->getPlayerRoles();
+
+    // Find the first attacker
+    ClientID first_attacker = -1;
+    for (const auto& [id, role] : player_roles) {
+        if (role == ATTACKER) {
+            first_attacker = id;
+            break;
+        }
+    }
+    ASSERT_NE(first_attacker, -1) << "First attacker was not determined";
+
+    // Determine the expected defender
+    auto attacker_it = std::find(clients.begin(), clients.end(), first_attacker);
+    ASSERT_NE(attacker_it, clients.end()) << "First attacker not found in player list";
+
+    ClientID expected_defender = (attacker_it + 1 != clients.end()) 
+                                    ? *(attacker_it + 1)
+                                    : clients.front();
+
+    // Find the defender in the roles
+    ClientID actual_defender = -1;
+    for (const auto& [id, role] : player_roles) {
+        if (role == DEFENDER) {
+            actual_defender = id;
+            break;
+        }
+    }
+    ASSERT_NE(actual_defender, -1) << "Defender was not determined";
+
+    // Validate the defender assignment
+    EXPECT_EQ(actual_defender, expected_defender) 
+        << "Defender role assignment is incorrect";
+
+    // Determine the expected second attacker
+    auto defender_it = std::find(clients.begin(), clients.end(), actual_defender);
+    ASSERT_NE(defender_it, clients.end()) << "Defender not found in player list";
+
+    ClientID expected_second_attacker = (defender_it + 1 != clients.end()) 
+                                            ? *(defender_it + 1)
+                                            : clients.front();
+
+    // Find the second attacker in the roles
+    ClientID actual_second_attacker = -1;
+    for (const auto& [id, role] : player_roles) {
+        if (role == CO_ATTACKER) {
+            actual_second_attacker = id;
+            break;
+        }
+    }
+    ASSERT_NE(actual_second_attacker, -1) << "Second attacker was not determined";
+
+    // Validate the second attacker assignment
+    EXPECT_EQ(actual_second_attacker, expected_second_attacker)
+        << "Second attacker role assignment is incorrect";
+}

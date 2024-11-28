@@ -36,26 +36,29 @@ Game::Game(std::vector<ClientID> player_ids){
         // ClientID second_attacker = (first_attacker + 2) % player_ids.size();
 
         ClientID first_defender = -1; //no player determined
-        for(auto it = player_ids.begin(); it != player_ids.end(); ++it){
-            if(*it == first_attacker){
-                auto next_it = std::next(it);
-                if(next_it == player_ids.end()){
-                    next_it = player_ids.begin();
+        for(size_t i = 0; i < player_ids.size(); ++i){
+            if(player_ids[i] == first_attacker){
+                if( i + 1 < player_ids.size()){
+                    first_defender = player_ids[i + 1]; 
                 }
-                first_defender = *next_it;
+                else{
+                    first_defender = player_ids[0];
+                }
                 break;
             }
         }
         std::cout << "determined defender: " << first_defender << std::endl;
 
         ClientID second_attacker = -1; //no player determined
-        for(auto it = player_ids.begin(); it != player_ids.end(); ++it){
-            if(*it == first_defender){
-                auto next_it = std::next(it);
-                if(next_it == player_ids.end()){
-                    next_it = player_ids.begin();
+
+        for(size_t i = 0; i < player_ids.size(); ++i){
+            if(player_ids[i] == first_defender){
+                if( i + 1 < player_ids.size()){
+                    second_attacker = player_ids[i + 1];
                 }
-                second_attacker = *next_it;
+                else{
+                    second_attacker = player_ids[0];
+                }
                 break;
             }
         }

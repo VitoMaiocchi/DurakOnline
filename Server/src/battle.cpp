@@ -110,8 +110,11 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         //else if more than one card is being played at the same time
         //also checks for if the max_attacks are reached
         else if(cards.size() > 1 && (cards.size() + curr_attacks_ <= max_attacks_)){
-            for(auto card : cards){
-                if(!isValidMove(card, player_id, slot)) {
+            for(size_t i = 0; i < cards.size() - 1; ++i){
+                if(cards[i].rank != cards[i + 1].rank){
+                    IllegalMoveNotify err_msg;
+                    err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
+                    Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
                     return false;
                 }
                 else {attacks_to_defend_++;}
@@ -474,6 +477,7 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
  * POST: moves the player roles one to the next 
  */
 void Battle::movePlayerRoles(){
+    std::cout << "moving the player roles" << std::endl;
     PlayerRole last_value = players_bs_.rbegin()->second;
 
     for(auto it = players_bs_.rbegin(); it != players_bs_.rend(); ++it){
@@ -482,6 +486,52 @@ void Battle::movePlayerRoles(){
         }
     }
     players_bs_.begin()->second = last_value;
+    //send the battle state updates
+    BattleStateUpdate bsu_msg;
+    //set the first attacker pointer to the one that attacks first
+    //while iterating prepare the message BattleStateUpdate to send to the client
+    for(auto& pl : players_bs_){
+        if(pl.second == ATTACKER){
+            first_attacker_ = &pl;
+            bsu_msg.attackers.push_back(pl.first);
+        }
+        else if(pl.second == DEFENDER){
+            bsu_msg.defender = pl.first;
+        }
+        else if(pl.second == CO_ATTACKER){
+            bsu_msg.attackers.push_back(pl.first);
+        }
+        else if(pl.second == IDLE){
+            bsu_msg.idle.push_back(pl.first);
+        }
+        std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
+    }
+
+    for(auto& pl : players_bs_){
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
+    }
+    //set the first attacker pointer to the one that attacks first
+    //while iterating prepare the message BattleStateUpdate to send to the client
+    for(auto& pl : players_bs_){
+        if(pl.second == ATTACKER){
+            first_attacker_ = &pl;
+            bsu_msg.attackers.push_back(pl.first);
+        }
+        else if(pl.second == DEFENDER){
+            bsu_msg.defender = pl.first;
+        }
+        else if(pl.second == CO_ATTACKER){
+            bsu_msg.attackers.push_back(pl.first);
+        }
+        else if(pl.second == IDLE){
+            bsu_msg.idle.push_back(pl.first);
+        }
+        std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
+    }
+
+    for(auto& pl : players_bs_){
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
+    }
 
     //send the new available action updates
     for(auto pl : players_bs_){

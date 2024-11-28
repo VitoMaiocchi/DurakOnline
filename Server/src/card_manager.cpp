@@ -137,6 +137,10 @@ bool CardManager::attackCard(Card card, ClientID PlayerID){
 
     // Place the card in the identified slot
     middle_[free_slot].first = card;
+
+    //remove card from player hand
+    player_hands_[PlayerID].erase(cardPosition);
+
     //Update middle number of cards in middle & in player hand
     ++number_cards_middle_;
     --player_number_of_cards_[PlayerID];
@@ -157,6 +161,7 @@ void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
     auto cardPosition = std::find(player_hands_[PlayerID].begin(), player_hands_[PlayerID].end(), card);
     //Place Card
     middle_[slot % 6].second=card;
+    
     //Remove card from the players hand
     player_hands_[PlayerID].erase(cardPosition);
     
@@ -174,13 +179,6 @@ void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
 //POST: All cards in the middle are moved from "middle" to "discarded cards"
 bool CardManager::clearMiddle(){
     assert(middle_.size()<=6 && "middle_ shouldn't have more than six slots");
-    //Alli charte transfere vo mitti zu discarded, bin nonig so zfriede mit dere implementation
-    // while(!middle_.empty()){
-    //     if(middle_[0])
-    //     discarded_cards_.push_back(middle_[0].first.value()); 
-    //     discarded_cards_.push_back(middle_[0].second.value());
-    //     middle_.erase(middle_.begin());
-    // }
     //if the middle is not empty 
     if(!middle_.empty()){
         //iterate over the middle

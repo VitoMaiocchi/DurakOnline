@@ -24,12 +24,44 @@ Game::Game(std::vector<ClientID> player_ids){
                 }
             }
         }
+        std::cout << "determined attacker: " << first_attacker << std::endl;
         if(first_attacker == -1){
             // no one has a trump, choose a random player as the first attacker
             first_attacker = rand() % player_ids.size();
+
+            //debugging
+            std::cout << "random determined first attacker" << std::endl;
         }
-        ClientID first_defender = (first_attacker + 1) % player_ids.size();
-        ClientID second_attacker = (first_attacker + 2) % player_ids.size();
+        // ClientID first_defender = (first_attacker + 1) % player_ids.size();
+        // ClientID second_attacker = (first_attacker + 2) % player_ids.size();
+
+        ClientID first_defender = -1; //no player determined
+        for(auto it = player_ids.begin(); it != player_ids.end(); ++it){
+            if(*it == first_attacker){
+                auto next_it = std::next(it);
+                if(next_it == player_ids.end()){
+                    next_it = player_ids.begin();
+                }
+                first_defender = *next_it;
+                break;
+            }
+        }
+        std::cout << "determined defender: " << first_defender << std::endl;
+
+        ClientID second_attacker = -1; //no player determined
+        for(auto it = player_ids.begin(); it != player_ids.end(); ++it){
+            if(*it == first_defender){
+                auto next_it = std::next(it);
+                if(next_it == player_ids.end()){
+                    next_it = player_ids.begin();
+                }
+                second_attacker = *next_it;
+                break;
+            }
+        }
+        std::cout << "determined second attacker: " << second_attacker << std::endl;
+
+
     // set private member player_roles_
     for(auto i : player_ids){
         if(i == first_attacker){

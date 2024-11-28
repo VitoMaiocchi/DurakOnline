@@ -35,6 +35,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
         else if(pl.second == IDLE){
             bsu_msg.idle.push_back(pl.first);
         }
+        std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
     }
 
     for(auto& pl : players_bs_){

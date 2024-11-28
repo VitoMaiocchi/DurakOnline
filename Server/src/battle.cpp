@@ -143,7 +143,13 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
             // return false;
         } 
         if(isValidMove(cards.at(0), player_id, slot)) {
-            // defend(player_id, cards.at(0), slot); //this function causes an address boundary error
+            defend(player_id, cards.at(0), slot); //this function causes an address boundary error
+            return true;
+        }
+    }
+    else if(role == DEFENDER && defense_started_){
+        if(isValidMove(cards.at(0), player_id, slot)) {
+            defend(player_id, cards.at(0), slot); //this function causes an address boundary error
             return true;
         }
     }
@@ -308,7 +314,7 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
 
  */ 
 bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
-
+    std::cout << "isValidMove() was called" << std::endl;
     //initialize the error message which will be sent if an invalid move is found
     IllegalMoveNotify err_message;
 
@@ -386,7 +392,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             return false;
         } 
     }
-    if(role == ATTACKER || role == CO_ATTACKER){
+    if(role == ATTACKER){
         if(curr_attacks_ == max_attacks_){
             err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
@@ -394,6 +400,29 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         }
         if(curr_attacks_ == 0){
             return true;
+        }
+        //check if card rank is in middle
+        if(curr_attacks_ < max_attacks_){
+            //fetch middle if the card is in play
+            std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
+            for(auto card_in_middle : middle){
+                if(card_in_middle.first->rank == card.rank || card_in_middle.second->rank == card.rank){
+                    return true;
+                }
+            } 
+        }
+    }
+    //coattacker can only jump in on the attack after the attacker started attcking
+    if(role == CO_ATTACKER){
+        if(curr_attacks_ == max_attacks_){
+            err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+            return false; //idk about this maybe should be > and if == true
+        }
+        if(curr_attacks_ == 0){
+            err_message.error = "Illegal move: 'First Attacker hasnt attacked yet'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+            return false;
         }
         //check if card rank is in middle
         if(curr_attacks_ < max_attacks_){

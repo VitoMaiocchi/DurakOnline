@@ -11,6 +11,7 @@ class LobbyNode : public TreeNode {
         void handleAvailableActionUpdate(AvailableActionUpdate update);
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
+        std::unique_ptr<Node> lobby;
 };
 
 class LoginScreenNode : public TreeNode {
@@ -23,9 +24,9 @@ class LoginScreenNode : public TreeNode {
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };
 
-class GameOverScreen : public TreeNode {
+class GameOverScreenNode : public TreeNode {
     public:
-        GameOverScreen(bool durak);
+        GameOverScreenNode(bool durak= 1);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 

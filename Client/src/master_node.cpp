@@ -2,6 +2,7 @@
 #include "drawable.hpp"
 #include "game_node.hpp"
 #include "viewport.hpp"
+#include "toplevel_nodes.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -15,10 +16,27 @@ GameState GlobalState::game_state = GAMESTATE_NONE;
 std::set<Player> GlobalState::players;
 
 std::unique_ptr<Node> game_node;
+std::unique_ptr<LobbyNode> lobby_node;
 
 MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
     master_node_exists = true;
+
+    lobby_node = std::make_unique<LobbyNode>();
+
+    PlayerUpdate update;
+    update.player_names = {
+        {1, "Alice"},
+        {2, "Bob"},
+        {3, "Charlie"},
+        {4, "Dave"},
+        {5, "Eve"},
+        {6, "Vito"}
+    };
+    update.durak = 4;
+
+    // Call handlePlayerUpdate
+    lobby_node->handlePlayerUpdate(update);
 } 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
@@ -26,6 +44,7 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
         assert(game_node);
         function(game_node);
     }
+    function(reinterpret_cast<std::unique_ptr<Node>&>(lobby_node)); 
 }
 
 void MasterNode::updateExtends(Extends ext) {
@@ -35,6 +54,12 @@ void MasterNode::updateExtends(Extends ext) {
         assert(game_node);
         game_node->updateExtends(ext);
     }
+    if (lobby_node) {
+        lobby_node->updateExtends(ext);
+    } else {
+        std::cerr << "Warning: lobby_node is nullptr in MasterNode::updateExtends." << std::endl;
+    }
+
 }
 
 Extends MasterNode::getCompactExtends(Extends ext) {

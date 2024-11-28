@@ -12,6 +12,7 @@ namespace DurakServer{
     std::unordered_set<ClientID> clients;
     std::unordered_set<ClientID> ready_clients;
     std::unique_ptr<Game> current_game = nullptr;
+    std::map<ClientID, Player> players_map;
 }
 
 
@@ -57,6 +58,8 @@ int main() {
             // the client connects to the server and enters his username
             // in return he will be transfered to the lobby and his name is saved on the server
             case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
+                //player update message prep
+                PlayerUpdate player_update;
                 // Client connected, add name to a datastructure maybe a map
                 if (clients.find(client) == clients.end() && clients.size() < MAX_PLAYERS) {
                     clients.insert(client);
@@ -66,9 +69,18 @@ int main() {
                     ClientConnectEvent* connect = dynamic_cast<ClientConnectEvent*>(msg_r.get());
                     p.name = connect->username;
                     p.player_id = client;
-                    std::cout << "Client name: " << p.name <<  std::endl;
+                    p.durak = false; //default value for new players
 
+                    std::cout << "Client name: " << p.name <<  std::endl;
+                    // store the player object in the map
+                    DurakServer::players_map[client] = p;
+                    //add player to update msg 
+                    for(auto c : players_map){
+                        player_update.player_names[c.first] = c.second.name;
+                    } 
                 }
+
+
                 // Gamestate update message
                 GameStateUpdate update;
                 update.state = GAMESTATE_LOBBY;
@@ -77,12 +89,14 @@ int main() {
 
                 //this is added for testing purposes to start the game screen
                 if(clients.size() >= MIN_PLAYERS){
+                    player_update.player_count = players_map.size(); //playerupdate msg
 
                     std::vector<ClientID> player_ids(clients.begin(), clients.end());
                     GameStateUpdate update;
                     update.state = GAMESTATE_GAME;
                     for(auto c : player_ids){
                         Network::sendMessage(std::make_unique<GameStateUpdate>(update), c);
+                        Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
                     }
                     PlayerUpdate update3;
                     update3.player_names[1] = "Garbage Goober";

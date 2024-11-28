@@ -26,6 +26,9 @@ namespace DurakServer{
     // Game instance
     extern std::unique_ptr<Game> current_game;
 
+    //player info
+    extern std::map<ClientID, Player> players_map;
+
     // Minimum number of players required to start a game
     constexpr size_t MIN_PLAYERS = 3;
     //maximum number of players that can play the game

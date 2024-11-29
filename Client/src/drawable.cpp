@@ -47,44 +47,40 @@ void LeafNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> fu
 
 //IMAGE NODE
 
-ImageNode::ImageNode(std::string path) : image(path) {
-    image.getDimensions(width, height);
+ImageNode::ImageNode(std::string path) : path(path) {
+    auto dim = OpenGL::getImageDimensions(path);
+    width = dim.first;
+    height = dim.second;
 }
 
 void ImageNode::draw() {
-    image.draw(extends);
+    OpenGL::drawImage(path, extends);
 }
 
 Extends ImageNode::getCompactExtends(Extends ext) {
     return computeCompactExtends(ext, height, width);
 }
 
-RectangleNode::RectangleNode(float r, float g, float b) : rect(r, g, b) {}
+RectangleNode::RectangleNode(float r, float g, float b) : r(r), g(g), b(b) {}
 Extends RectangleNode::getCompactExtends(Extends ext) {
     return ext;
 }
 void RectangleNode::draw() {
-    rect.draw(extends);
+    OpenGL::drawRectangle(extends, glm::vec4(r,g,b,1.0f));
 }
 
 //TEXT NODE
-TextNode::TextNode(std::string text, float r, float g, float b) : text(text, r, g, b) {}
+TextNode::TextNode(std::string text, float r, float g, float b) : text(text), color(r,g,b) {}
 void TextNode::updateContent(std::string text) {
-    this->text.text = text;
+    this->text = text;
 }
 
 Extends TextNode::getCompactExtends(Extends ext) {
-    float width, height;
-    text.getSize(width, height);
-    return computeCompactExtends(ext, height, width);
+    return ext; //nöd richtig so aber will das eh weg rationalisiere
 }
 
 void TextNode::draw() { //TEXT SIZE MAX
-    float width, height;
-    text.getSize(width, height);
-    Extends ext = computeCompactExtends(extends, height, width);
-    float scale_factor = ext.width / width;
-    text.draw(extends.x, extends.y, scale_factor);
+    OpenGL::drawText(text, extends, color, TEXTSIZE_LARGE);
 }
 
 

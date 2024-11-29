@@ -37,6 +37,7 @@ class LeafNode : public Node {
     void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };
 
+//IMAGE RECTANGLE UND TEXT NODE SIND OBSOLET LIBER DIREKT DRAW MACHE
 class ImageNode : public LeafNode {
     public:
         ImageNode(std::string path);
@@ -44,8 +45,8 @@ class ImageNode : public LeafNode {
         void draw();
 
     private:
-        OpenGL::Image image;
         uint width, height;
+        std::string path;
 };
 
 class RectangleNode : public LeafNode {
@@ -55,7 +56,6 @@ class RectangleNode : public LeafNode {
         void draw();
 
     private:
-        OpenGL::Rectangle rect;
         float r, g, b;
 };
 
@@ -65,8 +65,8 @@ class TextNode : public LeafNode {
         void updateContent(std::string text);
         Extends getCompactExtends(Extends ext);
         void draw();
-    private:
-        OpenGL::Text text;
+        std::string text;
+        glm::vec3 color;
 };
 
 

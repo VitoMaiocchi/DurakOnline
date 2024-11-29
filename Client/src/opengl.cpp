@@ -103,29 +103,6 @@ namespace OpenGL {
     //IMAGE
     Texture* getTexture(std::string path);
 
-    Image::Image(std::string path) {
-        texture = getTexture(path);
-    }
-
-    void Image::draw(Extends ext) {
-        glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
-        glUseProgram(imageShader->shader_program);
-
-        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
-        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
-
-        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    };
-
-    void Image::getDimensions(uint &width, uint &height) {
-        width = texture->width;
-        height = texture->height;
-    }
-
     std::pair<uint, uint> getImageDimensions(std::string path) {
         Texture* texture = getTexture(path);
         return {texture->width, texture->height};
@@ -150,32 +127,6 @@ namespace OpenGL {
 
     //Rectangle
     void drawRectangle(Extends ext, glm::vec4 color) {
-        glUseProgram(rectangleShader->shader_program);
-
-        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
-        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
-
-        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
-        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
-
-    Rectangle::Rectangle(float r, float g, float b) :
-        color(glm::vec4(r, g, b, 1.0f)) {}
-
-    Rectangle::Rectangle(glm::vec3 color) :
-        color(glm::vec4(color.x, color.y, color.z, 1.0f)) {}
-
-    Rectangle::Rectangle(glm::vec4 color) :
-        color(color) {}
-
-    void Rectangle::draw(Extends ext) {
         glUseProgram(rectangleShader->shader_program);
 
         glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
@@ -327,20 +278,6 @@ namespace OpenGL {
     //FREE TYPE (TEXT)
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
     void computeTextSize(std::string text, float scale, float &width, float &height);
-
-    Text::Text(std::string text, float r, float g, float b) :
-        text(text), color(glm::vec3(r,g,b)) {}
-    
-    Text::Text(std::string text, glm::vec3 color) :
-        text(text), color(color) {}
-
-    void Text::draw(float x, float y, float scale_factor) {
-        renderText(text, x, y, scale_factor, color);
-    }
-
-    void Text::getSize(float &width, float &height) {
-        computeTextSize(text, 1.0f, width, height);
-    }
 
     struct Character {
         unsigned int TextureID; // ID handle of the glyph texture

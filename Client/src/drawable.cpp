@@ -186,6 +186,15 @@ void LinearStackNode::updateExtends(Extends ext) {
         return;
     }
 
+    std::cout << "[LinearStackNode] Updated extends: x=" << extends.x
+              << ", y=" << extends.y
+              << ", width=" << extends.width
+              << ", height=" << extends.height << std::endl;
+
+    // For each child
+    for (const auto& child : children) {
+
+    }
 
     //legacy eric code (funktioniert wahschinlich immer nonig)
 

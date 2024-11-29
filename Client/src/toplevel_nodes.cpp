@@ -4,11 +4,6 @@
 // LobbyNode
 class Lobby : public LeafNode {
 private:
-    // Base
-    std::unique_ptr<RectangleNode> base_rectangle;
-    // Title
-    std::unique_ptr<TextNode> lobby_title;
-
     // Buttons
     struct Button {
         std::string label;
@@ -22,11 +17,6 @@ private:
 
 public:
     Lobby() {
-        // Base
-        base_rectangle = std::make_unique<RectangleNode>(1.0f, 1.0f, 1.0f);
-        // Title
-        lobby_title = std::make_unique<TextNode>("LOBBY", 0.0f, 0.0f, 0.0f);
-
         // Buttons
         buttons.push_back({"BACK", {0.0f, 0.0f, 0.0f}, {}});
         buttons.push_back({"READY", {0.0f, 0.0f, 0.0f}, {}});
@@ -46,8 +36,7 @@ public:
             extends.height * 0.9f,
             0
         };
-        base_rectangle->updateExtends(base_ext);
-        base_rectangle->draw();
+        OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         // Title extends
         Extends title_ext = {
@@ -57,8 +46,7 @@ public:
             extends.height * 0.3f,
             0
         };
-        lobby_title->updateExtends(title_ext);
-        lobby_title->draw();
+        OpenGL::drawText("LOBBY", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
 
         // Player extends
         Extends player_ext = {

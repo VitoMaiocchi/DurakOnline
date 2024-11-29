@@ -19,3 +19,21 @@ bool Player::operator<(const Player& other) const {
 bool Player::operator==(const Player& other) const {
     return id == other.id;
 }
+
+Extends computeCompactExtends(Extends ext, float height, float width) {
+    float h, w;
+    if( (float)ext.height / ext.width < (float)height / width ) { //height
+        h = ext.height;
+        w = (float) width * ext.height / height;
+    } else { //width
+        w = ext.width;
+        h = (float) height * ext.width / width;
+    }
+
+    return {
+        ext.x + (ext.width - w)/2,
+        ext.y + (ext.height - h)/2,
+        w,
+        h
+    };
+}

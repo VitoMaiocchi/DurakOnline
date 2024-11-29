@@ -55,6 +55,8 @@ inline std::string getPlayerStateIcon(PlayerState state) {
     return "error";
 }
 
+Extends computeCompactExtends(Extends ext, float height, float width);
+
 inline void printExt(std::string name, Extends ext) {
     std::cout << "Extends("<<name<<") x: " << ext.x << "; y: " << ext.y
                 << "; width: " << ext.width << "; height: " << ext.height << std::endl;

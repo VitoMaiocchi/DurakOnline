@@ -15,7 +15,6 @@
 #define CARD_OFFSET_BORDER 7
 
 #define BUTTON_BUFFER 10
-//TODO 
 //da chunt alles ine wo grendered wird während es game lauft
 //endscreen und so nöd nur das mit de charte i de mitti und so
 
@@ -125,9 +124,6 @@ class HandNode : public LeafNode {
         }
 
 };
-
-//TODO: das schönner mache
-Extends computeCompactExtends(Extends ext, float height, float width);
 
 class CardStackNode : public LeafNode {
     private:

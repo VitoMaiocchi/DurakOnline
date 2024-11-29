@@ -83,14 +83,14 @@ public:
 
     void drawPlayers(const Extends& player_ext) {
         // Number of players
-        size_t num_players = players.size();
+        int num_players = players.size();
         if (num_players == 0) return;
 
         // Calculate the width for each player (horizontal layout)
         float player_width = player_ext.width / num_players;
 
         // Loop over each player and draw
-        size_t index = 0;
+        int index = 0;
         for (const auto& player : players) {
             // Calculate the extends for the current player
             Extends current_player_ext = {
@@ -127,17 +127,20 @@ public:
     }
 
     void drawButtons(const Extends& button_area_ext) {
-        size_t num_buttons = buttons.size();
+        int num_buttons = buttons.size();
         if (num_buttons == 0) return;
 
         // Calculate the width
         float button_width = button_area_ext.width / num_buttons;
 
-        size_t index = 0;
+        int index = 0;
         for (auto& button : buttons) {
+            float middle = 0.;
+            if(index == 1) middle = (0.3f*button_width)*(1/6.);
+            if(index == 2) middle = (0.3f*button_width)*(2/6.);
             // Calculate the extends for the current button
             Extends button_ext = {
-                button_area_ext.x + index * button_width,
+                button_area_ext.x + index * button_width + middle,
                 button_area_ext.y,
                 button_width*0.9f,
                 button_area_ext.height*0.4f,

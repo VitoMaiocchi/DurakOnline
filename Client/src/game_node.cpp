@@ -13,6 +13,8 @@
 
 #define CARD_OFFSET_FACTOR 0.11f
 #define CARD_OFFSET_BORDER 7
+
+#define BUTTON_BUFFER 10
 //TODO 
 //da chunt alles ine wo grendered wird während es game lauft
 //endscreen und so nöd nur das mit de charte i de mitti und so
@@ -391,10 +393,93 @@ class PlayerBarNode : public TreeNode {
     }
 };
 
+class ButtonNode : public LeafNode { //TODO: hover (aber complettes hover rework)
+    std::string text;
+
+    public:
+    ButtonNode(std::string text) : text(text) {} 
+    bool visible = false;
+
+    Extends getCompactExtends(Extends ext) {
+        return ext;
+    }
+
+    void draw() { 
+        if(!visible) return;
+        OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.2));
+        OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
+    }
+};
+
+class PlayerActionNode : public TreeNode {
+
+    // {ok,pickup,passon}
+    std::unique_ptr<Node> buttons[3];
+
+    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+        for(auto &node : buttons) function(node);
+    }
+
+    public:
+    PlayerActionNode() {
+        buttons[0] = std::make_unique<ButtonNode>("Ready");
+        buttons[1] = std::make_unique<ButtonNode>("Pick Up");
+        buttons[2] = std::make_unique<ButtonNode>("Reflect");
+        buttons[0]->setClickEventCallback([](float x, float y){
+            std::cout << "CLICKED READY" << std::endl;
+            ClientActionEvent event;
+            event.action = CLIENTACTION_OK;
+            Network::sendMessage(std::make_unique<ClientActionEvent>(event));
+        });
+        buttons[1]->setClickEventCallback([](float x, float y){
+            std::cout << "CLICKED PICKUP" << std::endl;
+            ClientActionEvent event;
+            event.action = CLIENTACTION_PICK_UP;
+            Network::sendMessage(std::make_unique<ClientActionEvent>(event));
+        });
+        buttons[2]->setClickEventCallback([](float x, float y){
+            std::cout << "CLICKED REFLECT" << std::endl;
+            ClientActionEvent event;
+            event.action = CLIENTACTION_PASS_ON;
+            Network::sendMessage(std::make_unique<ClientActionEvent>(event));
+        });
+    }
+
+    void handleAvailableActionUpdate(AvailableActionUpdate update) {
+        std::cout << "handle available action update" <<  update.ok << update.pick_up << std::endl; 
+        cast(ButtonNode, buttons[0])->visible = update.ok;
+        cast(ButtonNode, buttons[1])->visible = update.pick_up;
+        cast(ButtonNode, buttons[2])->visible = update.pass_on;
+    }
+
+    void updateExtends(Extends ext) {
+        extends = getCompactExtends(ext);
+
+        float delta = extends.height / 3;
+        const float b = BUTTON_BUFFER * Viewport::global_scalefactor;
+        ext = {
+            extends.x + b,
+            extends.y + b,
+            extends.width - 2*b,
+            delta - 2*b
+        };
+
+        for(auto &node : buttons) {
+            node->updateExtends(ext);
+            ext.y += delta;
+        }
+    }
+
+    Extends getCompactExtends(Extends ext) {
+        return ext;
+    }
+};
+
 
 GameNode::GameNode(Extends ext) {
     handNode = std::make_unique<HandNode>();
     playerBarNode = std::make_unique<PlayerBarNode>();
+    playerActionNode = std::make_unique<PlayerActionNode>();
 
     middleNode = std::make_unique<MiddleNode>();
     Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
@@ -441,12 +526,21 @@ void GameNode::updateExtends(Extends ext) {
         0
     };
     middleNode->updateExtends(middle_ext);
+
+    playerActionNode->updateExtends({
+        extends.x + extends.width * 0.75f,
+        extends.y,
+        extends.width * 0.25f,
+        extends.height * 0.2f,
+        0
+    });
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(handNode);
     function(middleNode);
     function(playerBarNode);
+    function(playerActionNode);
 }
 
 Extends GameNode::getCompactExtends(Extends ext) {
@@ -484,7 +578,7 @@ void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
 }
 
 void GameNode::handleAvailableActionUpdate(AvailableActionUpdate update) {
-    //TODO
+    cast(PlayerActionNode, playerActionNode)->handleAvailableActionUpdate(update);
 }
 
 void GameNode::playerUpdateNotify() {

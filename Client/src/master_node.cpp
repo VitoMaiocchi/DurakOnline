@@ -96,7 +96,7 @@ void handleMessage(std::unique_ptr<Message> message) {
             cast(GameNode, game_node)->handleBattleStateUpdate(*dynamic_cast<BattleStateUpdate*>(message.get()));
         break;
         case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
-            if(GlobalState::game_state == GAMESTATE_GAME && GlobalState::game_state == GAMESTATE_LOBBY)
+            if(GlobalState::game_state == GAMESTATE_GAME) // da no für lobby GlobalState::game_state == GAMESTATE_LOBBY
                 cast(GameNode, game_node)->handleAvailableActionUpdate(*dynamic_cast<AvailableActionUpdate*>(message.get()));
         break;
         case MESSAGETYPE_GAME_STATE_UPDATE:

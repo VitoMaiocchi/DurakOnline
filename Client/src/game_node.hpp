@@ -21,4 +21,5 @@ class GameNode : public TreeNode {
         std::unique_ptr<Node> handNode;
         std::unique_ptr<Node> middleNode;
         std::unique_ptr<Node> playerBarNode;
+        std::unique_ptr<Node> playerActionNode;
 };

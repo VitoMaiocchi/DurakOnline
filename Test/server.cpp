@@ -70,6 +70,25 @@ int main() {
             update4.defender = 7;
             update4.idle = {10};
             Network::sendMessage(std::make_unique<BattleStateUpdate>(update4), id);
+
+            AvailableActionUpdate update5;
+            update5.ok = true;
+            update5.pass_on = false;
+            update5.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update5), id);
+
+            sleep(5);
+            update5.ok = false;
+            update5.pass_on = false;
+            update5.pick_up = true;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update5), id);
+
+
+            sleep(5);
+            update5.ok = true;
+            update5.pass_on = true;
+            update5.pick_up = true;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update5), id);
         }
     }
 

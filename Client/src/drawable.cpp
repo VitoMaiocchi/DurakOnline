@@ -119,14 +119,14 @@ void BufferNode::updateExtends(Extends ext) {
     ext = getCompactChildExt(ext);
     float s = getBufferSize();
     child->updateExtends(ext);
-    extends = {ext.x - s, ext.y - s, ext.width+2*s, ext.height+2*s, ext.layer};
+    extends = {ext.x - s, ext.y - s, ext.width+2*s, ext.height+2*s};
 }
 
 Extends BufferNode::getCompactExtends(Extends ext) {
-    if(!child) return {0,0,0,0,ext.layer};
+    if(!child) return {0,0,0,0};
     ext = getCompactChildExt(ext);
     float s = getBufferSize();
-    return {ext.x - s, ext.y - s, ext.width+2*s, ext.height+2*s, ext.layer};
+    return {ext.x - s, ext.y - s, ext.width+2*s, ext.height+2*s};
 }
 
 void BufferNode::setBufferSize(BufferType buffer_type, float buffer_size) {

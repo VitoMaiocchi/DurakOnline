@@ -86,8 +86,7 @@ class HandNode : public LeafNode {
                 extends.x + (extends.width - (card_width + delta * (N-1)) )/2,
                 extends.y,
                 card_width,
-                extends.height,
-                0
+                extends.height
             };
 
             for(Card card : cards) {
@@ -183,8 +182,7 @@ class CardStackNode : public LeafNode {
                     ext.x + 0.5f*offset,
                     ext.y + 0.5f*offset,
                     ext.width - offset,
-                    ext.height - offset,
-                    0
+                    ext.height - offset
                 }, glm::vec4(0.4,0.2,0.2,0.2));
             }
 
@@ -193,8 +191,7 @@ class CardStackNode : public LeafNode {
                     ext.x + 0.5f*offset,
                     ext.y + 0.5f*offset,
                     ext.width - offset,
-                    ext.height - offset,
-                    0
+                    ext.height - offset
                 });
                 return;
             }
@@ -203,16 +200,14 @@ class CardStackNode : public LeafNode {
                 ext.x,
                 ext.y + offset,
                 ext.width - offset,
-                ext.height - offset,
-                0
+                ext.height - offset
             });
 
             if(top_card.has_value()) OpenGL::drawImage(top_card.value().getFileName(), {
                 ext.x + offset,
                 ext.y,
                 ext.width - offset,
-                ext.height - offset,
-                0
+                ext.height - offset
             });
         }
 };
@@ -500,8 +495,7 @@ void GameNode::updateExtends(Extends ext) {
         extends.x + extends.width / 4,
         extends.y,
         extends.width / 2,
-        extends.height * 0.2f,
-        0
+        extends.height * 0.2f
     };
     handNode->updateExtends(hand_ext);
 
@@ -509,8 +503,7 @@ void GameNode::updateExtends(Extends ext) {
         extends.x,
         extends.y + extends.height * 0.775f,
         extends.width,
-        extends.height * 0.2f,
-        0
+        extends.height * 0.2f
     };
     playerBarNode->updateExtends(playerbar_ext);
 
@@ -518,8 +511,7 @@ void GameNode::updateExtends(Extends ext) {
         extends.x + extends.width * 0.1f,
         extends.y + extends.height * 0.25f,
         extends.width * 0.8f,
-        extends.height * 0.5f,
-        0
+        extends.height * 0.5f
     };
     middleNode->updateExtends(middle_ext);
 
@@ -527,8 +519,7 @@ void GameNode::updateExtends(Extends ext) {
         extends.x + extends.width * 0.75f,
         extends.y,
         extends.width * 0.25f,
-        extends.height * 0.2f,
-        0
+        extends.height * 0.2f
     });
 }
 

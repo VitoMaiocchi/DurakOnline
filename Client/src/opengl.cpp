@@ -115,7 +115,7 @@ namespace OpenGL {
         glUseProgram(imageShader->shader_program);
 
         glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, ext.layer));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0));
         trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
 
         unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
@@ -162,7 +162,7 @@ namespace OpenGL {
 
         Viewport::global_scalefactor = (width < 1.2*height ? width : height) / 1000.0f; //das chammer no besser mache
 
-        Extends viewport_ext = {0, 0, static_cast<float>(width), static_cast<float>(height), 0};
+        Extends viewport_ext = {0, 0, static_cast<float>(width), static_cast<float>(height)};
         masterNode->updateExtends(viewport_ext);
     }
 

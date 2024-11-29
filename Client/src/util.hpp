@@ -13,8 +13,7 @@ struct Extends {
     float y;
     float width;
     float height;
-    float layer;  //TODO: ich bin geistig das isch komplett unnötig
-
+    
     bool operator==(const Extends& other) const;
     bool contains(float x, float y);
 };

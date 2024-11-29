@@ -2,8 +2,7 @@
 
 bool Extends::operator==(const Extends& other) const {
     return (x == other.x && y == other.y && 
-            width == other.width && height == other.height &&
-            layer == other.layer);
+            width == other.width && height == other.height);
 }
 
 bool Extends::contains(float x, float y) {

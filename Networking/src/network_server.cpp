@@ -37,7 +37,7 @@ namespace Network {
         if(active_clients.find(client) == active_clients.end()) return;
         active_clients.erase(client);
 
-        std::pair<ClientID, std::string> pair(client, ClientDisconnectEvent().toJson());
+        std::pair<ClientID, std::string> pair(client, RemoteDisconnectEvent().toJson());
         message_queue_mut.lock();
         message_queue.push(pair);
         message_queue_mut.unlock();
@@ -120,6 +120,7 @@ namespace Network {
         last_message = std::chrono::system_clock::now();
 
         auto res = send_sockets[id].send(message->toJson());
+        std::cout << "(network debug) SENDING: " << message->toJson() << std::endl;
         if(res.is_error() || res.value() == -1) {
             closeConnection(id);
             return false;

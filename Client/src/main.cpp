@@ -17,7 +17,10 @@ int main() {
 
    while(!OpenGL::windowShouldClose()) {
       auto m = Network::reciveMessage();
-      if(m) handleMessage(std::move(m));
+      if(m) {
+         if (m->messageType == MESSAGETYPE_REMOTE_DISCONNECT_EVENT) break;
+         handleMessage(std::move(m));
+      }
       OpenGL::drawFrame();
    }
    OpenGL::cleanup();

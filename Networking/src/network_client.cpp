@@ -41,9 +41,15 @@ namespace Network {
         recive_thread = std::thread([](){
             char buffer[BUFFER_SIZE];
             while(true) {
-                size_t n = 0;
-                while (n == 0) n = recive_connector.recv(buffer, sizeof(buffer)).value_or_throw();
+                size_t n = recive_connector.recv(buffer, sizeof(buffer)).value_or_throw();
+                if(n == 0) { //disconnect
+                    message_queue_mut.lock();
+                    message_queue.push(RemoteDisconnectEvent().toJson());
+                    message_queue_mut.unlock();
+                    return;
+                }
                 message_queue_mut.lock();
+                std::cout << "(network debug) RECIVEING: " << std::string(buffer,n) << std::endl;
                 message_queue.push(std::string(buffer,n));
                 message_queue_mut.unlock();
             }

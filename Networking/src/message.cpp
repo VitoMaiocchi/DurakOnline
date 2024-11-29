@@ -4,7 +4,7 @@
 #include <algorithm> // for std::all_of for debugging purposes
 
 std::unique_ptr<Message> deserialiseMessage(std::string string) {
-    std::cout << "Trying to deserialise Message: \n" << string << std::endl;
+    //std::cout << "Trying to deserialise Message: \n" << string << std::endl;
     
     rapidjson::Document document;
     // assert(!document.Parse(string.c_str()).HasParseError());
@@ -31,8 +31,8 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_TEST:
             message = std::make_unique<TestMessage>();
         break;
-        case MESSAGETYPE_CLIENT_DISCONNECT_EVENT:
-            message = std::make_unique<ClientDisconnectEvent>();
+        case MESSAGETYPE_REMOTE_DISCONNECT_EVENT:
+            message = std::make_unique<RemoteDisconnectEvent>();
         break;
         case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
             message = std::make_unique<IllegalMoveNotify>();
@@ -108,9 +108,9 @@ void TestMessage::fromJson(const rapidjson::Value& obj) {
 
 
 //CLIENT DISCONNECT (dummy message; only sent my networking therefore the content is empty)
-ClientDisconnectEvent::ClientDisconnectEvent() {messageType = MESSAGETYPE_CLIENT_DISCONNECT_EVENT;}
-void ClientDisconnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {}
-void ClientDisconnectEvent::fromJson(const rapidjson::Value& obj) {}
+RemoteDisconnectEvent::RemoteDisconnectEvent() {messageType = MESSAGETYPE_REMOTE_DISCONNECT_EVENT;}
+void RemoteDisconnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {}
+void RemoteDisconnectEvent::fromJson(const rapidjson::Value& obj) {}
 
 
 //ILLEGAL MOVE NOTIFY

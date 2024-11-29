@@ -23,7 +23,7 @@ enum MessageType {
     MESSAGETYPE_PLAYCARD_EVENT, // Client:MasterNode to Server:Server->Game->Battle, informs server that a player is trying to play a card
     MESSAGETYPE_CLIENT_ACTION_EVENT, // Client:MasterNode to Server:Server->Game->Battle, info about which client action was performed
     MESSAGETYPE_CLIENT_CONNECT_EVENT, // Client:MasterNode to Server:Server->Game, info about the player
-    MESSAGETYPE_CLIENT_DISCONNECT_EVENT // Client:MasterNode to Server:Server->Game, informs server that a player has disconnected
+    MESSAGETYPE_REMOTE_DISCONNECT_EVENT // Client:MasterNode to Server:Server->Game, informs server that a player has disconnected
 };
 
 typedef rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> Allocator;
@@ -51,8 +51,8 @@ struct TestMessage : public Message {
     std::string string;
 };
 
-struct ClientDisconnectEvent : public Message {
-    ClientDisconnectEvent();
+struct RemoteDisconnectEvent : public Message {
+    RemoteDisconnectEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 };

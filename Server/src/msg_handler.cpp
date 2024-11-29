@@ -74,7 +74,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             break;
         }
 
-        case MESSAGETYPE_CLIENT_DISCONNECT_EVENT: {
+        case MESSAGETYPE_REMOTE_DISCONNECT_EVENT: {
             std::cout << "Client disconnected: " << client << std::endl;
             clients.erase(client);
             ready_clients.erase(client);

@@ -51,10 +51,10 @@ public:
 
         // Title extends
         Extends title_ext = {
-            extends.x + extends.width * 0.2f,
-            extends.y + extends.height * 0.7f,
-            extends.width * 0.6f,
-            extends.height * 0.25f,
+            extends.x + extends.width * 0.15f,
+            extends.y + extends.height * 0.6f,
+            extends.width * 0.7f,
+            extends.height * 0.3f,
             0
         };
         lobby_title->updateExtends(title_ext);
@@ -63,7 +63,7 @@ public:
         // Player extends
         Extends player_ext = {
             extends.x + extends.width * 0.1f,
-            extends.y + extends.height * 0.4f,
+            extends.y + extends.height * 0.3f,
             extends.width * 0.8f,
             extends.height * 0.25f,
             0
@@ -146,7 +146,7 @@ public:
             button.extends = button_ext;
 
             // Draw button background
-            OpenGL::drawRectangle(button_ext, glm::vec4(0.4,0.2,0.2,0.4));
+            OpenGL::drawRectangle(button_ext, glm::vec4(0.9f, 0.4f, 0.4f, 0.4f));
 
             // Draw button label
             OpenGL::drawText(button.label, {
@@ -154,7 +154,7 @@ public:
                 button_ext.y + button_ext.height * 0.3f,
                 button_ext.width,
                 button_ext.height * 0.4f
-            }, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+            }, glm::vec3(1.0f, 1.0f, 1.0f), TEXTSIZE_LARGE);
 
             ++index;
         }
@@ -169,7 +169,6 @@ public:
     }
 
 private:
-    // Compute compact extends to maintain aspect ratio
     Extends computeCompactExtends(const Extends& ext, float image_width, float image_height) {
         float ext_aspect = ext.width / ext.height;
         float image_aspect = image_width / image_height;

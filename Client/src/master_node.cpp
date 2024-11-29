@@ -22,21 +22,6 @@ MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
     master_node_exists = true;
 
-    lobby_node = std::make_unique<LobbyNode>();
-
-    PlayerUpdate update;
-    update.player_names = {
-        {1, "Alice"},
-        {2, "Bob"},
-        {3, "Charlie"},
-        {4, "Dave"},
-        {5, "Eve"},
-        {6, "Vito"}
-    };
-    update.durak = 4;
-
-    // Call handlePlayerUpdate
-    lobby_node->handlePlayerUpdate(update);
 } 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {

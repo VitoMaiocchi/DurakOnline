@@ -8,7 +8,8 @@
 enum TextSize {
     TEXTSIZE_SMALL = 10,
     TEXTSIZE_MEDIUM = 25,
-    TEXTSIZE_LARGE = 50
+    TEXTSIZE_LARGE = 50,
+    TEXTSIZE_XLARGE = 350
 };
 
 namespace OpenGL {

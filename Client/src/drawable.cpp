@@ -43,4 +43,5 @@ void LeafNode::updateExtends(Extends ext) {
 
 void LeafNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //do nothing
+
 }

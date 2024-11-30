@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <map>
 #include <algorithm>
+#include <iterator>
 #include <optional>
 #include <iostream>
 
@@ -35,13 +36,16 @@ class Battle {
         //pointer to cardmanager
         CardManager *card_manager_ptr_;
 
+        //need two ok messages, one from attacker and one from coattacker
+        std::map<PlayerRole, bool> ok_msg_ = {{ATTACKER, false}, {CO_ATTACKER, false}};
+        //pick up msg
+        //its weather or not the message was received, not if its positive or negative
+        bool pickUp_msg = false;
+
         // std::optional 
-        //empty card so we can find empty slots
-        // Card empty_card_ = Card(RANK_NONE, SUIT_NONE);
         std::optional<Card> slot_ = std::nullopt; //now we can check if slot.hasValue() means there is a card
 
-        //pointer to current game
-        // Game *current_game;
+        bool battle_done_;
 
     public:
         
@@ -65,6 +69,10 @@ class Battle {
 
         //moves the player roles one to the right and circles around again
         void movePlayerRoles();
+
+        bool battleIsDone();
+
+        std::map<ClientID, PlayerRole> getPlayerRolesMap();
 
 //setter and getter functions
         void setCurrAttacks(int attacks) { curr_attacks_ = attacks; }

@@ -37,7 +37,7 @@ class Game{
         bool endGame();
         bool resetGame();
         bool updateTurnOrder();
-        bool handleClientActionEvent();
+        bool handleClientActionEvent(std::unique_ptr<Message> message, ClientID client);
         bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
 
         //getter function for testing purposes

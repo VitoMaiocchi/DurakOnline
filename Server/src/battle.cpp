@@ -17,6 +17,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
                                     ,curr_attacks_(0){
     
     max_attacks_ = first_battle ? 5 : 6;
+    battle_done_ = false;
 
     BattleStateUpdate bsu_msg;
     //set the first attacker pointer to the one that attacks first
@@ -99,7 +100,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
     role = players_bs_[player_id];
 
     //attacker or coattacker
-    if(role == ATTACKER || role == CO_ATTACKER){
+    if(role == ATTACKER){
         //if only 1 card with which is being attacked, check if valid move
         if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
@@ -109,16 +110,111 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         }
         //else if more than one card is being played at the same time
         //also checks for if the max_attacks are reached
+        // tp place multiple cards we need to check if they exist in the middle
         else if(cards.size() > 1 && (cards.size() + curr_attacks_ <= max_attacks_)){
-            for(size_t i = 0; i < cards.size() - 1; ++i){
-                if(cards[i].rank != cards[i + 1].rank){
+            std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
+            
+            //we will iterate through the middle with std::find
+            if(curr_attacks_ > 0){
+                Rank targetrank = cards[0].rank;
+                auto it = std::find_if(field.begin(), field.end(), 
+                        [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
+                            return (pair.first.has_value() && pair.first->rank == targetrank) || 
+                                (pair.second.has_value() && pair.second->rank == targetrank);
+                        });
+                if(it == field.end()){
                     IllegalMoveNotify err_msg;
                     err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
                     Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
                     return false;
                 }
-                else {attacks_to_defend_++;}
-                std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
+            }
+
+
+            for(size_t i = 1; i < cards.size(); ++i){
+
+                //we will iterate through the middle with std::find
+                Rank targetrank = cards[i].rank;
+                auto it = std::find_if(field.begin(), field.end(), 
+                        [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
+                            return (pair.first.has_value() && pair.first->rank == targetrank) || 
+                                (pair.second.has_value() && pair.second->rank == targetrank);
+                        });
+
+                if(cards[i].rank != cards[i - 1].rank && it == field.end()){
+                    IllegalMoveNotify err_msg;
+                    err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
+                    Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                    return false;
+                }
+            }
+            //now place all attacks on the field
+            for(size_t i = 0; i < cards.size(); ++i){
+                attack(player_id, cards.at(i));
+            }
+            return true;
+        }
+    }
+    else if(role == CO_ATTACKER){
+        //coattacker can only start attacking once the attacker placed at least one card
+        //we just check the amount of current attacks 
+        if(curr_attacks_ == 0) {
+            IllegalMoveNotify err_msg;
+            err_msg.error = "Illegal Move: 'You are only co-attacker and you cannot start the attack'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+            return false;
+        }
+
+        if(curr_attacks_ > 0){
+            //if only one card is being attacked with
+            if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
+                //if valid move then attack with this card
+                attack(player_id, cards.at(0));
+
+                return true;
+            }
+        }
+        //else if more than one card is being played at the same time
+        //also checks for if the max_attacks are reached
+        // tp place multiple cards we need to check if they exist in the middle
+        else if(cards.size() > 1 && (cards.size() + curr_attacks_ <= max_attacks_)){
+            std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
+            
+            //we will iterate through the middle with std::find
+            Rank targetrank = cards[0].rank;
+            auto it = std::find_if(field.begin(), field.end(), 
+                    [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
+                        return (pair.first.has_value() && pair.first->rank == targetrank) || 
+                            (pair.second.has_value() && pair.second->rank == targetrank);
+                    });
+            if(it == field.end()){
+                IllegalMoveNotify err_msg;
+                err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
+                Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                return false;
+            }
+
+
+            for(size_t i = 1; i < cards.size(); ++i){
+
+                //we will iterate through the middle with std::find
+                Rank targetrank = cards[i].rank;
+                auto it = std::find_if(field.begin(), field.end(), 
+                        [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
+                            return (pair.first.has_value() && pair.first->rank == targetrank) || 
+                                (pair.second.has_value() && pair.second->rank == targetrank);
+                        });
+
+                if(cards[i].rank != cards[i - 1].rank && it == field.end()){
+                    IllegalMoveNotify err_msg;
+                    err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
+                    Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                    return false;
+                }
+            }
+            //now place all attacks on the field
+            for(size_t i = 0; i < cards.size(); ++i){
+                attack(player_id, cards.at(i));
             }
             return true;
         }
@@ -210,19 +306,18 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
     //pick up
     else if(action == CLIENTACTION_PICK_UP){
-        //check if theres at least one card not defended -> flag defended unnecessary? or maybe function
-        // for(auto& slot : field){
-        //     if(slot.first != empty_card_ && slot.second == empty_card_){
-        //         card_manager_ptr_->pickUp(player_id);
-        //         return true;
-        //     }
-        // }
+
+        pickUp_msg = true;
+
         if(!successfulDefend()){
             card_manager_ptr_->pickUp(player_id);
             return true;
         }
         if(successfulDefend()){
             //notify with illegal move (studid, why pick up when you defended everything lol)
+            IllegalMoveNotify err_msg;
+            err_msg.error = "Illegal move: 'All cards have been defended, cannot pick them up.'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
             return false;
         }
 
@@ -231,7 +326,22 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
     //ok
     else if(action == CLIENTACTION_OK){
-        //what should happen here? 
+        //the turn should finish after the two attackers clicked ok 
+        // -> clear middle
+        if(players_bs_[player_id] == ATTACKER) {
+            ok_msg_[ATTACKER] = true;
+        }
+        if(players_bs_[player_id] == CO_ATTACKER){
+            ok_msg_[CO_ATTACKER] = true;
+        }
+        if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
+                                        (pickUp_msg == true || successfulDefend())){
+            card_manager_ptr_->clearMiddle();
+
+            movePlayerRoles();
+
+            battle_done_ = true;
+        }
         return true;
     }
     
@@ -563,6 +673,15 @@ void Battle::movePlayerRoles(){
 
     }
 }
+//getter function for game
+bool Battle::battleIsDone(){
+    return battle_done_;
+}
+
+std::map<ClientID, PlayerRole> Battle::getPlayerRolesMap(){
+    return players_bs_;
+}
+
 
 /**
  * POST: returns the current defenders player id

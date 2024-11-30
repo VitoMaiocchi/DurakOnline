@@ -109,24 +109,35 @@ int main() {
             // this is removed for testing purposes
             case MESSAGETYPE_CLIENT_ACTION_EVENT: {
                 // Example: Ready action from the client
-                // ClientActionEvent* action = dynamic_cast<ClientActionEvent*>(msg_r.get());
-                // if (action && action->action == CLIENTACTION_READY) {
-                //     ready_clients.insert(client);
-                //     std::cout << "Client " << client << " is ready." << std::endl;
-                //     std::cout << std::endl;
-                // // Check if enough and all players are ready to start the game
-                //     if (ready_clients.size() >= MIN_PLAYERS && current_game == nullptr ) {
-                //         std::cout << "Starting a new game..." << std::endl;
-                //         std::vector<ClientID> player_ids(clients.begin(), clients.end());
-                //         current_game = std::make_unique<Game>(player_ids);
-                //         GameStateUpdate update;
-                //         update.state = GAMESTATE_GAME;
-                //         Network::sendMessage(std::make_unique<GameStateUpdate>(update), client);
-                //     }
-                // }
-                // else {
-                //     std::cout << "action message received but it is not ready";
-                // }
+                ClientActionEvent* action = dynamic_cast<ClientActionEvent*>(msg_r.get());
+                if (action && action->action == CLIENTACTION_READY) {
+                    ready_clients.insert(client);
+                    std::cout << "Client " << client << " is ready." << std::endl;
+                    std::cout << std::endl;
+                // Check if enough and all players are ready to start the game
+                    // if (ready_clients.size() >= MIN_PLAYERS && current_game == nullptr ) {
+                    //     std::cout << "Starting a new game..." << std::endl;
+                    //     std::vector<ClientID> player_ids(clients.begin(), clients.end());
+                    //     current_game = std::make_unique<Game>(player_ids);
+                    //     GameStateUpdate update;
+                    //     update.state = GAMESTATE_GAME;
+                    //     Network::sendMessage(std::make_unique<GameStateUpdate>(update), client);
+                    // }
+                }
+                else if(action && action->action == CLIENTACTION_PICK_UP || 
+                                  action->action ==CLIENTACTION_PASS_ON ||
+                                  action->action == CLIENTACTION_OK){
+                    std::cout << "pick up message received from client: " << client << std::endl;
+                    if(current_game){
+                        current_game->handleClientActionEvent(std::move(msg_r), client);
+                    }
+                    else{
+                        std::cerr << "No active game to handle action event" << std::endl;
+                    }
+                }
+                else {
+                    std::cout << "unidentified action message received";
+                }
                 break;
             }
 

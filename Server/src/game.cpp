@@ -121,7 +121,20 @@ bool Game::updateTurnOrder(){
     return false;
 }
 
-bool Game::handleClientActionEvent(){
+bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID client){
+    if(current_battle_ != nullptr){
+        ClientActionEvent* return_cacte = dynamic_cast<ClientActionEvent*>(message.get());
+
+        ClientAction action = return_cacte->action;
+        
+        current_battle_->handleActionEvent(client, action);
+
+        if(current_battle_->battleIsDone()){
+            player_roles_ = current_battle_->getPlayerRolesMap();
+            delete current_battle_;
+        }
+    }
+
     return false;
 }
 

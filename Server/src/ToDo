@@ -1,8 +1,9 @@
 server.cpp:
 - clean up the code
+- add the same changes as in test_server2.cpp
 
 msg_handler.cpp:
-- complete ClientActionEvent -> it should call a function from game handleClientActionEvent()
+
 - check the logic of ClientActionEvent
 - check the logic of PlayCardEvent msg
 - find a way to deal with ClientDisconnectEvent
@@ -14,7 +15,6 @@ game.cpp:
 - endGame() function
 - resetGame() function
 - updateTurnOrder() function
-- handleClientActionEvent() function
 
 - send GameStateUpdate messages
 - send PlayerUpdate messages 

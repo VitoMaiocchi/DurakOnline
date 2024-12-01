@@ -29,7 +29,7 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
         assert(game_node);
         function(game_node);
     }
-    function(reinterpret_cast<std::unique_ptr<Node>&>(lobby_node)); 
+    // function(reinterpret_cast<std::unique_ptr<Node>&>(lobby_node)); 
 }
 
 void MasterNode::updateExtends(Extends ext) {

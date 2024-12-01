@@ -8,6 +8,7 @@
 
 #include <unordered_set>
 #include <memory>
+#include <csignal>
 
 
 struct Player{
@@ -34,6 +35,7 @@ namespace DurakServer{
     //maximum number of players that can play the game
     constexpr size_t MAX_PLAYERS = 6;
 }
+void cleanup(int signum);
 
 void broadcastMessage(std::unique_ptr<Message> message);
 

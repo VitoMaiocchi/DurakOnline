@@ -246,13 +246,30 @@ void CardManager::pickUp(ClientID PlayerID_def){
     
 }   
 
+//PRE: correct order for picking up cards saved in attack_order_
+//POST: cards have been assigned from deck to player hands in the correcr order
+void CardManager::distributeNewCards(std::deque<ClientID> attack_order_, ClientID current_defender, bool succesful_defend){
+    //attackers pick up cards
+    while (getNumberOfCardsOnDeck() && !attack_order_.empty()){
+        drawFromMiddle(attack_order_.front());
+        attack_order_.pop_front();
+    }
+
+    //defender only picks up if all attacks where defended succesfully
+    if (succesful_defend){
+        drawFromMiddle(current_defender);
+    }
+}
+
 //PRE: Valid PlayerID
 //POST: Fills up the Hand of player with ID PlayerID with cards from deck until that player has 6 cards
-void CardManager::distributeNewCards(ClientID PlayerID){
-    // Mer bruched irgendwie e agriffsreihefolg für das
+void CardManager::drawFromMiddle(ClientID PlayerID){
+    // If there are cards in the deck and the player has less than six cards, assign cards to the players hand until the player has 6
     while (getNumberOfCardsInHand(PlayerID) < 6 && getNumberOfCardsOnDeck()){
         player_hands_[PlayerID].push_back(deck_.front());
         deck_.pop_front();
+        --number_cards_in_deck_;
+        ++player_number_of_cards_[PlayerID];
     }
 }
 

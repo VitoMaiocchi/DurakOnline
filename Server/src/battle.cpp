@@ -340,7 +340,9 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
                                         (pickUp_msg == true || successfulDefend())){
             card_manager_ptr_->clearMiddle();
-            //distribute new cards
+            //New cards from middle are distributed to players
+            card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
+            //Find a way to handle players that are now finished
             movePlayerRoles();
 
             battle_done_ = true;
@@ -402,7 +404,10 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     else {
         //moves player roles one up/next
         movePlayerRoles();
-        //Update pick up order
+        //This function should only be calles when there are 3 or more active players
+        if(getPlayerRolesMap().size() >= 3){
+            UpdatePickUpOrder();
+        }
 
         //player_bs_[player_id] is now attacker
         attack(player_id, card);

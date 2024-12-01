@@ -567,6 +567,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
 }
 
 void Battle::attack(ClientID client, Card card){
+    std::cout << "attack() was called"<<std::endl;
     //calls attack
     card_manager_ptr_->attackCard(card, client);
     attacks_to_defend_++;
@@ -576,6 +577,7 @@ void Battle::attack(ClientID client, Card card){
 }
 
 void Battle::defend(ClientID client, Card card, CardSlot slot){ 
+    std::cout << "defend was called" <<std::endl;
     //calls defendCard
     card_manager_ptr_->defendCard(card, client, slot);
     attacks_to_defend_--;

@@ -164,6 +164,19 @@ int main() {
             case MESSAGETYPE_REMOTE_DISCONNECT_EVENT: {
                 std::cout << "Client disconnected: " << client << std::endl;
                 clients.erase(client);
+                players_map.erase(client);
+                if(players_map.size() < 3){
+                    current_game.reset();
+                }
+                PlayerUpdate player_update;
+                player_update.player_count = players_map.size();
+                for(ClientID c : clients){
+                    player_update.player_names[c] = players_map[c].name;
+                }
+                for(ClientID c : clients){
+                    Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                }
+
                 // ready_clients.erase(client); removed for testing purposes
 
                 // Handle cleanup if a client disconnects mid-game

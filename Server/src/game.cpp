@@ -102,6 +102,8 @@ bool Game::createBattle(){
         // - Check if a client action event needs to be handled
         // - Check if a client card event needs to be handled
         // - Create a new battle
+
+        current_battle_ = new Battle(false, player_roles_, *card_manager_);
     return false;
 }
 
@@ -131,7 +133,7 @@ bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID cl
 
         if(current_battle_->battleIsDone()){
             player_roles_ = current_battle_->getPlayerRolesMap();
-            delete current_battle_;
+            current_battle_ = nullptr;
         }
     }
 
@@ -152,6 +154,9 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
         CardSlot slot = return_pce->slot;
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
+    }
+    else{
+        createBattle();
     }
     return false;
 }

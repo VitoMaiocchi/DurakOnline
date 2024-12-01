@@ -259,6 +259,10 @@ void CardManager::distributeNewCards(std::deque<ClientID> attack_order_, ClientI
     if (succesful_defend){
         drawFromMiddle(current_defender);
     }
+        // send message to all clients
+    for(auto id : player_ids_){
+        sendCardUpdateMsg(id);
+    }
 }
 
 //PRE: Valid PlayerID

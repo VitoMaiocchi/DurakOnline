@@ -36,6 +36,10 @@ class Battle {
         //pointer to cardmanager
         CardManager *card_manager_ptr_;
 
+        //Tracks order of attackers in case an attack is passed on, used for pickup function at the end of every battle
+        //front is first, back is last to pick up
+        std::deque<ClientID> attack_order_;
+
         //need two ok messages, one from attacker and one from coattacker
         std::map<PlayerRole, bool> ok_msg_ = {{ATTACKER, false}, {CO_ATTACKER, false}};
         //pick up msg
@@ -69,6 +73,9 @@ class Battle {
 
         //moves the player roles one to the right and circles around again
         void movePlayerRoles();
+        void UpdatePickUpOrder();
+        ClientID nextInOrder(ClientID current);
+        ClientID findRole(PlayerRole role);
 
         bool battleIsDone();
 

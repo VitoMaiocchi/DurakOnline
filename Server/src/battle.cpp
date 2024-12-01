@@ -1,4 +1,5 @@
 #include "../include/battle.hpp"
+#include "Networking/util.hpp"
 
 
 /**
@@ -26,12 +27,14 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
         if(pl.second == ATTACKER){
             first_attacker_ = &pl;
             bsu_msg.attackers.push_back(pl.first);
+            attack_order_.push_front(pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
         }
         else if(pl.second == CO_ATTACKER){
             bsu_msg.attackers.push_back(pl.first);
+            attack_order_.push_back(pl.first);
         }
         else if(pl.second == IDLE){
             bsu_msg.idle.push_back(pl.first);
@@ -337,7 +340,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
                                         (pickUp_msg == true || successfulDefend())){
             card_manager_ptr_->clearMiddle();
-
+            //distribute new cards
             movePlayerRoles();
 
             battle_done_ = true;
@@ -399,6 +402,8 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     else {
         //moves player roles one up/next
         movePlayerRoles();
+        //Update pick up order
+
         //player_bs_[player_id] is now attacker
         attack(player_id, card);
         //check if everything worked
@@ -682,6 +687,87 @@ std::map<ClientID, PlayerRole> Battle::getPlayerRolesMap(){
     return players_bs_;
 }
 
+//This function is called when an attack is passed on & Player Roles have already been moved
+//it updates the attack order deque
+//This function should only be called for when there are 3 or more active players
+void Battle::UpdatePickUpOrder(){
+    //find client IDs of defender, attacker CoAttacker and first attacker of the battle
+    //IDs correspond to Player Roles after they have been moved
+    ClientID current_attacker = findRole(ATTACKER);
+    ClientID current_defender = findRole(DEFENDER);
+    ClientID current_coattacker = findRole(CO_ATTACKER);
+    ClientID first_attacker = getFirstAttackerPtr()->first; //First player to attack during this battle
+    
+    //1a Case: New Defender already was first attacker during this battle
+    //Case 1a can only occur when there are either 3 or 4 players left
+    if(current_defender == attack_order_.front()){
+        attack_order_.pop_front();
+        attack_order_.push_back(current_attacker);
+    }
+
+
+    //1b Case: New attacker is the first attacker who started this battle
+    //Case 1b can only occur when there are exactly 3 players left
+    
+    else if (current_attacker == first_attacker) {
+        attack_order_.pop_front();                      //remove current defender
+        attack_order_.push_front(current_attacker);  //add previous defender who already was an attacker
+    }
+
+    //2. Case: New Co-Attacker already was first attacker during this battle
+    else if(current_coattacker == first_attacker) {
+        attack_order_.pop_back();                       //remove current defender
+        attack_order_.push_back(current_attacker);   //add previous defender
+        //current coattacker doesn't have to be added, already is in the list
+    }
+
+
+    //3. Case: none of the cases above,
+    //New Defender is removed and new attacker & coattacker are added
+    else{
+        attack_order_.pop_back();                       //remove current defender
+        attack_order_.push_back(current_attacker);   //add previous defender
+        attack_order_.push_back(current_coattacker); //add current coattacker
+    }
+    
+}
+
+//For any valid ClientID returns the ID of the player who is next
+//This function assumes that only "active" players (who haven't finished yet) are in the players_bs_ map
+ClientID Battle::nextInOrder(ClientID current_player){
+    //Check that map isn't empty
+    assert(!players_bs_.empty() && "Map should not be empty here");
+    //Create Iterator pointing to current client ID
+    auto it = players_bs_.find(current_player);
+
+    //Handle the case where a wrong ClientID was entered
+    if(it == players_bs_.end()){
+        throw std::invalid_argument("PlayerID not found in the map.");
+    }
+
+    ++it;
+    //Check for case where the ClientID was at the end of the map
+    if(it == players_bs_.end()){
+        return players_bs_.begin()->first;
+    }
+    // Otherwise return next element
+    return it->first;
+}
+
+//Call this function with either ATTACKER, DEFENDER or COATTACKER
+//and it returns the corresponding CLientID
+//THIS FUNCTION SHOULD ONLY BE CALLED WITH CO_ATTACKER IF THERE ARE 3 OR MORE PLAYERS (it expects the Role to be found)
+//THIS FUNCTION SHOULDNT BE CALLED FOR IDLE
+ClientID Battle::findRole(PlayerRole role){
+    for(const auto& pair : players_bs_){
+        if (pair.second == role){
+            return pair.first;
+        }
+    }
+
+    throw std::logic_error("No Player with role found when calling findRole function.");
+
+}
 
 /**
  * POST: returns the current defenders player id

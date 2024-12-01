@@ -54,6 +54,7 @@ public:
     std::vector<std::pair<std::optional<Card>,std::optional<Card>>> getMiddle();
     unsigned int getNumberActivePlayers();
     unsigned int getNumberOfCardsInHand(ClientID PlayerID);
+    unsigned int getNumberOfCardsOnDeck() const;
     Suit getTrump();
 
     bool attackCard(Card card, ClientID PlayerID);
@@ -63,7 +64,7 @@ public:
     bool playCard(Card card, ClientID PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
     bool clearMiddle();         //When attack is succesfully defended
     void pickUp(ClientID PlayerID_def);              //When attack wasn't succesfully defended
-    bool distributeNewCards();
+    void distributeNewCards(ClientID PlayerID);
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();

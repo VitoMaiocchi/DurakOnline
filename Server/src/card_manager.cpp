@@ -5,8 +5,7 @@
 #include "../include/card_manager.hpp"
 
 
-//constructors
-
+//constructor
 CardManager::CardManager(std::vector<ClientID> player_ids) : player_ids_(player_ids){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
@@ -36,7 +35,7 @@ CardManager::CardManager(std::vector<ClientID> player_ids) : player_ids_(player_
 CardManager::~CardManager() = default;
 //At the beginning of the game
 
-//Brucht die funktion en rückgabetyp?
+
 //PRE: A deque containing all 52 cards in the deck_ (evtl au nöd?), empty player_hands vector
 //POST: Returns true if the deck was succesfully shuffled, stored in the deck member and 6 cards were distributed to every palyer
 void CardManager::shuffleCards(){
@@ -111,6 +110,11 @@ unsigned int CardManager::getNumberOfCardsInHand(ClientID PlayerID){
     return player_hands_[PlayerID].size();
 }
 
+//PRE:
+//POST: Returns current number of cards in the middle
+unsigned int CardManager::getNumberOfCardsOnDeck() const{
+    return deck_.size();
+}
 
 //PRE:A valid move 
 //POST:Middle, Playerhand & numberofcards in hand updated
@@ -242,11 +246,14 @@ void CardManager::pickUp(ClientID PlayerID_def){
     
 }   
 
-//PRE:
-//POST: Every player now has 6 or more cards in their hand except if the middle is empty
-bool CardManager::distributeNewCards(){
+//PRE: Valid PlayerID
+//POST: Fills up the Hand of player with ID PlayerID with cards from deck until that player has 6 cards
+void CardManager::distributeNewCards(ClientID PlayerID){
     // Mer bruched irgendwie e agriffsreihefolg für das
-    return 0;
+    while (getNumberOfCardsInHand(PlayerID) < 6 && getNumberOfCardsOnDeck()){
+        player_hands_[PlayerID].push_back(deck_.front());
+        deck_.pop_front();
+    }
 }
 
 

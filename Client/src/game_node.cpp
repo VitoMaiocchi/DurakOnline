@@ -384,24 +384,6 @@ class PlayerBarNode : public TreeNode {
     }
 };
 
-class ButtonNode : public LeafNode { //TODO: hover (aber complettes hover rework)
-    std::string text;
-
-    public:
-    ButtonNode(std::string text) : text(text) {} 
-    bool visible = false;
-
-    Extends getCompactExtends(Extends ext) {
-        return ext;
-    }
-
-    void draw() { 
-        if(!visible) return;
-        OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.2));
-        OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
-    }
-};
-
 class PlayerActionNode : public TreeNode {
 
     // {ok,pickup,passon}

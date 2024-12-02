@@ -43,5 +43,17 @@ void LeafNode::updateExtends(Extends ext) {
 
 void LeafNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     //do nothing
+}
 
+ButtonNode::ButtonNode(std::string text) : text(text) {} 
+    bool visible = false;
+
+Extends ButtonNode::getCompactExtends(Extends ext) {
+    return ext;
+}
+
+void ButtonNode::draw() { 
+    if(!visible) return;
+    OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.2));
+    OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
 }

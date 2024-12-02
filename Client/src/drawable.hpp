@@ -36,3 +36,13 @@ class LeafNode : public Node {
     protected:
     void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };
+
+class ButtonNode : public LeafNode { //TODO: hover (aber complettes hover rework)
+    std::string text;
+
+    public:
+    bool visible = false;
+    ButtonNode(std::string text);
+    Extends getCompactExtends(Extends ext);
+    void draw();
+};

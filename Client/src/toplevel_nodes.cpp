@@ -206,25 +206,6 @@ void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
 }
 
 
-//sub optimal weg copy paste
-class ButtonNode : public LeafNode { //TODO: hover (aber complettes hover rework)
-    std::string text;
-
-    public:
-    ButtonNode(std::string text) : text(text) {} 
-    bool visible = false;
-
-    Extends getCompactExtends(Extends ext) {
-        return ext;
-    }
-
-    void draw() { 
-        if(!visible) return;
-        OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.2));
-        OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
-    }
-};
-
 LoginScreenNode::LoginScreenNode(Extends ext){
     placeholder_button = std::make_unique<ButtonNode>("CONNECT");
     placeholder_button->setClickEventCallback([](float x, float y){

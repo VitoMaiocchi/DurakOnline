@@ -17,12 +17,11 @@ class Node {
         virtual void sendClickEvent(float x, float y);
         virtual void sendHoverEvent(float x, float y);
         void setClickEventCallback(std::function<void(float, float)> callback);
-        void setHoverEventCallback(std::function<void(float, float)> callback);
     protected:
         virtual void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) = 0;
         Extends extends = {0,0,0,0};
         std::function<void(float, float)> clickEventCallback = [](float x, float y){/*nothing*/};
-        std::function<void(float, float)> hoverEventCallback = [](float x, float y){/*nothing*/};
+        bool hover = false;
 };
 
 class TreeNode : public Node {
@@ -37,7 +36,7 @@ class LeafNode : public Node {
     void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
 };
 
-class ButtonNode : public LeafNode { //TODO: hover (aber complettes hover rework)
+class ButtonNode : public LeafNode {
     std::string text;
 
     public:

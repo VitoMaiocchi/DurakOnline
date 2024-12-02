@@ -16,15 +16,12 @@ void Node::setClickEventCallback(std::function<void(float, float)> callback) {
 }
 
 void Node::sendHoverEvent(float x, float y) {
-    if(!extends.contains(x,y)) return;
-    hoverEventCallback(x,y);
+    hover = extends.contains(x,y);
     callForAllChildren([x,y](std::unique_ptr<Node>& child){
         child->sendHoverEvent(x,y);
     });
 }
-void Node::setHoverEventCallback(std::function<void(float, float)> callback) {
-    hoverEventCallback = callback;
-}
+
 
 //LEAF /TREE NODES
 void TreeNode::draw() {
@@ -54,6 +51,7 @@ Extends ButtonNode::getCompactExtends(Extends ext) {
 
 void ButtonNode::draw() { 
     if(!visible) return;
-    OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.2));
+    if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.25));
+    else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.15));
     OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
 }

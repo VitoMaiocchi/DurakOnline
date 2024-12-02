@@ -128,16 +128,10 @@ class CardStackNode : public LeafNode {
     private:
         std::optional<Card> bottom_card;
         std::optional<Card> top_card;
-        bool hover = false;
     public:
         void setCard(bool top, std::optional<Card> card) {
             if(top) top_card = card;
             else bottom_card = card;
-        }
-
-        void sendHoverEvent(float x, float y) override {
-            if(extends.contains(x,y)) hover = true;
-            else hover = false;
         }
 
         Extends getCompactExtends(Extends ext) {
@@ -289,7 +283,7 @@ class PlayerNode : public LeafNode {
     }
 
     void draw() { //TODO: mache das di zahle schön aligned sind
-        //OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
+        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
 
         auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "skins/durak.png");
         Extends ext = computeCompactExtends({

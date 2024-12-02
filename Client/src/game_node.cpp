@@ -461,6 +461,7 @@ GameNode::GameNode(Extends ext) {
         });
     }
     
+    playerUpdateNotify();
     updateExtends(ext);
 }
 

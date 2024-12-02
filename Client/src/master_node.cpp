@@ -119,8 +119,9 @@ void handlePlayerUpdate(PlayerUpdate update) {
         GlobalState::players.insert(p);
     }
 
+    //das bruchts nöd wil anderi implementation (TODO: für game node au so)
     if(GlobalState::game_state == GAMESTATE_GAME) cast(GameNode, game_node)->playerUpdateNotify();
-    if(GlobalState::game_state == GAMESTATE_LOBBY) cast(LobbyNode, lobby_node)->playerUpdateNotify();
+    //if(GlobalState::game_state == GAMESTATE_LOBBY) cast(LobbyNode, lobby_node)->playerUpdateNotify();
 }
 
 void handleMessage(std::unique_ptr<Message> message) {

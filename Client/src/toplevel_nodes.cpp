@@ -15,9 +15,6 @@ private:
     };
     std::vector<Button> buttons;
 
-    // Players
-    std::list<Player> players;
-
 public:
     Lobby() {
         // Buttons
@@ -70,7 +67,7 @@ public:
 
     void drawPlayers(const Extends& player_ext) {
         // Number of players
-        int num_players = players.size();
+        int num_players = GlobalState::players.size();
         if (num_players == 0) return;
 
         // Calculate the width for each player (horizontal layout)
@@ -78,7 +75,7 @@ public:
 
         // Loop over each player and draw
         int index = 0;
-        for (const auto& player : players) {
+        for (const auto& player : GlobalState::players) {
             // Calculate the extends for the current player
             Extends current_player_ext = {
                 player_ext.x + index * player_width,
@@ -109,7 +106,7 @@ public:
             extends.y,
             extends.width,
             extends.height * 0.3f
-        }, glm::vec3(0, 0, 0), TEXTSIZE_LARGE);
+        }, glm::vec3(0, 0, 0), TEXTSIZE_MEDIUM);
     }
 
     void drawButtons(const Extends& button_area_ext) {
@@ -146,10 +143,6 @@ public:
 
             ++index;
         }
-    }
-
-    void updatePlayer(const std::list<Player>& new_players) {
-        players = new_players;
     }
 
     Extends getCompactExtends(Extends ext) override {
@@ -195,10 +188,6 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
 
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(lobby);
-}
-
-void LobbyNode::playerUpdateNotify() {
-    GlobalState::players; //-> set of current players
 }
 
 void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){

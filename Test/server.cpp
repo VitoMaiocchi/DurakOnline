@@ -34,11 +34,6 @@ int main() {
             update.state = GAMESTATE_LOBBY;
             Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
 
-            sleep(5);
-
-            update.state = GAMESTATE_GAME;
-            Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
-
             PlayerUpdate update3;
             update3.player_names[8] = "Garbage Goober";
             update3.player_names[7] = "Booger Eater";
@@ -46,6 +41,11 @@ int main() {
             update3.player_names[id] = "YOU";
 
             Network::sendMessage(std::make_unique<PlayerUpdate>(update3), id);
+
+            sleep(5);
+
+            update.state = GAMESTATE_GAME;
+            Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
 
             CardUpdate update2;
             update2.hand = {

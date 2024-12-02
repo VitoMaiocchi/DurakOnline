@@ -7,7 +7,6 @@ class LobbyNode : public TreeNode {
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 
-        void playerUpdateNotify();
         void handleAvailableActionUpdate(AvailableActionUpdate update);
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);

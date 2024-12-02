@@ -1,5 +1,6 @@
 #include "toplevel_nodes.hpp"
 #include "drawable.hpp"
+#include "master_node.hpp"
 
 // LobbyNode
 class Lobby : public LeafNode {
@@ -190,8 +191,14 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
     return ext;
 }
 
-
-
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(lobby);
+}
+
+void LobbyNode::playerUpdateNotify() {
+    GlobalState::players; //-> set of current players
+}
+
+void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
+    update.ok; //für ready
 }

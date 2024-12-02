@@ -31,6 +31,11 @@ int main() {
 
         if(m->messageType == MESSAGETYPE_CLIENT_CONNECT_EVENT) {
             GameStateUpdate update;
+            update.state = GAMESTATE_LOBBY;
+            Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
+
+            sleep(5);
+
             update.state = GAMESTATE_GAME;
             Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
 

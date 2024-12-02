@@ -16,7 +16,7 @@ GameState GlobalState::game_state = GAMESTATE_NONE;
 std::set<Player> GlobalState::players;
 
 std::unique_ptr<Node> game_node;
-std::unique_ptr<LobbyNode> lobby_node;
+std::unique_ptr<Node> lobby_node;
 
 MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
@@ -25,26 +25,31 @@ MasterNode::MasterNode() {
 } 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
-    if(GlobalState::game_state == GAMESTATE_GAME) {
-        assert(game_node);
-        function(game_node);
+    switch(GlobalState::game_state) {
+        case GAMESTATE_GAME:
+            assert(game_node);
+            function(game_node);
+            return;
+        case GAMESTATE_LOBBY:
+            assert(lobby_node);
+            function(lobby_node);
+            return;
     }
-    // function(reinterpret_cast<std::unique_ptr<Node>&>(lobby_node)); 
 }
 
 void MasterNode::updateExtends(Extends ext) {
     extends = ext;
 
-    if(GlobalState::game_state == GAMESTATE_GAME) {
-        assert(game_node);
-        game_node->updateExtends(ext);
+    switch(GlobalState::game_state) {
+        case GAMESTATE_GAME:
+            assert(game_node);
+            game_node->updateExtends(ext);
+            return;
+        case GAMESTATE_LOBBY:
+            assert(lobby_node);
+            lobby_node->updateExtends(ext);
+            return;
     }
-    if (lobby_node) {
-        lobby_node->updateExtends(ext);
-    } else {
-        std::cerr << "Warning: lobby_node is nullptr in MasterNode::updateExtends." << std::endl;
-    }
-
 }
 
 Extends MasterNode::getCompactExtends(Extends ext) {
@@ -55,16 +60,26 @@ void handleGameStateUpdate(GameStateUpdate update) {
     if(GlobalState::game_state == update.state) return;
     Extends ext = {0,0,(float)Viewport::width, (float)Viewport::height};
 
-    if(GlobalState::game_state == GAMESTATE_GAME) {
-        game_node = nullptr;
+    switch(GlobalState::game_state) {
+        case GAMESTATE_GAME:
+            game_node = nullptr;
+            break;
+        case GAMESTATE_LOBBY:
+            lobby_node = nullptr;
+            break;
     }
 
-    if(update.state == GAMESTATE_GAME) {
-        game_node = std::make_unique<GameNode>(ext);
+    switch(update.state) {
+        case GAMESTATE_GAME:
+            game_node = std::make_unique<GameNode>(ext);
+            break;
+        case GAMESTATE_LOBBY:
+            lobby_node = std::make_unique<LobbyNode>();
+            lobby_node->updateExtends(ext); //TODO: das sött im constructor si
+            break;
     }
 
     GlobalState::game_state = update.state;
-    //TODO ...
 } 
 
 void handlePlayerUpdate(PlayerUpdate update) {
@@ -87,6 +102,7 @@ void handlePlayerUpdate(PlayerUpdate update) {
     }
 
     if(GlobalState::game_state == GAMESTATE_GAME) cast(GameNode, game_node)->playerUpdateNotify();
+    if(GlobalState::game_state == GAMESTATE_LOBBY) cast(LobbyNode, lobby_node)->playerUpdateNotify();
 }
 
 void handleMessage(std::unique_ptr<Message> message) {
@@ -106,8 +122,10 @@ void handleMessage(std::unique_ptr<Message> message) {
             cast(GameNode, game_node)->handleBattleStateUpdate(*dynamic_cast<BattleStateUpdate*>(message.get()));
         break;
         case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
-            if(GlobalState::game_state == GAMESTATE_GAME) // da no für lobby GlobalState::game_state == GAMESTATE_LOBBY
+            if(GlobalState::game_state == GAMESTATE_GAME)
                 cast(GameNode, game_node)->handleAvailableActionUpdate(*dynamic_cast<AvailableActionUpdate*>(message.get()));
+            if(GlobalState::game_state == GAMESTATE_LOBBY)
+                cast(LobbyNode, lobby_node)->handleAvailableActionUpdate(*dynamic_cast<AvailableActionUpdate*>(message.get()));
         break;
         case MESSAGETYPE_GAME_STATE_UPDATE:
             handleGameStateUpdate(*dynamic_cast<GameStateUpdate*>(message.get()));

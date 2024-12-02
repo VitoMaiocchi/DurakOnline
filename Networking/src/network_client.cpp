@@ -17,6 +17,8 @@
 #define MESSAGE_TIME 100
 
 namespace Network {
+    bool connected = false;
+
     //CLIENT USE
     sockpp::tcp_connector send_connector;
     sockpp::tcp_connector recive_connector;
@@ -26,6 +28,8 @@ namespace Network {
     std::thread recive_thread;
 
     ClientID openConnection(std::string ip, uint port) {
+        assert(!connected); //cannt connect twice
+
         std::cout << "opening connection..." << std::endl;
         if(!send_connector.connect(sockpp::inet_address(ip, port)))
             throw std::runtime_error("FAILED TO OPEN CONNECTION");
@@ -55,12 +59,19 @@ namespace Network {
             }
         });
         std::cout << "connection established" << std::endl;
+
+        connected = true;
         return client_id;
     }
 
 
     std::chrono::system_clock::time_point last_message;
     void sendMessage(std::unique_ptr<Message> message) {
+        if(!connected) {
+            std::cout << "WARNING: trying to send message while disconnected" << std::endl;
+            return;
+        }
+
         auto now = std::chrono::system_clock::now();
         auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - last_message).count();
         if(delta < MESSAGE_TIME) std::this_thread::sleep_for(std::chrono::milliseconds(MESSAGE_TIME - delta));
@@ -70,6 +81,8 @@ namespace Network {
     }
 
     std::unique_ptr<Message> reciveMessage() {
+        if(!connected) return nullptr;
+        
         message_queue_mut.lock();
         if(!message_queue.empty()) {
             auto m = message_queue.front();

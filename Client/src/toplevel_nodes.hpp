@@ -16,12 +16,13 @@ class LobbyNode : public TreeNode {
 
 class LoginScreenNode : public TreeNode {
     public:
-        LoginScreenNode();
+        LoginScreenNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
+        std::unique_ptr<Node> placeholder_button;
 };
 
 class GameOverScreenNode : public TreeNode {

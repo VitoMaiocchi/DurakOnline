@@ -1,6 +1,8 @@
 #include "toplevel_nodes.hpp"
 #include "drawable.hpp"
 #include "master_node.hpp"
+#define NETWORKTYPE_CLIENT
+#include <Networking/network.hpp>
 
 // LobbyNode
 class Lobby : public LeafNode {
@@ -201,4 +203,57 @@ void LobbyNode::playerUpdateNotify() {
 
 void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
     update.ok; //für ready
+}
+
+
+//sub optimal weg copy paste
+class ButtonNode : public LeafNode { //TODO: hover (aber complettes hover rework)
+    std::string text;
+
+    public:
+    ButtonNode(std::string text) : text(text) {} 
+    bool visible = false;
+
+    Extends getCompactExtends(Extends ext) {
+        return ext;
+    }
+
+    void draw() { 
+        if(!visible) return;
+        OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.2));
+        OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
+    }
+};
+
+LoginScreenNode::LoginScreenNode(Extends ext){
+    placeholder_button = std::make_unique<ButtonNode>("CONNECT");
+    placeholder_button->setClickEventCallback([](float x, float y){
+        std::cout << "Trying to connect to server..." << std::endl;
+        clientID = Network::openConnection("localhost", 42069);
+
+        //place holder: da muss mer den de actual name schicke
+        ClientConnectEvent event;
+        event.username = "Booger Eater";
+        Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+    });
+    cast(ButtonNode, placeholder_button)->visible = true;
+    updateExtends(ext);
+}
+
+void LoginScreenNode::updateExtends(Extends ext){
+    extends = ext;
+    placeholder_button->updateExtends({
+        ext.x + ext.width * 0.3f,
+        ext.y + ext.height * 0.4f,
+        ext.width * 0.4f,
+        ext.height * 0.2f
+    });
+}
+
+Extends LoginScreenNode::getCompactExtends(Extends ext){
+    return ext;
+}
+
+void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node> &)> function) {
+    function(placeholder_button);
 }

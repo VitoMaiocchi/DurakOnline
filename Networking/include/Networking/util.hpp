@@ -79,7 +79,7 @@ enum GameState {
     GAMESTATE_SPECTATOR,
     GAMESTATE_GAME_OVER,
     GAMESTATE_DURAK_SCREEN,
-    GAMESTATE_NONE
+    GAMESTATE_LOGIN_SCREEN //only for client use
 };
 // inline int ToInt(GameState state) { return static_cast<int>(state); }
 // inline GameState FromInt(int value) { return static_cast<GameState>(value); }

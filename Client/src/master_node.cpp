@@ -12,16 +12,20 @@
 
 bool master_node_exists = false;
 
-GameState GlobalState::game_state = GAMESTATE_NONE;
+GameState GlobalState::game_state;
 std::set<Player> GlobalState::players;
 
 std::unique_ptr<Node> game_node;
 std::unique_ptr<Node> lobby_node;
+std::unique_ptr<Node> login_node;
 
 MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
     master_node_exists = true;
 
+    GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;
+    Extends ext = {0,0,(float)Viewport::width, (float)Viewport::height};
+    login_node = std::make_unique<LoginScreenNode>(ext);
 } 
 
 void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
@@ -33,6 +37,10 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
         case GAMESTATE_LOBBY:
             assert(lobby_node);
             function(lobby_node);
+            return;
+        case GAMESTATE_LOGIN_SCREEN:
+            assert(login_node);
+            function(login_node);
             return;
     }
 }
@@ -49,6 +57,10 @@ void MasterNode::updateExtends(Extends ext) {
             assert(lobby_node);
             lobby_node->updateExtends(ext);
             return;
+        case GAMESTATE_LOGIN_SCREEN:
+            assert(login_node);
+            login_node->updateExtends(ext);
+        return;
     }
 }
 
@@ -67,6 +79,9 @@ void handleGameStateUpdate(GameStateUpdate update) {
         case GAMESTATE_LOBBY:
             lobby_node = nullptr;
             break;
+        case GAMESTATE_LOGIN_SCREEN:
+            login_node = nullptr;
+            break;
     }
 
     switch(update.state) {
@@ -76,6 +91,9 @@ void handleGameStateUpdate(GameStateUpdate update) {
         case GAMESTATE_LOBBY:
             lobby_node = std::make_unique<LobbyNode>();
             lobby_node->updateExtends(ext); //TODO: das sött im constructor si
+            break;
+        case GAMESTATE_LOGIN_SCREEN:
+            //das bruchts nur wenn mer server disconnect handled
             break;
     }
 

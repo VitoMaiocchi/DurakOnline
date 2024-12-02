@@ -296,7 +296,7 @@ namespace OpenGL {
         if (FT_New_Face(ft, FONT_PATH, 0, &face)) throw std::runtime_error(std::string("FreeType: failed to load font: ")+FONT_PATH);
 
         // set size to load glyphs as
-        FT_Set_Pixel_Sizes(face, 0, 48);
+        FT_Set_Pixel_Sizes(face, 0, 200);
 
         // disable byte-alignment restriction
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -390,7 +390,7 @@ namespace OpenGL {
     }
 
     void drawText(std::string text, Extends ext, glm::vec3 color, TextSize size) {
-        float scale = Viewport::global_scalefactor * size / 60.0f;
+        float scale = Viewport::global_scalefactor * size / 240.0f;
 
         float width, height;
         computeTextSize(text, scale, width, height);

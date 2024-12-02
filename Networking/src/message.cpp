@@ -315,10 +315,7 @@ void GameStateUpdate::fromJson(const rapidjson::Value& obj) {
     if(obj.HasMember("state") && obj["state"].IsInt()){
         state = FromInt<GameState>(obj["state"].GetInt());
 
-    } else{
-        std::cerr << "Error: 'state' is missing or not in the string." << std::endl;
-        state = GAMESTATE_NONE;
-    }
+    } else std::cerr << "Error: 'state' is missing or not in the string." << std::endl;
 }
 
 

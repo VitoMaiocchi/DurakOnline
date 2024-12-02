@@ -42,7 +42,7 @@ int main() {
 
             Network::sendMessage(std::make_unique<PlayerUpdate>(update3), id);
 
-            sleep(5);
+            sleep(2);
 
             update.state = GAMESTATE_GAME;
             Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);

@@ -15,6 +15,7 @@
 #define CARD_OFFSET_BORDER 7
 
 #define BUTTON_BUFFER 10
+#define DECK_BUFFER 10
 //da chunt alles ine wo grendered wird während es game lauft
 //endscreen und so nöd nur das mit de charte i de mitti und so
 
@@ -442,11 +443,79 @@ class PlayerActionNode : public TreeNode {
     }
 };
 
+class DeckNode : public LeafNode {
+    
+    Card trump_card = Card();
+    Suit trump_suit = SUIT_CLUBS;
+    uint draw_pile_cards = 0;
+
+    public:
+    Extends getCompactExtends(Extends ext) {
+        Extends e = computeCompactExtends(ext, 1.8f, 1);
+        e.x = ext.x;
+        return e;
+    }
+
+    void draw() {
+        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
+
+        const float b = Viewport::global_scalefactor * DECK_BUFFER;
+        Extends ext = {
+            extends.x + b,
+            extends.y + b,
+            extends.width - 2*b,
+            extends.height - 2*b
+        };
+
+        Extends image_ext = computeCompactExtends(ext, CARD_TEXTURE_HEIGHT, CARD_TEXTURE_WIDTH);
+        image_ext.y = ext.y;
+        float delta = (ext.height - image_ext.height) / 2;
+        Extends text_ext = {
+            ext.x,
+            ext.y + image_ext.height,
+            ext.width,
+            delta
+        };
+        OpenGL::drawText("Trump Card", text_ext, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+        text_ext.y += delta;
+        OpenGL::drawText("Cards Left: "+std::to_string(draw_pile_cards), text_ext, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+
+        if(draw_pile_cards != 0) {
+            OpenGL::drawImage(trump_card.getFileName(), image_ext);
+            return;
+        }
+
+        std::string image = "PLACEHOLDER (suit image): ";
+        switch(trump_suit) {
+            case SUIT_CLUBS:
+                image +="clubs.png";
+            break;
+            case SUIT_HEARTS:
+                image +="hearts.png";
+            break;
+            case SUIT_DIAMONDS:
+                image +="diamonds.png";
+            break;
+            case SUIT_SPADES:
+                image +="spades.png";
+            break;
+        }
+
+        OpenGL::drawText(image, image_ext, glm::vec3(0.1,0.2,1), TEXTSIZE_LARGE);
+    }
+
+    void handleCardUpdate(CardUpdate update) {
+        trump_card = update.trump_card;
+        trump_suit = update.trump_suit;
+        draw_pile_cards = update.draw_pile_cards;
+    }
+};
 
 GameNode::GameNode(Extends ext) {
     handNode = std::make_unique<HandNode>();
     playerBarNode = std::make_unique<PlayerBarNode>();
     playerActionNode = std::make_unique<PlayerActionNode>();
+    deckNode = std::make_unique<DeckNode>();
 
     middleNode = std::make_unique<MiddleNode>();
     Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
@@ -498,6 +567,13 @@ void GameNode::updateExtends(Extends ext) {
         extends.width * 0.25f,
         extends.height * 0.2f
     });
+
+    deckNode->updateExtends({
+        extends.x,
+        extends.y,
+        extends.width * 0.25f,
+        extends.height * 0.2f
+    });
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
@@ -505,6 +581,7 @@ void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> fu
     function(middleNode);
     function(playerBarNode);
     function(playerActionNode);
+    function(deckNode);
 }
 
 Extends GameNode::getCompactExtends(Extends ext) {
@@ -514,13 +591,13 @@ Extends GameNode::getCompactExtends(Extends ext) {
 void GameNode::handleCardUpdate(CardUpdate update) {
     cast(HandNode, handNode)->updateHand(update.hand);
     cast(MiddleNode, middleNode)->setCards(update.middle_cards);
+    cast(DeckNode, deckNode)->handleCardUpdate(update);
 
     for(auto entry : update.opponent_cards) {
         auto it = GlobalState::players.find({entry.first});
         throwServerErrorIF("invalid ClientID in opponent cards entry", it == GlobalState::players.end());
         it->game->cards = entry.second;
     }
-    //TODO
 }
 
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {

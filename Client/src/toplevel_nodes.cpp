@@ -9,7 +9,7 @@ class Lobby : public LeafNode {
 private:
 
 public:
-    Lobby() {}
+    Lobby () {}
 
     void updateExtends(Extends new_extends) override {
         extends = new_extends;
@@ -111,7 +111,7 @@ private:
 
 
 // LobbyNode Implementation
-LobbyNode::LobbyNode() {
+LobbyNode::LobbyNode(Extends ext) {
     lobby = std::make_unique<Lobby>();
 
     back_button = std::make_unique<ButtonNode>("BACK");
@@ -135,6 +135,7 @@ LobbyNode::LobbyNode() {
         std::cout << "settings" << std::endl;
     });
     cast(ButtonNode, settings_button)->visible = true;
+    updateExtends(ext);
 }
 
 void LobbyNode::updateExtends(Extends ext) {
@@ -182,7 +183,8 @@ void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
     update.ok; //für ready
 }
 
-
+//-----------------------------------------------------------------------------------------------------
+ 
 LoginScreenNode::LoginScreenNode(Extends ext){
     placeholder_button = std::make_unique<ButtonNode>("CONNECT");
     placeholder_button->setClickEventCallback([](float x, float y){
@@ -214,4 +216,65 @@ Extends LoginScreenNode::getCompactExtends(Extends ext){
 
 void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node> &)> function) {
     function(placeholder_button);
+}
+
+//--------------------------------------------------------------------------------------------------
+
+GameOverScreenNode::GameOverScreenNode(bool durak):durak(durak){
+    back_button = std::make_unique<ButtonNode>("BACK");
+    back_button->setClickEventCallback([](float x, float y){
+        std::cout << "back" << std::endl;
+    });
+    cast(ButtonNode, back_button)->visible = true;
+
+    rematch_button = std::make_unique<ButtonNode>("REMATCH");
+    rematch_button->setClickEventCallback([](float x, float y){
+        std::cout << "rematch" << std::endl;
+    });
+    cast(ButtonNode, rematch_button)->visible = true;
+
+}
+
+void GameOverScreenNode::updateExtends(Extends ext){
+    extends = ext;
+    //buttons
+    float button_width = ext.width * 0.25f;
+    float available_area = ext.width * 0.8f;
+    float total_button_width = button_width * 2;
+    float spacing = (available_area - total_button_width) / 3;
+    float start_x = ext.x + (ext.width - available_area) / 2.0f;
+    back_button->updateExtends({
+        start_x + spacing,
+        ext.y + ext.height * 0.1f,
+        button_width,
+        ext.height * 0.1f,
+    });
+    rematch_button->updateExtends({
+        start_x + spacing * 2 + button_width,
+        ext.y + ext.height * 0.1f,
+        button_width,
+        ext.height * 0.1f,
+    });
+}
+
+Extends GameOverScreenNode::getCompactExtends(Extends ext){
+    return ext;
+}
+
+void GameOverScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function){
+    //Base
+    function(back_button);
+    function(rematch_button);
+}
+
+void GameOverScreenNode::draw() {
+    Extends base_ext = {
+        extends.x + extends.width * 0.15f,
+        extends.y + extends.height * 0.05f,
+        extends.width * 0.7f,
+        extends.height * 0.9f,
+    };
+    OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    back_button->draw();
+    rematch_button->draw();
 }

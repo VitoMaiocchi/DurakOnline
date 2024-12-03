@@ -171,10 +171,20 @@ namespace OpenGL {
         Window::width = width;
     }
 
-    static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+    void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
         xpos = xpos / Window::width * Viewport::width;
         ypos = (1 - ypos / Window::height) * Viewport::height;
         masterNode->sendHoverEvent(xpos, ypos);
+    }
+
+    std::function<void(char)> character_input_callback = [](char c){};
+
+    void setCharacterInputCallback(std::function<void(char)> callback) {
+        character_input_callback = callback;
+    }
+
+    void character_callback(GLFWwindow* window, unsigned int codepoint) {
+        if (codepoint <= 0x7F) character_input_callback(static_cast<char>(codepoint));
     }
 
     bool setupWindow() {
@@ -205,6 +215,7 @@ namespace OpenGL {
         glfwSetWindowSizeCallback(window, window_size_callback);
         glfwSetMouseButtonCallback(window, mouse_button_callback);
         glfwSetCursorPosCallback(window, cursor_position_callback);
+        glfwSetCharCallback(window, character_callback);
         return true;
     }
 

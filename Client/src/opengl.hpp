@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 #include <glm/glm.hpp>
+#include <functional>
 
 enum TextSize {
     TEXTSIZE_SMALL = 10,
@@ -24,4 +25,6 @@ namespace OpenGL {
     void drawText(std::string, Extends ext, glm::vec3 color, TextSize size);
 
     std::pair<uint, uint> getImageDimensions(std::string path);
+
+    void setCharacterInputCallback(std::function<void(char)> callback);
 }

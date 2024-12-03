@@ -195,6 +195,11 @@ LoginScreenNode::LoginScreenNode(Extends ext){
         Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
     });
     cast(ButtonNode, placeholder_button)->visible = true;
+
+    OpenGL::setCharacterInputCallback([](char c) {
+        std::cout << "De eric muss de login screen no mache und es isch grad " << c << " druckt worde" << std::endl;
+    });
+
     updateExtends(ext);
 }
 

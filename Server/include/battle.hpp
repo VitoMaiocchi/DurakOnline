@@ -81,6 +81,18 @@ class Battle {
 
         std::map<ClientID, PlayerRole> getPlayerRolesMap();
 
+        void sendAvailableActionUpdate(unsigned int setting, ClientID client); 
+        //setting = 0 -> ok1&2 true,            pick up -> true,    pass on -> true
+        //setting = 1 -> ok1&2 true,            pick up -> true,    pass on -> false
+        //setting = 2 -> ok1&2 true,            pick up -> false,   pass on -> false
+        //setting = 3 -> ok1 false, ok2 true,   pick up -> true,    pass on -> true
+        //setting = 4 -> ok1 false, ok2 true,   pick up -> true,    pass on -> false
+        //setting = 5 -> ok1 false, ok2 true,   pick up -> false,   pass on -> false
+        //setting = 6 -> ok1 true, ok2 false,   pick up -> true,    pass on -> true
+        //setting = 7 -> ok1 true, ok2 false,   pick up -> true,    pass on -> false
+        //setting = 8 -> ok1 true, ok2 false,   pick up -> false,   pass on -> false
+        //setting = 9 -> ok1&2 false            pick up -> false,   pass on -> false
+
 //setter and getter functions
         void setCurrAttacks(int attacks) { curr_attacks_ = attacks; }
         int getCurrAttacks() const { return curr_attacks_; }

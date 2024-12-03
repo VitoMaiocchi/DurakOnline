@@ -72,6 +72,7 @@ void handleGameStateUpdate(GameStateUpdate update) {
     if(GlobalState::game_state == update.state) return;
     Extends ext = {0,0,(float)Viewport::width, (float)Viewport::height};
 
+    /*
     switch(GlobalState::game_state) {
         case GAMESTATE_GAME:
             game_node = nullptr;
@@ -83,6 +84,7 @@ void handleGameStateUpdate(GameStateUpdate update) {
             login_node = nullptr;
             break;
     }
+    */
 
     switch(update.state) {
         case GAMESTATE_GAME:

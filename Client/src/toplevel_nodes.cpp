@@ -113,6 +113,7 @@ private:
 // LobbyNode Implementation
 LobbyNode::LobbyNode() {
     lobby = std::make_unique<Lobby>();
+
     back_button = std::make_unique<ButtonNode>("BACK");
     back_button->setClickEventCallback([](float x, float y){
         std::cout << "back" << std::endl;
@@ -121,7 +122,11 @@ LobbyNode::LobbyNode() {
 
     ready_button = std::make_unique<ButtonNode>("READY");
     ready_button->setClickEventCallback([](float x, float y){
-        std::cout << "ready" << std::endl;
+        std::cout << "Ready button pressed..." << std::endl;
+
+        ClientActionEvent event;
+        event.action = CLIENTACTION_READY;
+        Network::sendMessage(std::make_unique<ClientActionEvent>(event));
     });
     cast(ButtonNode, ready_button)->visible = true;
 
@@ -133,6 +138,7 @@ LobbyNode::LobbyNode() {
 }
 
 void LobbyNode::updateExtends(Extends ext) {
+    extends = ext;
     //lobby
     lobby->updateExtends(ext);
     //buttons
@@ -180,7 +186,7 @@ void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
 LoginScreenNode::LoginScreenNode(Extends ext){
     placeholder_button = std::make_unique<ButtonNode>("CONNECT");
     placeholder_button->setClickEventCallback([](float x, float y){
-        std::cout << "Trying to connect to server..." << std::endl;
+        std::cout << "Trying to connet to server..." << std::endl;
         clientID = Network::openConnection("localhost", 42069);
 
         //place holder: da muss mer den de actual name schicke

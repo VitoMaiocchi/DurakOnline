@@ -360,6 +360,7 @@ ClientActionEvent::ClientActionEvent() {messageType = MESSAGETYPE_CLIENT_ACTION_
 void ClientActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {
     content.AddMember("action", ToInt(action), allocator);
 }
+
 void ClientActionEvent::fromJson(const rapidjson::Value& obj) {
     if(obj.HasMember("action") && obj["action"].IsInt()){
         action = FromInt<ClientAction>(obj["action"].GetInt());

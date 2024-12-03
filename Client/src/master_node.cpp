@@ -18,6 +18,7 @@ std::set<Player> GlobalState::players;
 std::unique_ptr<Node> game_node;
 std::unique_ptr<Node> lobby_node;
 std::unique_ptr<Node> login_node;
+std::unique_ptr<Node> gameover_node;
 
 MasterNode::MasterNode() {
     assert(!master_node_exists); // Only one master node can exist
@@ -42,6 +43,10 @@ void MasterNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> 
             assert(login_node);
             function(login_node);
             return;
+        case GAMESTATE_GAME_OVER:
+            assert(gameover_node);
+            function(gameover_node);
+            return;
     }
 }
 
@@ -60,7 +65,11 @@ void MasterNode::updateExtends(Extends ext) {
         case GAMESTATE_LOGIN_SCREEN:
             assert(login_node);
             login_node->updateExtends(ext);
-        return;
+            return; 
+        case GAMESTATE_GAME_OVER:
+            assert(gameover_node);
+            gameover_node->updateExtends(ext);
+            return;
     }
 }
 
@@ -83,6 +92,9 @@ void handleGameStateUpdate(GameStateUpdate update) {
         case GAMESTATE_LOGIN_SCREEN:
             login_node = nullptr;
             break;
+        case GAMESTATE_GAME_OVER:
+            gameover_node = nullptr;
+            break;
     }
     */
 
@@ -91,11 +103,14 @@ void handleGameStateUpdate(GameStateUpdate update) {
             game_node = std::make_unique<GameNode>(ext);
             break;
         case GAMESTATE_LOBBY:
-            lobby_node = std::make_unique<LobbyNode>();
-            lobby_node->updateExtends(ext); //TODO: das sött im constructor si
+            lobby_node = std::make_unique<LobbyNode>(ext);
             break;
         case GAMESTATE_LOGIN_SCREEN:
             //das bruchts nur wenn mer server disconnect handled
+            break;
+        case GAMESTATE_GAME_OVER:
+            gameover_node = std::make_unique<GameOverScreenNode>();
+            gameover_node->updateExtends(ext);
             break;
     }
 

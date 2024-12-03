@@ -42,11 +42,13 @@ int main() {
 
             Network::sendMessage(std::make_unique<PlayerUpdate>(update3), id);
 
+            /*
             sleep(2);
 
             update.state = GAMESTATE_GAME;
             Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
 
+            
             CardUpdate update2;
             update2.hand = {
                 Card(RANK_ACE, SUIT_SPADES),
@@ -94,6 +96,7 @@ int main() {
             update5.pass_on = true;
             update5.pick_up = true;
             Network::sendMessage(std::make_unique<AvailableActionUpdate>(update5), id);
+            */
         }
     }
 

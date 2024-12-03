@@ -11,6 +11,9 @@ class LobbyNode : public TreeNode {
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> lobby;
+        std::unique_ptr<Node> back_button;
+        std::unique_ptr<Node> ready_button;
+        std::unique_ptr<Node> settings_button;
 };
 
 class LoginScreenNode : public TreeNode {

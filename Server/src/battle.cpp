@@ -343,7 +343,7 @@ bool Battle::successfulDefend(){
     }
     if(attacks_to_defend_ == 0){
         // ----------> send message ok = true, pick up = false, pass on = false
-        sendAvailableActionUpdate(2);
+        sendAvailableActionUpdate(2, getCurrentDefender());
         return true;
     }
     return true;
@@ -563,7 +563,7 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     attacks_to_defend_--;
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-    sendAvailableActionUpdate(1); //ok false, pick up true, pass on false
+    sendAvailableActionUpdate(1, client); //ok false, pick up true, pass on false
 }
 
 

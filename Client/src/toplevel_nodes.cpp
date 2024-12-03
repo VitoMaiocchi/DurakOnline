@@ -1,27 +1,15 @@
+#define NETWORKTYPE_CLIENT
 #include "toplevel_nodes.hpp"
 #include "drawable.hpp"
 #include "master_node.hpp"
-#define NETWORKTYPE_CLIENT
 #include <Networking/network.hpp>
 
 // LobbyNode
 class Lobby : public LeafNode {
 private:
-    // Buttons
-    struct Button {
-        std::string label;
-        glm::vec3 color;
-        Extends extends;
-    };
-    std::vector<Button> buttons;
 
 public:
-    Lobby() {
-        // Buttons
-        buttons.push_back({"BACK", {0.0f, 0.0f, 0.0f}, {}});
-        buttons.push_back({"READY", {0.0f, 0.0f, 0.0f}, {}});
-        buttons.push_back({"SETTINGS", {0.0f, 0.0f, 0.0f}, {}});
-    }
+    Lobby() {}
 
     void updateExtends(Extends new_extends) override {
         extends = new_extends;
@@ -54,26 +42,13 @@ public:
             extends.height * 0.25f,
         };
         drawPlayers(player_ext);
-
-        // Button extends
-        Extends button_ext = {
-            extends.x + extends.width * 0.1f,
-            extends.y + extends.height * 0.1f,
-            extends.width * 0.8f,
-            extends.height * 0.2f,
-        };
-        drawButtons(button_ext);
     }
 
     void drawPlayers(const Extends& player_ext) {
-        // Number of players
         int num_players = GlobalState::players.size();
         if (num_players == 0) return;
-
-        // Calculate the width for each player (horizontal layout)
         float player_width = player_ext.width / num_players;
 
-        // Loop over each player and draw
         int index = 0;
         for (const auto& player : GlobalState::players) {
             // Calculate the extends for the current player
@@ -86,7 +61,6 @@ public:
 
             // Draw player image and name
             drawPlayer(player, current_player_ext);
-
             ++index;
         }
     }
@@ -107,42 +81,6 @@ public:
             extends.width,
             extends.height * 0.3f
         }, glm::vec3(0, 0, 0), TEXTSIZE_MEDIUM);
-    }
-
-    void drawButtons(const Extends& button_area_ext) {
-        int num_buttons = buttons.size();
-        if (num_buttons == 0) return;
-
-        // Calculate the width
-        float button_width = button_area_ext.width / num_buttons;
-
-        int index = 0;
-        for (auto& button : buttons) {
-            float middle = 0.;
-            if(index == 1) middle = (0.3f*button_width)*(1/6.);
-            if(index == 2) middle = (0.3f*button_width)*(2/6.);
-            // Calculate the extends for the current button
-            Extends button_ext = {
-                button_area_ext.x + index * button_width + middle,
-                button_area_ext.y,
-                button_width*0.9f,
-                button_area_ext.height*0.4f,
-            };
-            button.extends = button_ext;
-
-            // Draw button background
-            OpenGL::drawRectangle(button_ext, glm::vec4(0.9f, 0.4f, 0.4f, 0.4f));
-
-            // Draw button label
-            OpenGL::drawText(button.label, {
-                button_ext.x,
-                button_ext.y + button_ext.height * 0.3f,
-                button_ext.width,
-                button_ext.height * 0.4f
-            }, glm::vec3(1.0f, 1.0f, 1.0f), TEXTSIZE_LARGE);
-
-            ++index;
-        }
     }
 
     Extends getCompactExtends(Extends ext) override {
@@ -167,7 +105,6 @@ private:
             result.y += (ext.height - new_height) / 2.0f;
             result.height = new_height;
         }
-
         return result;
     }
 };
@@ -176,10 +113,58 @@ private:
 // LobbyNode Implementation
 LobbyNode::LobbyNode() {
     lobby = std::make_unique<Lobby>();
+
+    back_button = std::make_unique<ButtonNode>("BACK");
+    back_button->setClickEventCallback([](float x, float y){
+        std::cout << "back" << std::endl;
+    });
+    cast(ButtonNode, back_button)->visible = true;
+
+    ready_button = std::make_unique<ButtonNode>("READY");
+    ready_button->setClickEventCallback([](float x, float y){
+        std::cout << "Ready button pressed..." << std::endl;
+
+        ClientActionEvent event;
+        event.action = CLIENTACTION_READY;
+        Network::sendMessage(std::make_unique<ClientActionEvent>(event));
+    });
+    cast(ButtonNode, ready_button)->visible = true;
+
+    settings_button = std::make_unique<ButtonNode>("SETTINGS");
+    settings_button->setClickEventCallback([](float x, float y){
+        std::cout << "settings" << std::endl;
+    });
+    cast(ButtonNode, settings_button)->visible = true;
 }
 
 void LobbyNode::updateExtends(Extends ext) {
+    extends = ext;
+    //lobby
     lobby->updateExtends(ext);
+    //buttons
+    float button_width = ext.width * 0.25f;
+    float available_area = ext.width * 0.8f;
+    float total_button_width = button_width * 3;
+    float spacing = (available_area - total_button_width) / 4;
+    float start_x = ext.x + (ext.width - available_area) / 2.0f;
+    back_button->updateExtends({
+        start_x + spacing,
+        ext.y + ext.height * 0.1f,
+        button_width,
+        ext.height * 0.1f,
+    });
+    ready_button->updateExtends({
+        start_x + spacing * 2 + button_width,
+        ext.y + ext.height * 0.1f,
+        button_width,
+        ext.height * 0.1f,
+    });
+    settings_button->updateExtends({
+        start_x + spacing * 3 + button_width * 2,
+        ext.y + ext.height * 0.1f,
+        button_width,
+        ext.height * 0.1f,
+    });
 }
 
 Extends LobbyNode::getCompactExtends(Extends ext) {
@@ -188,6 +173,9 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
 
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(lobby);
+    function(back_button);
+    function(ready_button);
+    function(settings_button);
 }
 
 void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
@@ -198,7 +186,7 @@ void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
 LoginScreenNode::LoginScreenNode(Extends ext){
     placeholder_button = std::make_unique<ButtonNode>("CONNECT");
     placeholder_button->setClickEventCallback([](float x, float y){
-        std::cout << "Trying to connect to server..." << std::endl;
+        std::cout << "Trying to connet to server..." << std::endl;
         clientID = Network::openConnection("localhost", 42069);
 
         //place holder: da muss mer den de actual name schicke

@@ -48,6 +48,7 @@ int main() {
             update.state = GAMESTATE_GAME;
             Network::sendMessage(std::make_unique<GameStateUpdate>(update), id);
 
+            
             CardUpdate update2;
             update2.hand = {
                 Card(RANK_ACE, SUIT_SPADES),

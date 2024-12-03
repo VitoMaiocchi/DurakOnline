@@ -28,51 +28,30 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             first_attacker_ = &pl;
             bsu_msg.attackers.push_back(pl.first);
             attack_order_.push_front(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == CO_ATTACKER){
             bsu_msg.attackers.push_back(pl.first);
             attack_order_.push_back(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == IDLE){
             bsu_msg.idle.push_back(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
     }
 
     for(auto& pl : players_bs_){
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
-    }
-
-    for(auto& pl : players_bs_){
-        AvailableActionUpdate update;
-        if(pl.second == ATTACKER){
-            update.ok = true;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-        if(pl.second == DEFENDER){
-            update.ok = false;
-            update.pass_on = true;
-            update.pick_up = true;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-        if(pl.second == CO_ATTACKER){
-            update.ok = true;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-        if(pl.second == IDLE){
-            update.ok = false;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-
     }
 
 
@@ -363,7 +342,8 @@ bool Battle::successfulDefend(){
         }
     }
     if(attacks_to_defend_ == 0){
-        // ----------> send message
+        // ----------> send message ok = true, pick up = false, pass on = false
+        sendAvailableActionUpdate(2);
         return true;
     }
     return true;
@@ -583,6 +563,7 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     attacks_to_defend_--;
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
+    sendAvailableActionUpdate(1); //ok false, pick up true, pass on false
 }
 
 
@@ -614,39 +595,24 @@ void Battle::movePlayerRoles(){
     //while iterating prepare the message BattleStateUpdate to send to the client
     for(auto& pl : players_bs_){
         if(pl.second == ATTACKER){
-            first_attacker_ = &pl;
             bsu_msg.attackers.push_back(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == CO_ATTACKER){
             bsu_msg.attackers.push_back(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == IDLE){
             bsu_msg.idle.push_back(pl.first);
-        }
-        std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
-    }
-
-    for(auto& pl : players_bs_){
-        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
-    }
-    //set the first attacker pointer to the one that attacks first
-    //while iterating prepare the message BattleStateUpdate to send to the client
-    for(auto& pl : players_bs_){
-        if(pl.second == ATTACKER){
-            first_attacker_ = &pl;
-            bsu_msg.attackers.push_back(pl.first);
-        }
-        else if(pl.second == DEFENDER){
-            bsu_msg.defender = pl.first;
-        }
-        else if(pl.second == CO_ATTACKER){
-            bsu_msg.attackers.push_back(pl.first);
-        }
-        else if(pl.second == IDLE){
-            bsu_msg.idle.push_back(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
         }
         std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
     }
@@ -655,36 +621,117 @@ void Battle::movePlayerRoles(){
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
     }
 
-    //send the new available action updates
-    for(auto pl : players_bs_){
-        AvailableActionUpdate update;
-        if(pl.second == ATTACKER){
-            update.ok = true;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-        if(pl.second == DEFENDER){
-            update.ok = false;
-            update.pass_on = true;
-            update.pick_up = true;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-        if(pl.second == CO_ATTACKER){
-            update.ok = true;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
-        if(pl.second == IDLE){
-            update.ok = false;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), pl.first);
-        }
 
-    }
+
 }
+void Battle::sendAvailableActionUpdate(unsigned int setting, ClientID client){
+        // attacker 1 & 2                       //defender
+        //setting = 0 -> ok1&2 true,            pick up -> true,    pass on -> true     11
+        //setting = 1 -> ok1&2 true,            pick up -> true,    pass on -> false    10
+        //setting = 2 -> ok1&2 true,            pick up -> false,   pass on -> false    00
+        //setting = 3 -> ok1 false, ok2 true,   pick up -> true,    pass on -> true     11
+        //setting = 4 -> ok1 false, ok2 true,   pick up -> true,    pass on -> false    10
+        //setting = 5 -> ok1 false, ok2 true,   pick up -> false,   pass on -> false    00
+        //setting = 6 -> ok1 true, ok2 false,   pick up -> true,    pass on -> true     11
+        //setting = 7 -> ok1 true, ok2 false,   pick up -> true,    pass on -> false    10
+        //setting = 8 -> ok1 true, ok2 false,   pick up -> false,   pass on -> false    00
+        //setting = 9 -> ok1&2 false            pick up -> false,   pass on -> false    00
+
+
+        AvailableActionUpdate update;
+        if(players_bs_[client] == ATTACKER){
+            switch(setting){
+                case 0:
+                case 1:
+                case 2:
+                case 6:
+                case 7:
+                case 8:
+                    update.ok = true;
+                    update.pass_on = false;
+                    update.pick_up = false;
+                    break;
+                case 3:
+                case 4:
+                case 5:
+                case 9:
+                    update.ok = false;
+                    update.pass_on = false;
+                    update.pick_up = false;
+                    break;
+                default:
+                    std::cerr << "setting not found to send an available action update" <<std::endl;
+                    break;
+            }
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
+        }
+        if(players_bs_[client] == DEFENDER){
+            switch(setting){
+                case 0:
+                case 3:
+                case 6:
+                    update.ok = false;
+                    update.pass_on = true;
+                    update.pick_up = true;
+                    break;
+                case 1:
+                case 4:
+                case 7:
+                    update.ok = false;
+                    update.pass_on = false;
+                    update.pick_up = true;
+                    break;
+                case 2:
+                case 5:
+                case 8:
+                case 9:
+                    update.ok = false;
+                    update.pass_on = false;
+                    update.pick_up = false;
+                    break;
+                default:
+                    std::cerr << "setting not found to send an available action update" <<std::endl;
+                    break;
+            }
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
+        }
+        if(players_bs_[client] == CO_ATTACKER){
+            switch(setting){
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    update.ok = true;
+                    update.pass_on = false;
+                    update.pick_up = false;
+                    break;
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    update.ok = false;
+                    update.pass_on = false;
+                    update.pick_up = false;
+                    break;
+                default:
+                    std::cerr << "setting not found to send an available action update" <<std::endl;
+                    break;
+            }
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
+        }
+
+
+        if(players_bs_[client] == IDLE){
+            update.ok = false;
+            update.pass_on = false;
+            update.pick_up = false;
+            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
+        }
+
+}
+
 //getter function for game
 bool Battle::battleIsDone(){
     return battle_done_;

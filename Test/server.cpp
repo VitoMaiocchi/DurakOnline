@@ -4,6 +4,7 @@
 #include <Networking/network.hpp>
 #include <unordered_set>
 #include <csignal>
+#include <unistd.h>
 
 std::unordered_set<ClientID> clients;
 

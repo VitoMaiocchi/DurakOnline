@@ -81,7 +81,7 @@ Game::Game(std::vector<ClientID> player_ids){
         }
     }
     // - Start the first battle
-    // only decomment this when constructor of battle user map
+    // only decomment this when constructor of battle uses map
     current_battle_ = new Battle(true, player_roles_, *card_manager_);
     // the constructor of Battle will then communicate to the clients the roles of the players
 }

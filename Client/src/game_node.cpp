@@ -467,12 +467,20 @@ class DeckNode : public LeafNode {
             extends.height - 2*b
         };
 
-        Extends image_ext = computeCompactExtends(ext, CARD_TEXTURE_HEIGHT, CARD_TEXTURE_WIDTH);
-        image_ext.y = ext.y;
-        float delta = (ext.height - image_ext.height) / 2;
+        Extends ext2 = {
+            ext.x + b,
+            ext.y + b,
+            ext.width - 2*b,
+            ext.height - 2*b
+        };
+
+        Extends image_ext = computeCompactExtends(ext2, CARD_TEXTURE_HEIGHT, CARD_TEXTURE_WIDTH);
+        image_ext.y = ext.y + b;
+        const float h = image_ext.height + 2*b;
+        float delta = (ext.height - h) / 2;
         Extends text_ext = {
             ext.x,
-            ext.y + image_ext.height,
+            ext.y + h,
             ext.width,
             delta
         };
@@ -572,7 +580,7 @@ void GameNode::updateExtends(Extends ext) {
         extends.x,
         extends.y,
         extends.width * 0.25f,
-        extends.height * 0.2f
+        extends.height * 0.25f
     });
 }
 

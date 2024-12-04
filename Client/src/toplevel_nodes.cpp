@@ -193,13 +193,13 @@ LoginScreenNode::LoginScreenNode(Extends ext){
 
         //place holder: da muss mer den de actual name schicke
         ClientConnectEvent event;
-        event.username = "Booger Eater";
+        event.username = "Durak3";
         Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
     });
     cast(ButtonNode, placeholder_button)->visible = true;
 
     OpenGL::setCharacterInputCallback([](char c) {
-        std::cout << "De eric muss de login screen no mache und es isch grad " << c << " druckt worde" << std::endl;
+        std::cout << c << std::endl;
     });
 
     updateExtends(ext);

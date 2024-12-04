@@ -87,6 +87,8 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
             attack(player_id, cards.at(0));
+            // sendAvailableActionUpdate(0, player_id);
+            // sendAvailableActionUpdate(0, getCurrentDefender());
 
             return true;
         }
@@ -258,6 +260,12 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
             return false;
         }
+        if(first_battle_){
+            IllegalMoveNotify notify;
+            notify.error = "Illegal move: 'Cannot pass the attack on when it's the first battle'";
+            Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+            return false;
+        }
         //for every card in the middle i want to test the whole hand if there is a card that is trump
         //and that matches the rank of the card, if yes then we can say break and then call 
         //moveplayer roles, but if not then if it reaches the end of the middle vector without finding
@@ -292,6 +300,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         pickUp_msg = true;
 
         if(!successfulDefend()){
+            sendAvailableActionUpdate(2, player_id);
             card_manager_ptr_->pickUp(player_id);
             return true;
         }
@@ -312,9 +321,11 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         // -> clear middle
         if(players_bs_[player_id] == ATTACKER) {
             ok_msg_[ATTACKER] = true;
+            sendAvailableActionUpdate(1, player_id);
         }
         if(players_bs_[player_id] == CO_ATTACKER){
             ok_msg_[CO_ATTACKER] = true;
+            sendAvailableActionUpdate(1, player_id);
         }
         if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
                                         (pickUp_msg == true || successfulDefend())){
@@ -626,35 +637,19 @@ void Battle::movePlayerRoles(){
 }
 void Battle::sendAvailableActionUpdate(unsigned int setting, ClientID client){
         // attacker 1 & 2                       //defender
-        //setting = 0 -> ok1&2 true,            pick up -> true,    pass on -> true     11
-        //setting = 1 -> ok1&2 true,            pick up -> true,    pass on -> false    10
-        //setting = 2 -> ok1&2 true,            pick up -> false,   pass on -> false    00
-        //setting = 3 -> ok1 false, ok2 true,   pick up -> true,    pass on -> true     11
-        //setting = 4 -> ok1 false, ok2 true,   pick up -> true,    pass on -> false    10
-        //setting = 5 -> ok1 false, ok2 true,   pick up -> false,   pass on -> false    00
-        //setting = 6 -> ok1 true, ok2 false,   pick up -> true,    pass on -> true     11
-        //setting = 7 -> ok1 true, ok2 false,   pick up -> true,    pass on -> false    10
-        //setting = 8 -> ok1 true, ok2 false,   pick up -> false,   pass on -> false    00
-        //setting = 9 -> ok1&2 false            pick up -> false,   pass on -> false    00
-
+        //setting = 0 -> ok true                pick up true        pass on -> true
+        //setting = 1 -> ok false               pick up true        pass on -> false
+        //setting = 2  //////////               picl up false       pass on -> false
 
         AvailableActionUpdate update;
         if(players_bs_[client] == ATTACKER){
             switch(setting){
                 case 0:
-                case 1:
-                case 2:
-                case 6:
-                case 7:
-                case 8:
                     update.ok = true;
                     update.pass_on = false;
                     update.pick_up = false;
                     break;
-                case 3:
-                case 4:
-                case 5:
-                case 9:
+                case 1:
                     update.ok = false;
                     update.pass_on = false;
                     update.pick_up = false;
@@ -668,23 +663,16 @@ void Battle::sendAvailableActionUpdate(unsigned int setting, ClientID client){
         if(players_bs_[client] == DEFENDER){
             switch(setting){
                 case 0:
-                case 3:
-                case 6:
                     update.ok = false;
                     update.pass_on = true;
                     update.pick_up = true;
                     break;
                 case 1:
-                case 4:
-                case 7:
                     update.ok = false;
                     update.pass_on = false;
                     update.pick_up = true;
                     break;
                 case 2:
-                case 5:
-                case 8:
-                case 9:
                     update.ok = false;
                     update.pass_on = false;
                     update.pick_up = false;
@@ -698,19 +686,11 @@ void Battle::sendAvailableActionUpdate(unsigned int setting, ClientID client){
         if(players_bs_[client] == CO_ATTACKER){
             switch(setting){
                 case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
                     update.ok = true;
                     update.pass_on = false;
                     update.pick_up = false;
                     break;
-                case 6:
-                case 7:
-                case 8:
-                case 9:
+                case 1:
                     update.ok = false;
                     update.pass_on = false;
                     update.pick_up = false;

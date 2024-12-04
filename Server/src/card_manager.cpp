@@ -19,13 +19,13 @@ CardManager::CardManager(std::vector<ClientID> player_ids) : player_ids_(player_
     //charte mische & usteile
     shuffleCards();
 
+    //Trumpf bestimme
+    determineTrump();
+
     //send all the players the updates about their cards
     for(auto id : player_ids_){
         sendCardUpdateMsg(id);
     }
-
-    //Trumpf bestimme
-    determineTrump();
 
     // at the end of the constructor card manager should communicate the current status of the cards in play
     // for this we use the message CARD_UPDATE

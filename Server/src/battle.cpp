@@ -87,8 +87,8 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
             attack(player_id, cards.at(0));
-            sendAvailableActionUpdate(0, player_id);
-            sendAvailableActionUpdate(0, getCurrentDefender());
+            // sendAvailableActionUpdate(0, player_id);
+            // sendAvailableActionUpdate(0, getCurrentDefender());
 
             return true;
         }

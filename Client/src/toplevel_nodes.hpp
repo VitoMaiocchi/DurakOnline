@@ -24,6 +24,7 @@ class LoginScreenNode : public Node {
         Extends getCompactExtends(Extends ext);
 
     private:
+        std::string name;
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> connect_button;
 };
@@ -36,6 +37,7 @@ class GameOverScreenNode : public Node {
         Extends getCompactExtends(Extends ext);
 
     private:
+    
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         const bool durak;
         std::unique_ptr<Node> back_button;

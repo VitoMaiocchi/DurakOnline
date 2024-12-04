@@ -16,15 +16,16 @@ class LobbyNode : public TreeNode {
         std::unique_ptr<Node> settings_button;
 };
 
-class LoginScreenNode : public TreeNode {
+class LoginScreenNode : public Node {
     public:
+        void draw();
         LoginScreenNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
-        std::unique_ptr<Node> placeholder_button;
+        std::unique_ptr<Node> connect_button;
 };
 
 class GameOverScreenNode : public Node {

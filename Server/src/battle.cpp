@@ -47,7 +47,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             //send the normal action update
             sendAvailableActionUpdate(0, pl.first);
         }
-        std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
+        std::cout << "Debugging purposes: id: " << pl.first << ": role" << pl.second << std::endl;
     }
 
     for(auto& pl : players_bs_){

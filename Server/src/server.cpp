@@ -6,6 +6,7 @@
 #include "../include/game.hpp"
 #include <unordered_set>
 #include <iostream>
+#include <unistd.h>
 
 
 namespace DurakServer{

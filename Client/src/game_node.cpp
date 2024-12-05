@@ -340,9 +340,23 @@ class PlayerBarNode : public TreeNode {
     public:
     void playerUpdateNotify() {
         playerNodes.clear();
-        for(const Player& player : GlobalState::players) 
-            if(!player.is_you) playerNodes.push_back(std::make_unique<PlayerNode>(&player));
-        
+        if(GlobalState::players.size() == 0) return;
+
+        auto you_it = GlobalState::players.find({clientID});
+        throwServerErrorIF("This client ClientID is not part of the player update", you_it == GlobalState::players.end());
+
+        auto it = you_it;
+        it++;
+        while(it != GlobalState::players.end()) {
+            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it)));
+            it++;
+        }
+        it = GlobalState::players.begin();
+        while(it != you_it) {
+            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it)));
+            it++;
+        }
+
         updateExtends(extends);
     }
 

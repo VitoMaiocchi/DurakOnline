@@ -99,20 +99,18 @@ int main() {
                 std::cout << std::endl;
 
                 //this is added for testing purposes to start the game screen
-                if(clients.size() >= MIN_PLAYERS){
-                    player_update.player_count = players_map.size(); //playerupdate msg
+                // if(clients.size() >= MIN_PLAYERS){
+                player_update.player_count = players_map.size(); //playerupdate msg
 
-                    std::vector<ClientID> player_ids(clients.begin(), clients.end());
-                    GameStateUpdate update;
-                    update.state = GAMESTATE_GAME;
-                    for(auto c : player_ids){
-                        Network::sendMessage(std::make_unique<GameStateUpdate>(update), c);
-                        Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
-                    }
+                std::vector<ClientID> player_ids(clients.begin(), clients.end());
 
-                    current_game = std::make_unique<Game>(player_ids);
-                    std::cout << "Starting a new game..." << std::endl;
+                for(auto c : player_ids){
+                    Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
                 }
+
+                //     current_game = std::make_unique<Game>(player_ids);
+                //     std::cout << "Starting a new game..." << std::endl;
+                // }
 
                 break;
             }
@@ -126,14 +124,16 @@ int main() {
                     std::cout << "Client " << client << " is ready." << std::endl;
                     std::cout << std::endl;
                 // Check if enough and all players are ready to start the game
-                    // if (ready_clients.size() >= MIN_PLAYERS && current_game == nullptr ) {
-                    //     std::cout << "Starting a new game..." << std::endl;
-                    //     std::vector<ClientID> player_ids(clients.begin(), clients.end());
-                    //     current_game = std::make_unique<Game>(player_ids);
-                    //     GameStateUpdate update;
-                    //     update.state = GAMESTATE_GAME;
-                    //     Network::sendMessage(std::make_unique<GameStateUpdate>(update), client);
-                    // }
+                    if (ready_clients.size() == clients.size() && ready_clients.size() >= MIN_PLAYERS && current_game == nullptr ) {
+                        std::cout << "Starting a new game..." << std::endl;
+                        std::vector<ClientID> player_ids(clients.begin(), clients.end());
+                        GameStateUpdate update;
+                        update.state = GAMESTATE_GAME;
+                        for(auto c : ready_clients){
+                            Network::sendMessage(std::make_unique<GameStateUpdate>(update), c);
+                        }
+                        current_game = std::make_unique<Game>(player_ids);
+                    }
                 }
                 else if(action && action->action == CLIENTACTION_PICK_UP || 
                                   action->action ==CLIENTACTION_PASS_ON ||
@@ -165,6 +165,7 @@ int main() {
             case MESSAGETYPE_REMOTE_DISCONNECT_EVENT: {
                 std::cout << "Client disconnected: " << client << std::endl;
                 clients.erase(client);
+                ready_clients.erase(client);
                 players_map.erase(client);
                 if(players_map.size() < 3){
                     current_game.reset();

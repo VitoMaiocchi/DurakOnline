@@ -1,5 +1,4 @@
 #include "global_state.hpp"
-#include "shaders.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -45,24 +44,40 @@ namespace OpenGL {
     Shader* imageShader;
     Shader* rectangleShader;
     Shader* characterShader;
-    unsigned int VAO;
+    unsigned int VAO; //Vertex Array
     int success;
 
     bool setupWindow();
     void setupVertexArray();
     void generateCharacterTextures();
+    void compileShaders();
 
     //General Setup
 
-    bool setup() {
+    bool setup() { //Most important function in this file: Main Window Setup
+        /*
+        Sets up the glfw Window. This includes various callbacks for the following events:
+        Window size change
+        Viewport size change
+        Text input
+        Mouse Click
+        Mouse Hover
+        */
         if(!setupWindow()) return false;
 
-        //Compile Shaders
-        imageShader = new Shader(imageVertexShaderSource, imageFragmentShaderSource);
-        rectangleShader = new Shader(rectangleVertexShaderSource, rectangleFragmentShaderSource);
-        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
-
+        //compiles the GLSL shaders. This is the code that runs on the graphics card.
+        compileShaders();
+        /*
+        sets up a vertex array of two triangles forming a rectangle
+        this is used to render all the primitive objects like 
+        Colored Rectangles, Images/Textures and single Characters (text);
+        */
         setupVertexArray();
+        /*
+        This takes a ttf font file from the resource directory and
+        creates OpenGl compatible Textures for each character
+        (limited to ASCI for simplicity)
+        */
         generateCharacterTextures();
 
         Viewport::sizeUpdateNotify();
@@ -98,48 +113,7 @@ namespace OpenGL {
         return glfwWindowShouldClose(window);
     }
 
-    //IMAGE
-    Texture* getTexture(std::string path);
 
-    std::pair<uint, uint> getImageDimensions(std::string path) {
-        Texture* texture = getTexture(path);
-        return {texture->width, texture->height};
-    }
-
-    void drawImage(std::string path, Extends ext) {
-        Texture* texture = getTexture(path);
-
-        glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
-        glUseProgram(imageShader->shader_program);
-
-        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0));
-        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
-
-        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
-
-
-    //Rectangle
-    void drawRectangle(Extends ext, glm::vec4 color) {
-        glUseProgram(rectangleShader->shader_program);
-
-        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
-        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
-        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
-
-        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-
-        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
-        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
 
     //Window Setup
 
@@ -247,40 +221,106 @@ namespace OpenGL {
     }
 
 
-    //Vertex Array
+    /*
+    Rectangle: The first primitive that can be rendered
+    This is very straight forward and only involves one function
+    it just sends to color and transform to the graphics card for use in the shader
+    and then issues the draw.
+    */
+    void drawRectangle(Extends ext, glm::vec4 color) {
+        glUseProgram(rectangleShader->shader_program);
 
-    const float vertices[] = {
-        0.0f,  1.0f,   0.0f, 0.0f,
-        1.0f,  1.0f,   1.0f, 0.0f,
-        1.0f,  0.0f,   1.0f, 1.0f,
-        0.0f,  1.0f,   0.0f, 0.0f,
-        1.0f,  0.0f,   1.0f, 1.0f,
-        0.0f,  0.0f,   0.0f, 1.0f
-    };
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0.0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
 
-    void setupVertexArray() {
-        //Create Vertex Array
-        //Vertex Array 
-        unsigned int VBO;
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
+        unsigned int transformLoc = glGetUniformLocation(rectangleShader->shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+        uint colorLoc = glGetUniformLocation(rectangleShader->shader_program, "color");
+        glUniform4fv(colorLoc, 1, glm::value_ptr(color));
+
         glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
 
-        // position attribute
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        // texture coordinate attribute
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-        glEnableVertexAttribArray(1);
+    /*
+    Image: the second primitive.
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0); 
-        glBindVertexArray(0); 
+    rendred in a simmilar way as the rectangle but this time with a texture.
+    To avoid loading the same image file multiple times a pointer to the Texture
+    is stored in a hashmap with the path.
+    */
+    Texture* getTexture(std::string path);
+
+    std::pair<uint, uint> getImageDimensions(std::string path) {
+        Texture* texture = getTexture(path);
+        return {texture->width, texture->height};
+    }
+
+    void drawImage(std::string path, Extends ext) {
+        Texture* texture = getTexture(path);
+
+        glBindTexture(GL_TEXTURE_2D, texture->gl_texture);
+        glUseProgram(imageShader->shader_program);
+
+        glm::mat4 trans = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
+        trans = glm::translate(trans, glm::vec3(ext.x, ext.y, 0));
+        trans = glm::scale(trans, glm::vec3(ext.width, ext.height, 1.0));
+
+        unsigned int transformLoc = glGetUniformLocation(imageShader->shader_program, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+        //Texture creator
+    std::map<std::string, Texture> textures;
+
+    Texture* getTexture(std::string path) {
+        auto i = textures.find(path);
+        if(i != textures.end()) return &i->second;
+        
+        //load new texture
+        Texture tex; 
+
+        glGenTextures(1, &tex.gl_texture);
+        glBindTexture(GL_TEXTURE_2D, tex.gl_texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        int nrChannels;
+        unsigned char *data = stbi_load(path.c_str(), &tex.width, &tex.height, &nrChannels, 0);
+
+        if (data){
+            if(nrChannels == 4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            if(nrChannels == 3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        } else throw std::runtime_error("OpenGL: error loading the following texture: "+path);
+        
+        stbi_image_free(data);
+
+        textures[path] = tex;
+        return &textures[path];
     }
     
 
-    //FREE TYPE (TEXT)
+    /*
+    Text:
+
+    drawText() draws the text with a given TextSize. If the size is to large
+    it fits it within the extends parameter.
+
+    Here the Character textures get pre computed.
+    When text is rendered we just iterate trough all the characters and draw them one by one.
+
+    the following parts contain copied code (Refer to the Note in opengl.hpp):
+    struct Character();
+    generateCharacterTextures();
+    renderText(); (modified for use of the same vertex buffer)
+    */
     void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
     void computeTextSize(std::string text, float scale, float &width, float &height);
 
@@ -414,36 +454,121 @@ namespace OpenGL {
         renderText(text, ext.x + (ext.width - width)/2, ext.y + (ext.height - height)/2, scale, color);
     }
 
-    //Texture creator
-    std::map<std::string, Texture> textures;
+    /*
+    This is the Vertex array for a Rectangle made up of two triangles.
+    It includes the texture cordinates 
+    */
+    const float vertices[] = {
+        0.0f,  1.0f,   0.0f, 0.0f,
+        1.0f,  1.0f,   1.0f, 0.0f,
+        1.0f,  0.0f,   1.0f, 1.0f,
+        0.0f,  1.0f,   0.0f, 0.0f,
+        1.0f,  0.0f,   1.0f, 1.0f,
+        0.0f,  0.0f,   0.0f, 1.0f
+    };
 
-    Texture* getTexture(std::string path) {
-        auto i = textures.find(path);
-        if(i != textures.end()) return &i->second;
-        
-        //load new texture
-        Texture tex; 
+    void setupVertexArray() {
+        //Create Vertex Array
+        //Vertex Array 
+        unsigned int VBO;
+        glGenVertexArrays(1, &VAO);
+        glGenBuffers(1, &VBO);
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glGenTextures(1, &tex.gl_texture);
-        glBindTexture(GL_TEXTURE_2D, tex.gl_texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // position attribute
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        // texture coordinate attribute
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
-        int nrChannels;
-        unsigned char *data = stbi_load(path.c_str(), &tex.width, &tex.height, &nrChannels, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0); 
+        glBindVertexArray(0); 
+    }
 
-        if (data){
-            if(nrChannels == 4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            if(nrChannels == 3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-        } else throw std::runtime_error("OpenGL: error loading the following texture: "+path);
-        
-        stbi_image_free(data);
 
-        textures[path] = tex;
-        return &textures[path];
+    /*
+    to keep things simple the shader code is just 
+    stored in const strings instead of seperate files
+    */
+
+    const char *imageVertexShaderSource = 
+        "#version 330 core\n"
+        "layout (location = 0) in vec2 aPos;\n"
+        "layout (location = 1) in vec2 aTexCoord;\n"
+        "out vec2 TexCoord;\n"
+        "uniform mat4 transform;"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = transform * vec4(aPos.x, aPos.y, 1.0, 1.0);\n"
+        "   TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+        "}\0";
+
+    const char *imageFragmentShaderSource = 
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+        "in vec2 TexCoord;\n"
+        "uniform sampler2D texture1;\n"
+        "void main()\n"
+        "{\n"
+        "   FragColor = texture(texture1, TexCoord);"
+        "}\n\0";
+
+
+    const char *rectangleVertexShaderSource = 
+        "#version 330 core\n"
+        "layout (location = 0) in vec2 aPos;\n"
+        "layout (location = 1) in vec2 aTexCoord;\n"
+        "out vec2 TexCoord;\n"
+        "uniform mat4 transform;"
+        "void main()\n"
+        "{\n"
+        "   gl_Position = transform * vec4(aPos.x, aPos.y, 1.0, 1.0);\n"
+        "   TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+        "}\0";
+
+    const char *rectangleFragmentShaderSource = 
+        "#version 330 core\n"
+        "out vec4 FragColor;\n"
+        "in vec2 TexCoord;\n"
+        "uniform vec4 color;\n"
+        "void main()\n"
+        "{\n"
+        "   FragColor = color;"
+        "}\n\0";
+
+    const char* characterVertexShaderSource = 
+        "#version 330 core\n"
+        "layout (location = 0) in vec2 aPos;\n"
+        "layout (location = 1) in vec2 aTexCoord;\n"
+        "out vec2 TexCoords;\n"
+
+        "uniform mat4 transform;\n"
+
+        "void main() {"
+            "gl_Position = transform * vec4(aPos, 0.0, 1.0);\n"
+            "TexCoords = aTexCoord;\n"
+        "}";
+
+    const char *characterFragmentShaderSource = 
+        "#version 330 core\n"
+        "in vec2 TexCoords;\n"
+        "out vec4 color;\n"
+
+        "uniform sampler2D text;\n"
+        "uniform vec3 textColor;\n"
+
+        "void main() {"
+            "vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);\n"
+            "color = vec4(textColor, 1.0) * sampled;\n"
+        "}";
+
+    void compileShaders() {
+        imageShader = new Shader(imageVertexShaderSource, imageFragmentShaderSource);
+        rectangleShader = new Shader(rectangleVertexShaderSource, rectangleFragmentShaderSource);
+        characterShader = new Shader(characterVertexShaderSource, characterFragmentShaderSource);
     }
 
 }

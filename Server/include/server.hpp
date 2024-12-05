@@ -10,6 +10,7 @@
 #include <memory>
 #include <csignal>
 #include <iostream>
+#include <algorithm>
 
 
 struct Player{

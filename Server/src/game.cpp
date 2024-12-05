@@ -38,28 +38,33 @@ Game::Game(std::vector<ClientID> player_ids){
         ClientID first_defender = -1; //no player determined
         for(size_t i = 0; i < player_ids.size(); ++i){
             if(player_ids[i] == first_attacker){
-                if( i + 1 < player_ids.size()){
+                if( (i + 1) < player_ids.size()){
                     first_defender = player_ids[i + 1]; 
+                    break;
                 }
                 else{
                     first_defender = player_ids[0];
+                    break;
                 }
                 break;
             }
         }
+        // auto it = std::find(player_roles_.begin(), player_roles_.end(), )
         std::cout << "determined defender: " << first_defender << std::endl;
 
         ClientID second_attacker = -1; //no player determined
 
         for(size_t i = 0; i < player_ids.size(); ++i){
             if(player_ids[i] == first_defender){
-                if( i + 1 < player_ids.size()){
+                if( (i + 1) < player_ids.size()){
                     second_attacker = player_ids[i + 1];
+                    break;
                 }
                 else{
                     second_attacker = player_ids[0];
+                    break;
                 }
-                break;
+
             }
         }
         std::cout << "determined second attacker: " << second_attacker << std::endl;

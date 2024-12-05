@@ -73,12 +73,18 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                 if (ready_clients.size() >= MIN_PLAYERS && ready_clients.size() == clients.size() && current_game == nullptr ) {
                     std::cout << "Starting a new game..." << std::endl;
                     std::vector<ClientID> player_ids(ready_clients.begin(), ready_clients.end());
+                    std::sort(player_ids.begin(), player_ids.end());
                     GameStateUpdate update;
                     update.state = GAMESTATE_GAME;
                     for(auto c : player_ids){
                         Network::sendMessage(std::make_unique<GameStateUpdate>(update), c);
                     }
                     current_game = std::make_unique<Game>(player_ids);
+                    //searching bug 
+                    std::cout << "player ids vector with which the game is initialized \nid: "<< std::endl;
+                    for(auto p : player_ids){
+                        std::cout << p << " ";
+                    }
                 }
             }
             else if(action && action->action == CLIENTACTION_PICK_UP || 
@@ -119,6 +125,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             }
             PlayerUpdate player_update;
             player_update.player_count = players_map.size();
+            player_update.durak = 0;
             for(ClientID c : clients){
                 player_update.player_names[c] = players_map[c].name;
             }

@@ -66,15 +66,17 @@ public:
     }
 
     void drawPlayer(const Player& player, const Extends& extends) {
-        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "skins/durak_bot.png");
+        std::string skin_type = "skins/durak_bot.png";
+        if(player.name == "danil" || player.name == "Danil") skin_type = "skins/player.png";
+        if(player.name == "thomas" || player.name == "Thomas") skin_type = "skins/clown.png";
+        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + skin_type);
         Extends skin_ext = computeCompactExtends({
             extends.x,
             extends.y + extends.height * 0.3f,
             extends.width,
             extends.height * 0.7f
         }, size.second, size.first);
-        OpenGL::drawImage(CLIENT_RES_DIR + "skins/durak_bot.png", skin_ext);
-
+        OpenGL::drawImage(CLIENT_RES_DIR + skin_type, skin_ext);
         OpenGL::drawText(player.name, {
             extends.x,
             extends.y,
@@ -186,33 +188,72 @@ void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
 //-----------------------------------------------------------------------------------------------------
  
 LoginScreenNode::LoginScreenNode(Extends ext){
-    placeholder_button = std::make_unique<ButtonNode>("CONNECT");
-    placeholder_button->setClickEventCallback([](float x, float y){
+    /*
+    OpenGL::setCharacterInputCallback([](char c) {
+        std::cout << c << std::endl;
+        name.push_back(c);
+    });*/
+    OpenGL::setCharacterInputCallback([this](char c) {
+        std::cout << c << std::endl;
+        name.push_back(c);
+    });
+    connect_button = std::make_unique<ButtonNode>("CONNECT");
+    connect_button->setClickEventCallback([this](float x, float y){
         std::cout << "Trying to connet to server..." << std::endl;
         clientID = Network::openConnection("localhost", 42069);
 
         //place holder: da muss mer den de actual name schicke
+        if(name.size() == 0) name = "Durak";
         ClientConnectEvent event;
-        event.username = "Durak3";
+        event.username = name;
         Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
     });
-    cast(ButtonNode, placeholder_button)->visible = true;
-
-    OpenGL::setCharacterInputCallback([](char c) {
-        std::cout << c << std::endl;
-    });
-
+    cast(ButtonNode, connect_button)->visible = true;
     updateExtends(ext);
 }
 
 void LoginScreenNode::updateExtends(Extends ext){
     extends = ext;
-    placeholder_button->updateExtends({
-        ext.x + ext.width * 0.3f,
-        ext.y + ext.height * 0.4f,
-        ext.width * 0.4f,
-        ext.height * 0.2f
+    //button
+    connect_button->updateExtends({
+        ext.x + ext.width * 0.25f,
+        ext.y + ext.height * 0.1f,
+        ext.width * 0.5f,
+        ext.height * 0.1f,
     });
+}
+
+void LoginScreenNode::draw() {
+    Extends base_ext = {
+        extends.x + extends.width * 0.2f,
+        extends.y + extends.height * 0.05f,
+        extends.width * 0.6f,
+        extends.height * 0.9f,
+    };
+    OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    Extends title_ext = {
+            extends.x + extends.width * 0.25f,
+            extends.y + extends.height * 0.65f,
+            extends.width * 0.5f,
+            extends.height * 0.3f,
+    };
+    OpenGL::drawText("DURAK", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
+    /*Extends server_ip_ext = {
+            extends.x + extends.width * 0.25f,
+            extends.y + extends.height * 0.45f,
+            extends.width * 0.5f,
+            extends.height * 0.3f,
+    };
+    OpenGL::drawText("SERVER IP:", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    */
+    Extends player_name_ext = {
+            extends.x + extends.width * 0.25f,
+            extends.y + extends.height * 0.25f,
+            extends.width * 0.5f,
+            extends.height * 0.3f,
+    };
+    OpenGL::drawText("PLAYER NAME: (type in name and press connect)", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    connect_button->draw();
 }
 
 Extends LoginScreenNode::getCompactExtends(Extends ext){
@@ -220,7 +261,7 @@ Extends LoginScreenNode::getCompactExtends(Extends ext){
 }
 
 void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node> &)> function) {
-    function(placeholder_button);
+    function(connect_button);
 }
 
 //--------------------------------------------------------------------------------------------------

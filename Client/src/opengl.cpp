@@ -1,5 +1,4 @@
-#include "master_node.hpp"
-#include "viewport.hpp"
+#include "global_state.hpp"
 #include "shaders.h"
 
 #include <glad/glad.h>
@@ -18,15 +17,15 @@
 
 #define FONT_PATH "../Client/resources/fonts/OpenSans-Bold.ttf"
 
+namespace Window {
+    unsigned int height = 600;
+    unsigned int width = 800;
+}
 
 uint Viewport::height = 600;
 uint Viewport::width = 800;
-uint Window::height = 600;
-uint Window::width = 800;
-float Viewport::global_scalefactor = 1000;
 
 namespace OpenGL {
-    MasterNode* masterNode;
     GLFWwindow* window;
 
     struct Texture {
@@ -66,7 +65,7 @@ namespace OpenGL {
         setupVertexArray();
         generateCharacterTextures();
 
-        masterNode = new MasterNode();
+        Viewport::sizeUpdateNotify();
         return true;
     }
     
@@ -74,14 +73,13 @@ namespace OpenGL {
         glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        masterNode->draw();
+        Viewport::draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();    
     }
 
     void cleanup() {
-        delete masterNode;
         delete imageShader;
         delete rectangleShader;
         delete characterShader;
@@ -151,7 +149,7 @@ namespace OpenGL {
             glfwGetCursorPos(window, &xpos, &ypos);
             xpos = xpos / Window::width * Viewport::width;
             ypos = (1 - ypos / Window::height) * Viewport::height;
-            masterNode->sendClickEvent(xpos, ypos);
+            Viewport::clickEventNotify(xpos, ypos);
         }
     }
 
@@ -159,11 +157,7 @@ namespace OpenGL {
         glViewport(0, 0, width, height);
         Viewport::height = height;
         Viewport::width = width;
-
-        Viewport::global_scalefactor = (width < 1.2*height ? width : height) / 1000.0f; //das chammer no besser mache
-
-        Extends viewport_ext = {0, 0, static_cast<float>(width), static_cast<float>(height)};
-        masterNode->updateExtends(viewport_ext);
+        Viewport::sizeUpdateNotify();
     }
 
     void window_size_callback(GLFWwindow* window, int width, int height) {
@@ -174,7 +168,7 @@ namespace OpenGL {
     void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
         xpos = xpos / Window::width * Viewport::width;
         ypos = (1 - ypos / Window::height) * Viewport::height;
-        masterNode->sendHoverEvent(xpos, ypos);
+        Viewport::hoverEventNotify(xpos, ypos);
     }
 
     std::function<void(char)> character_input_callback = [](char c){};

@@ -1,7 +1,7 @@
 #define NETWORKTYPE_CLIENT
 #include "toplevel_nodes.hpp"
 #include "drawable.hpp"
-#include "master_node.hpp"
+#include "global_state.hpp"
 #include <Networking/network.hpp>
 
 // LobbyNode
@@ -200,7 +200,7 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     connect_button = std::make_unique<ButtonNode>("CONNECT");
     connect_button->setClickEventCallback([this](float x, float y){
         std::cout << "Trying to connet to server..." << std::endl;
-        clientID = Network::openConnection("localhost", 42069);
+        GlobalState::clientID = Network::openConnection("localhost", 42069);
 
         //place holder: da muss mer den de actual name schicke
         if(name.size() == 0) name = "Durak";

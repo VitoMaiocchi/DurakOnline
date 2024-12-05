@@ -1,9 +1,9 @@
 #include "game_node.hpp"
-#include "master_node.hpp"
+#include "global_state.hpp"
+
 #include <iostream>
 #include <unordered_set>
 #include <optional>
-#include "viewport.hpp"
 
 #define NETWORKTYPE_CLIENT
 #include <Networking/network.hpp>
@@ -342,7 +342,7 @@ class PlayerBarNode : public TreeNode {
         playerNodes.clear();
         if(GlobalState::players.size() == 0) return;
 
-        auto you_it = GlobalState::players.find({clientID});
+        auto you_it = GlobalState::players.find({GlobalState::clientID});
         throwServerErrorIF("This client ClientID is not part of the player update", you_it == GlobalState::players.end());
 
         auto it = you_it;

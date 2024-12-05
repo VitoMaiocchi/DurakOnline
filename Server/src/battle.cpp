@@ -23,22 +23,26 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
     BattleStateUpdate bsu_msg;
     //set the first attacker pointer to the one that attacks first
     //while iterating prepare the message BattleStateUpdate to send to the client
+    // we first iterate through to set the first attacker
     for(auto& pl : players_bs_){
         if(pl.second == ATTACKER){
             first_attacker_ = &pl;
-            bsu_msg.attackers.push_back(pl.first);
+            bsu_msg.attackers.push_front(pl.first);
             attack_order_.push_front(pl.first);
+            //send the normal action update
+            sendAvailableActionUpdate(0, pl.first);
+        }
+    }
+    // then we iterate through another time to ensure the co attacker is appended to the list and does not come in front of the attacker
+    for(auto& pl : players_bs_){
+        if(pl.second == CO_ATTACKER){
+            bsu_msg.attackers.push_back(pl.first);
+            attack_order_.push_back(pl.first);
             //send the normal action update
             sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
-            //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
-        }
-        else if(pl.second == CO_ATTACKER){
-            bsu_msg.attackers.push_back(pl.first);
-            attack_order_.push_back(pl.first);
             //send the normal action update
             sendAvailableActionUpdate(0, pl.first);
         }
@@ -302,6 +306,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         if(!successfulDefend()){
             sendAvailableActionUpdate(2, player_id);
             card_manager_ptr_->pickUp(player_id);
+            movePlayerRoles(); //moves player roles one to the right
             return true;
         }
         if(successfulDefend()){

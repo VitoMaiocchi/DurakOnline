@@ -1,3 +1,10 @@
+Thomas questions:
+
+-   Right now if the client defending picks up the cards, the attacker and co-attacker can not throw in any more cards.
+    -   Should the attacker and co-attacker be able to throw in cards after the defender picks up the cards?
+        or should the attacker and co-attacker need to press ready and only then the defender can pick up the cards?
+
+
 server.cpp:
 - clean up the code
 - add the same changes as in test_server2.cpp

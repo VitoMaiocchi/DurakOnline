@@ -227,7 +227,13 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
          * edge case: defender places two cards to pass_on
          */
         std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
-        if(!middle[slot % 6].first.has_value() && !first_battle_){
+        if(!middle[slot % 6].first.has_value()){
+            if(first_battle_) {
+                IllegalMoveNotify notify;
+                notify.error = "Illegal Move: 'Cannot pass the attack on in the first battle'.";
+                Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+                return false;
+            }
             //now we know the slot is empty, now we need to call pass_on()
             passOn(cards.at(0), player_id, slot);
             //check if the middle has been updated

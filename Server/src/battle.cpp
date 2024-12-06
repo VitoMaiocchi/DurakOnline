@@ -17,7 +17,17 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
                                     first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) 
                                     ,curr_attacks_(0){
     
-    max_attacks_ = first_battle ? 5 : 6;
+    // max_attacks_ = first_battle ? 5 : 6;
+    if(first_battle){
+        max_attacks_ = 5;
+    }
+    //if in the endgame, where players have less than 6 cards on hand
+    else if(card_manager_ptr_->getPlayerHand(getCurrentDefender()).size() < 6){
+        max_attacks_ = card_manager_ptr_->getPlayerHand(getCurrentDefender()).size();
+    }
+    else{
+        max_attacks_ = 6;
+    }
     battle_done_ = false;
 
     BattleStateUpdate bsu_msg;
@@ -218,6 +228,12 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
          */
         std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         if(!middle[slot % 6].first.has_value()){
+            if(first_battle_) {
+                IllegalMoveNotify notify;
+                notify.error = "Illegal Move: 'Cannot pass the attack on in the first battle'.";
+                Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+                return false;
+            }
             //now we know the slot is empty, now we need to call pass_on()
             passOn(cards.at(0), player_id, slot);
             //check if the middle has been updated
@@ -230,13 +246,13 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
             // return false;
         } 
         if(isValidMove(cards.at(0), player_id, slot)) {
-            defend(player_id, cards.at(0), slot); //this function causes an address boundary error
+            defend(player_id, cards.at(0), slot); 
             return true;
         }
     }
     else if(role == DEFENDER && defense_started_){
         if(isValidMove(cards.at(0), player_id, slot)) {
-            defend(player_id, cards.at(0), slot); //this function causes an address boundary error
+            defend(player_id, cards.at(0), slot); 
             return true;
         }
     }
@@ -302,7 +318,6 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
     else if(action == CLIENTACTION_PICK_UP){
 
         pickUp_msg = true;
-
         if(!successfulDefend()){
             sendAvailableActionUpdate(2, player_id);
             card_manager_ptr_->pickUp(player_id);
@@ -339,6 +354,9 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
             card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
             //Find a way to handle players that are now finished
             movePlayerRoles();
+            if(pickUp_msg){ //need a better if statement
+                movePlayerRoles(); //defender loses the ability to attack
+            }
 
             battle_done_ = true;
         }
@@ -443,6 +461,9 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     //else if its two or more cards at the same time check that all of the cards are the same number
     //else if the card is the same number as one of the cards in the middle then it is ok to play
 
+    //get the defenders hand to check how many cards can be played, this is a second check to ensure
+    //when an attack was passed on that the defender can defend all cards
+    std::size_t defender_card_amount = card_manager_ptr_->getPlayerHand(getCurrentDefender()).size();
     //check if the card is in the players hand 
     const std::vector<Card>& player_hand = card_manager_ptr_->getPlayerHand(player_id);
     if(std::find(player_hand.begin(), player_hand.end(), card) == player_hand.end()){
@@ -512,7 +533,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         } 
     }
     if(role == ATTACKER){
-        if(curr_attacks_ == max_attacks_){
+        if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
             return false; //idk about this maybe should be > and if == true
@@ -521,7 +542,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             return true;
         }
         //check if card rank is in middle
-        if(curr_attacks_ < max_attacks_){
+        if(curr_attacks_ < max_attacks_ && 0 < defender_card_amount){
             //fetch middle if the card is in play
             std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
             for(auto card_in_middle : middle){
@@ -533,7 +554,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     }
     //coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
-        if(curr_attacks_ == max_attacks_){
+        if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
             return false; //idk about this maybe should be > and if == true
@@ -544,7 +565,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             return false;
         }
         //check if card rank is in middle
-        if(curr_attacks_ < max_attacks_){
+        if(curr_attacks_ < max_attacks_ && 0 < defender_card_amount){
             //fetch middle if the card is in play
             std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
             for(auto card_in_middle : middle){

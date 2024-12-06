@@ -45,3 +45,13 @@ class ButtonNode : public LeafNode {
     Extends getCompactExtends(Extends ext);
     void draw();
 };
+
+class PlayerNode : public LeafNode {
+    const Player* player;
+    const bool game; //true for game; false for lobby version
+
+    public:
+    PlayerNode(const Player* player, const bool game);
+    Extends getCompactExtends(Extends ext);
+    void draw();
+};

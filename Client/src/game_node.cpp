@@ -265,71 +265,6 @@ class MiddleNode : public TreeNode {
         }
 };
 
-class PlayerNode : public LeafNode {
-
-    const Player* player;
-
-    public:
-    PlayerNode(const Player* player) : player(player) {}
-
-    Extends getCompactExtends(Extends ext) {
-        if(ext.height >  ext.width) {
-            ext.y += (ext.height-ext.width)/2;
-            ext.height = ext.width;
-        } else {
-            ext.x += (ext.width-ext.height)/2;
-            ext.width = ext.height;
-        }
-        return ext;
-    }
-
-    void draw() { //TODO: mache das di zahle schön aligned sind
-        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
-
-        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "skins/durak.png");
-        Extends ext = computeCompactExtends({
-            extends.x,
-            extends.y + extends.height * 0.3f,
-            extends.width,
-            extends.height * 0.7f
-        }, size.second, size.first);
-        OpenGL::drawImage(CLIENT_RES_DIR + "skins/durak.png", ext);
-
-        size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "icons/hand.png");
-        OpenGL::drawImage(CLIENT_RES_DIR + "icons/hand.png", computeCompactExtends({
-            extends.x + extends.width * 0.15f,
-            extends.y + extends.height * 0.15f,
-            extends.width * 0.2f,
-            extends.height * 0.15f
-        }, size.second, size.first));
-
-        OpenGL::drawText(std::to_string(player->game->cards), {
-            extends.x + extends.width * 0.35f,
-            extends.y + extends.height * 0.15f,
-            extends.width * 0.2f,
-            extends.height * 0.15f
-        }, glm::vec3(0,0,0), TEXTSIZE_LARGE);
-
-        if(player->game->state != PLAYERSTATE_NONE) {
-            const std::string s = getPlayerStateIcon(player->game->state);
-            size = OpenGL::getImageDimensions(s);
-            OpenGL::drawImage(s, computeCompactExtends({
-                extends.x + extends.width * 0.65f,
-                extends.y + extends.height * 0.15f,
-                extends.width * 0.2f,
-                extends.height * 0.15f
-            }, size.second, size.first));
-        }
-
-        OpenGL::drawText(player->name, {
-            extends.x,
-            extends.y,
-            extends.width,
-            extends.height * 0.15f
-        }, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
-    }
-};
-
 class PlayerBarNode : public TreeNode {
     std::list<std::unique_ptr<Node>> playerNodes;
 
@@ -348,12 +283,12 @@ class PlayerBarNode : public TreeNode {
         auto it = you_it;
         it++;
         while(it != GlobalState::players.end()) {
-            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it)));
+            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it), true));
             it++;
         }
         it = GlobalState::players.begin();
         while(it != you_it) {
-            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it)));
+            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it), true));
             it++;
         }
 

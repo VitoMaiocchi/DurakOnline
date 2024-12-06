@@ -533,11 +533,57 @@ class DeckNode : public LeafNode {
     }
 };
 
+class PlayerStateNode : public LeafNode {
+
+    public:
+    Extends getCompactExtends(Extends ext) {
+        return ext;
+    }
+
+    void draw() {
+        const auto state = GlobalState::players.find({GlobalState::clientID})->game->state;
+
+        std::string text = "You are currently ";
+        switch(state) {
+            case PLAYERSTATE_ATTACK:
+            text += "attacking";
+            break;
+            case PLAYERSTATE_DEFEND:
+            text += "defending";
+            break;
+            case PLAYERSTATE_IDLE:
+            text += "watching";
+            break;
+        }
+
+        OpenGL::drawText(text, {
+            extends.x + 0.2f*extends.width,
+            extends.y,
+            extends.width * 0.8f,
+            extends.height
+        }, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+
+        if(state != PLAYERSTATE_NONE) {
+            const std::string path = getPlayerStateIcon(state);
+            auto size = OpenGL::getImageDimensions(path);
+            OpenGL::drawImage(path, computeCompactExtends({
+                extends.x,
+                extends.y + extends.height * 0.25f,
+                extends.width * 0.2f,
+                extends.height * 0.5f
+            }, size.second, size.first));
+        }
+    }
+
+
+};
+
 GameNode::GameNode(Extends ext) {
     handNode = std::make_unique<HandNode>();
     playerBarNode = std::make_unique<PlayerBarNode>();
     playerActionNode = std::make_unique<PlayerActionNode>();
     deckNode = std::make_unique<DeckNode>();
+    playerStateNode = std::make_unique<PlayerStateNode>();
 
     middleNode = std::make_unique<MiddleNode>();
     Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
@@ -596,6 +642,13 @@ void GameNode::updateExtends(Extends ext) {
         extends.width * 0.25f,
         extends.height * 0.25f
     });
+
+    playerStateNode->updateExtends({
+        extends.x + extends.width * 0.3f,
+        extends.y + extends.height * 0.2f,
+        extends.width * 0.4f,
+        extends.height * 0.05f
+    });
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
@@ -604,6 +657,7 @@ void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> fu
     function(playerBarNode);
     function(playerActionNode);
     function(deckNode);
+    function(playerStateNode);
 }
 
 Extends GameNode::getCompactExtends(Extends ext) {

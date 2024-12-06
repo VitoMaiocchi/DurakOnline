@@ -75,7 +75,7 @@ int main() {
             BattleStateUpdate update4;
             update4.attackers = {8};
             update4.defender = 7;
-            update4.idle = {10};
+            update4.idle = {10, id};
             Network::sendMessage(std::make_unique<BattleStateUpdate>(update4), id);
 
             AvailableActionUpdate update5;

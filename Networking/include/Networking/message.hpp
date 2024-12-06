@@ -11,7 +11,7 @@
 #include <Networking/util.hpp>
 
 enum MessageType {
-    MESSAGETYPE_TEST, //NUR FÜR TEST GRÜND DI CHÖMMER NACHER WEG NEH
+    MESSAGETYPE_TEST,
     // Server:* to Client:MasterNode
     MESSAGETYPE_ILLEGAL_MOVE_NOTIFY, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
     MESSAGETYPE_CARD_UPDATE, // Server:CardManager to Client:MasterNode, communicates the current status of the cards in play

@@ -148,3 +148,46 @@ void PlayerNode::draw() {
     if(game) drawGamePlayer(extends, player->name, player->game->cards, player->game->state);
     else drawLobbyPlayer(extends, player->name);
 }
+
+TextInputNode::TextInputNode(const std::string& placeholder)
+    : text(placeholder) {}
+
+Extends TextInputNode::getCompactExtends(Extends ext) {
+    return ext;
+}
+
+void TextInputNode::draw() {
+    if (!visible) return;
+
+    // Draw the input field rectangle
+    glm::vec4 backgroundColor = focused ? glm::vec4(0.8, 0.8, 0.8, 1.0) : glm::vec4(1.0, 1.0, 1.0, 1.0);
+    OpenGL::drawRectangle(extends, backgroundColor);
+
+    // Draw the text within the field
+    glm::vec3 textColor = glm::vec3(0, 0, 0);
+    OpenGL::drawText(text, extends, textColor, TEXTSIZE_LARGE);
+}
+
+void TextInputNode::sendClickEvent(float x, float y) {
+    // Check if the click is within the bounds of the text input field
+    if (x >= extends.x && x <= extends.x + extends.width &&
+        y >= extends.y && y <= extends.y + extends.height) {
+        focused = true;  // Activate focus on this field
+    } else {
+        focused = false; // Deactivate focus
+    }
+}
+
+void TextInputNode::handleCharacterInput(char c) {
+    if (focused) {
+        if (c == '\b') {
+            // Handle backspace
+            if (!text.empty()) {
+                text.pop_back();
+            }
+        } else if (std::isprint(c)) {
+            // Append printable characters to the text
+            text.push_back(c);
+        }
+    }
+}

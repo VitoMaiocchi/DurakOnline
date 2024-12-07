@@ -27,6 +27,7 @@ class LoginScreenNode : public Node {
         std::string name;
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> connect_button;
+        std::unique_ptr<Node> name_input;
 };
 
 class GameOverScreenNode : public Node {

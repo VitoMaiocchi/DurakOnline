@@ -2,20 +2,19 @@
 #include "../include/battle.hpp"
 #include "../include/card_manager.hpp"
 
-Game::Game(std::vector<ClientID> player_ids){
+Game::Game(std::vector<ClientID> player_ids) : card_manager_(player_ids) {
     // What does need to happen when a game of durak is created?
         // - Create a deck of 52 cards              //
         // - Shuffle the deck                       //
         // - Determine the trump suit               // 
         // - Distribute 6 cards to each player      // all done in the constructor of the card_manager
-         card_manager_ = new CardManager(player_ids);
         // - Determine the first attacker
-        Suit trump = card_manager_->getTrump();
+        Suit trump = card_manager_.getTrump();
         Card current_lowest_trump = Card(RANK_ACE, trump);
         // iterate through all players and find the one with the lowest trump card
         ClientID first_attacker = -1; // -1 means no one has a trump
         for(auto i : player_ids){
-            std::vector<Card> hand = card_manager_->getPlayerHand(i);
+            std::vector<Card> hand = card_manager_.getPlayerHand(i);
             // iterate through hand
             for(unsigned j = 0; j < hand.size(); j++){
                 if(hand[j].suit == trump && hand[j].rank <= current_lowest_trump.rank){
@@ -87,15 +86,13 @@ Game::Game(std::vector<ClientID> player_ids){
     }
     // - Start the first battle
     // only decomment this when constructor of battle uses map
-    current_battle_ = new Battle(true, player_roles_, *card_manager_);
+    current_battle_ = Battle(true, player_roles_, card_manager_);
     // the constructor of Battle will then communicate to the clients the roles of the players
 }
 
 // destructor
 Game::~Game(){
-    // delete shared ptr of battle and card manager
-    delete card_manager_;
-    delete current_battle_;
+    //de bruchts nöd es wird alles automatisch deallocated
 }
 
 bool Game::createBattle(){
@@ -109,7 +106,7 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
-        current_battle_ = new Battle(false, player_roles_, *card_manager_);
+        current_battle_ = Battle(false, player_roles_, card_manager_);
     return false;
 }
 
@@ -119,7 +116,7 @@ bool Game::isStarted(){
 //check if game is ended
 bool Game::endGame(){
     //only one player has cards left in his hand
-    if(card_manager_->getNumberActivePlayers() == 1){
+    if(card_manager_.getNumberActivePlayers() == 1){
         return true;
     }
     return false;
@@ -134,7 +131,7 @@ bool Game::updateTurnOrder(){
 }
 
 bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID client){
-    if(current_battle_ != nullptr){
+    if(current_battle_.has_value()){
         ClientActionEvent* return_cacte = dynamic_cast<ClientActionEvent*>(message.get());
 
         ClientAction action = return_cacte->action;
@@ -143,7 +140,7 @@ bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID cl
 
         if(current_battle_->battleIsDone()){
             player_roles_ = current_battle_->getPlayerRolesMap();
-            current_battle_ = nullptr;
+            current_battle_.reset();
         }
     }
 
@@ -151,7 +148,7 @@ bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID cl
 }
 
 bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID client){
-    if(current_battle_ != nullptr){
+    if(current_battle_.has_value()){
         // there is a battle and we need to handle the card event
         // current_battle_->handleCardEvent(message, client);
         PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
@@ -165,22 +162,18 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
     }
-    else if(current_battle_ == nullptr){
+    else {
         createBattle();
-        if(current_battle_ != nullptr){
-            PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
+        PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
 
-            //calls game function handleClientCardEvent();
-            std::vector<Card> vector_of_cards;
-            for(auto card : return_pce->cards){
-                vector_of_cards.push_back(card);
-            }
-            CardSlot slot = return_pce->slot;
-
-            current_battle_->handleCardEvent(vector_of_cards, client, slot);
+        //calls game function handleClientCardEvent();
+        std::vector<Card> vector_of_cards;
+        for(auto card : return_pce->cards){
+            vector_of_cards.push_back(card);
         }
-    } else {
-        std::cerr << "Error: 'current_battle_' is an unknown pointer" << std::endl;
+        CardSlot slot = return_pce->slot;
+
+        current_battle_->handleCardEvent(vector_of_cards, client, slot);
     }
     return false;
 }

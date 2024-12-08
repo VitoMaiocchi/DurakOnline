@@ -108,7 +108,26 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             // Handle card play event if a game is active
             if (current_game) {
                 current_game->handleClientCardEvent(std::move(msg_r), client);
-            } else {
+            } 
+            if(current_game->endGame()){
+                //clean up
+                //player update first
+                PlayerUpdate player_update;
+                player_update.durak = 0; //getlastplayer
+                
+                GameStateUpdate game_update;
+                game_update.state = GAMESTATE_DURAK_SCREEN;
+
+                for(auto c : clients){
+                    Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                    Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
+                    ready_clients.erase(c);
+                }
+
+
+
+            }
+            else {
                 std::cerr << "No active game to handle play card event!" << std::endl;
             }
             break;

@@ -434,7 +434,7 @@ namespace OpenGL {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void drawText(std::string text, Extends ext, glm::vec3 color, TextSize size) {
+    void drawText(std::string text, Extends ext, glm::vec3 color, TextSize size, TextAlignment align) {
         float scale = Viewport::global_scalefactor * size / 240.0f;
 
         float width, height;
@@ -451,7 +451,20 @@ namespace OpenGL {
             height = ext.height;
         }
 
-        renderText(text, ext.x + (ext.width - width)/2, ext.y + (ext.height - height)/2, scale, color);
+        switch(align) {
+            case TEXTALIGN_CENTER:
+                renderText(text, ext.x + (ext.width - width)/2, ext.y + (ext.height - height)/2, scale, color);
+            break;
+            case TEXTALIGN_LEFT:
+                renderText(text, ext.x, ext.y + (ext.height - height)/2, scale, color);
+        }
+    }
+
+    std::pair<float, float> getTextDimensions(std::string text, TextSize size) {
+        float scale = Viewport::global_scalefactor * size / 240.0f;
+        float width, height;
+        computeTextSize(text, scale, width, height);
+        return {width, height};
     }
 
     /*

@@ -77,7 +77,6 @@ inline std::string getPlayerIconPath(const std::string &name) {
     return CLIENT_RES_DIR + "skins/" + path;
 }
 
-//TODO: mache das di zahle schön aligned sind
 void drawGamePlayer(Extends extends, const std::string &name, const uint cards, const PlayerState state) {
     const std::string path = getPlayerIconPath(name);
     auto size = OpenGL::getImageDimensions(path);
@@ -102,7 +101,7 @@ void drawGamePlayer(Extends extends, const std::string &name, const uint cards, 
         extends.y + extends.height * 0.15f,
         extends.width * 0.2f,
         extends.height * 0.15f
-    }, glm::vec3(0,0,0), TEXTSIZE_LARGE);
+    }, glm::vec3(0,0,0), TEXTSIZE_LARGE, TEXTALIGN_LEFT);
 
     if(state != PLAYERSTATE_NONE) {
         const std::string s = getPlayerStateIcon(state);

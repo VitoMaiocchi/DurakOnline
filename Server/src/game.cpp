@@ -186,6 +186,15 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
 
 // After a card has been played this function checks if a player has finished the game
 // If that is the case, the player is removed from the player_bs_ map and added to the finished_players set
-/*void Game::updateFinishedPlayers(){
-    if (c)
-}*/
+void Game::updateFinishedPlayers(){
+    if (card_manager_.getNumberOfCardsOnDeck()){
+        return;
+    }
+    for (auto it = player_roles_.begin();it != player_roles_.end();){
+        if (card_manager_.playerFinished(it->first)){
+            finished_players_.insert(it->first);
+            it = player_roles_.erase(it);
+            
+        }
+    }
+}

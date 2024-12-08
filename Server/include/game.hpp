@@ -44,6 +44,7 @@ class Game{
         bool updateTurnOrder();
         bool handleClientActionEvent(std::unique_ptr<Message> message, ClientID client);
         bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
+        void updateFinishedPlayers();
 
         //getter function for testing purposes
         Battle* getCurrentBattle(){ return &current_battle_.value();}

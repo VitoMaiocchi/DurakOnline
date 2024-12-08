@@ -44,12 +44,16 @@ class Battle {
         std::map<PlayerRole, bool> ok_msg_ = {{ATTACKER, false}, {CO_ATTACKER, false}};
         //pick up msg
         //its weather or not the message was received, not if its positive or negative
-        bool pickUp_msg = false;
+        bool pickUp_msg_ = false;
+        bool pickUp_ = false; // if it was actually picked up
 
         // std::optional 
         std::optional<Card> slot_ = std::nullopt; //now we can check if slot.hasValue() means there is a card
 
         bool battle_done_;
+
+        //this will save all the cards from the middle, so the attackers can throw in more cards
+        std::vector<std::pair<std::optional<Card>, std::optional<Card>>> picked_up_cards_;
 
     public:
         

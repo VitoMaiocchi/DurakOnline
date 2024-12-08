@@ -202,9 +202,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
             return false;
         }
 
-        if(curr_attacks_ > 0 && !pickUp_){
+        if(curr_attacks_ > 0 && !pickUp_ && cards.size() == 1){
             //if only one card is being attacked with
-            if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot)){
+            if(isValidMove(cards.at(0), player_id, slot)){
                 //if valid move then attack with this card
                 attack(player_id, cards.at(0));
 

@@ -119,9 +119,14 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             clients.erase(client);
             ready_clients.erase(client);
             players_map.erase(client);
-            if(players_map.size() < 3){
+            if(players_map.size() < 2){
                 current_game.reset();
-                //send message to send the players into the lobby
+                GameStateUpdate game_update;
+                game_update = GAMESTATE_LOBBY;
+                for(auto c : ready_clients){
+                    //send message to send the players into the lobby
+                    Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
+                }
             }
             PlayerUpdate player_update;
             player_update.player_count = players_map.size();

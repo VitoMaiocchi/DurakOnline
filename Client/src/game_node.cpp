@@ -488,8 +488,10 @@ class PlayerStateNode : public LeafNode {
 
     void draw() {
         const auto state = GlobalState::players.find({GlobalState::clientID})->game->state;
+        if(state == PLAYERSTATE_NONE) return;
 
-        std::string text = "You are currently ";
+        const std::string path = getPlayerStateIcon(state);
+        std::string text = " You are currently ";
         switch(state) {
             case PLAYERSTATE_ATTACK:
             text += "attacking";
@@ -502,23 +504,30 @@ class PlayerStateNode : public LeafNode {
             break;
         }
 
-        OpenGL::drawText(text, {
-            extends.x + 0.2f*extends.width,
-            extends.y,
-            extends.width * 0.8f,
-            extends.height
-        }, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+        auto tsize = OpenGL::getTextDimensions(text, TEXTSIZE_MEDIUM);
+        auto isize = OpenGL::getImageDimensions(path);
+        isize.second = extends.height / 2.0f * isize.second / isize.first;
+        isize.first = extends.height / 2.0f;
 
-        if(state != PLAYERSTATE_NONE) {
-            const std::string path = getPlayerStateIcon(state);
-            auto size = OpenGL::getImageDimensions(path);
-            OpenGL::drawImage(path, computeCompactExtends({
-                extends.x,
-                extends.y + extends.height * 0.25f,
-                extends.width * 0.2f,
-                extends.height * 0.5f
-            }, size.second, size.first));
-        }
+        float w = tsize.first + isize.first;
+        float x = extends.x + (extends.width - w)/2;
+
+        Extends image_ext = {
+            x,
+            extends.y + extends.height * 0.25f,
+            (float) isize.first,
+            (float) isize.second
+        };
+
+        Extends text_ext = {
+            x + isize.first,
+            extends.y,
+            tsize.first,
+            extends.height
+        };
+
+        OpenGL::drawText(text, text_ext, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+        OpenGL::drawImage(path, image_ext);
     }
 
 

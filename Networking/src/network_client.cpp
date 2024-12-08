@@ -31,16 +31,14 @@ namespace Network {
         assert(!connected); //cannt connect twice
 
         std::cout << "opening connection..." << std::endl;
-        if(!send_connector.connect(sockpp::inet_address(ip, port)))
-            throw std::runtime_error("FAILED TO OPEN CONNECTION");
+        if(!send_connector.connect(sockpp::inet_address(ip, port))) return 0;
         send_connector.send("request id");
         char buffer[BUFFER_SIZE];
         size_t n = 0;
         while (n == 0) n = send_connector.recv(buffer, sizeof(buffer)).value_or_throw();
         client_id = std::stoi(std::string(buffer, n));
         std::cout << "client id ["<< client_id<<"]" << std::endl;
-        if(!recive_connector.connect(sockpp::inet_address(ip, port)))
-            throw std::runtime_error("FAILED TO OPEN CONNECTION");
+        if(!recive_connector.connect(sockpp::inet_address(ip, port))) return 0;
         recive_connector.send("recive " + std::to_string(client_id));
         recive_thread = std::thread([](){
             char buffer[BUFFER_SIZE];

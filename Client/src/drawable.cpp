@@ -50,8 +50,8 @@ Extends ButtonNode::getCompactExtends(Extends ext) {
 
 void ButtonNode::draw() { 
     if(!visible) return;
-    if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.25));
-    else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.15));
+    if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,2*DEFAULT_TRANSPARANCY));
+    else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
     OpenGL::drawText(text, extends, glm::vec3(0,0,0), TEXTSIZE_LARGE);
 }
 
@@ -143,7 +143,7 @@ void drawLobbyPlayer(Extends extends, const std::string &name) {
 }
 
 void PlayerNode::draw() {
-    if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
+    if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
     if(game) drawGamePlayer(extends, player->name, player->game->cards, player->game->state);
     else drawLobbyPlayer(extends, player->name);
 }

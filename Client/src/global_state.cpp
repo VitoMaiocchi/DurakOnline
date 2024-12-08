@@ -58,7 +58,7 @@ namespace Viewport {
                 break;
             case GAMESTATE_GAME_OVER:
                 master_node = std::make_unique<GameOverScreenNode>();
-                master_node->updateExtends(extends); //TODO: das in constructor ine tue
+                master_node->updateExtends(extends); //TODO: (eric) das in constructor ine tue
                 break;
         }
 

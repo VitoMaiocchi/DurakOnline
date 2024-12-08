@@ -307,21 +307,20 @@ class PlayerBarNode : public TreeNode {
     }
 
     void updateExtends(Extends ext) {
-        ext = getCompactExtends(ext);
-        extends = ext; //TODO: das isch hässlich
+        extends = getCompactExtends(ext);
 
         const uint N = playerNodes.size();
         if(N == 0) return;
         if(N == 1) {
-            (*playerNodes.begin())->updateExtends(ext);
+            (*playerNodes.begin())->updateExtends(extends);
             return;
         }
 
-        const float s = ext.height;
-        const float delta = (ext.width - s) / (N -1);
-        float x = ext.x;
+        const float s = extends.height;
+        const float delta = (extends.width - s) / (N -1);
+        float x = extends.x;
         for(auto &player : playerNodes) {
-            player->updateExtends({x, ext.y, s, s});
+            player->updateExtends({x, extends.y, s, s});
             x += delta;
         }
     }

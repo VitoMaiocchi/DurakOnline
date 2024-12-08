@@ -399,6 +399,11 @@ class PlayerActionNode : public TreeNode {
     }
 
     Extends getCompactExtends(Extends ext) {
+        const float max_w = ext.height * 1.4f;
+        if(ext.width < max_w) return ext;
+
+        ext.x = ext.x + ext.width - max_w;
+        ext.width = max_w;
         return ext;
     }
 };

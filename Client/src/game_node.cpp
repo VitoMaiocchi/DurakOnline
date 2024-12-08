@@ -283,12 +283,12 @@ class PlayerBarNode : public TreeNode {
         auto it = you_it;
         it++;
         while(it != GlobalState::players.end()) {
-            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it), true));
+            playerNodes.push_front(std::make_unique<PlayerNode>(&(*it), true));
             it++;
         }
         it = GlobalState::players.begin();
         while(it != you_it) {
-            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it), true));
+            playerNodes.push_front(std::make_unique<PlayerNode>(&(*it), true));
             it++;
         }
 

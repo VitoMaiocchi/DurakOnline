@@ -13,9 +13,9 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager) : 
-                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) 
-                                    ,curr_attacks_(0){
+Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
+                                    finished_players_(finished_players), curr_attacks_(0){
     
     // max_attacks_ = first_battle ? 5 : 6;
     if(first_battle){
@@ -62,6 +62,11 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             sendAvailableActionUpdate(0, pl.first);
         }
         std::cout << "Debugging purposes: id: " << pl.first << ": role" << pl.second << std::endl;
+    }
+
+    //the finished players are automatically just observers
+    for(ClientID f : finished_players_){
+        bsu_msg.idle.push_back(f);
     }
 
     for(auto& pl : players_bs_){

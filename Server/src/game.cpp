@@ -8,7 +8,7 @@ Game::Game(std::vector<ClientID> player_ids){
         // - Shuffle the deck                       //
         // - Determine the trump suit               // 
         // - Distribute 6 cards to each player      // all done in the constructor of the card_manager
-        card_manager_ = new CardManager(player_ids);
+        std::shared_ptr<CardManager> card_manager_ = std::make_shared<CardManager>(player_ids);
         // - Determine the first attacker
         Suit trump = card_manager_->getTrump();
         Card current_lowest_trump = Card(RANK_ACE, trump);
@@ -87,14 +87,15 @@ Game::Game(std::vector<ClientID> player_ids){
     }
     // - Start the first battle
     // only decomment this when constructor of battle uses map
-    current_battle_ = new Battle(true, player_roles_, *card_manager_);
+    std::shared_ptr<Battle> current_battle_ = std::make_shared<Battle>(true, player_roles_, *card_manager_);
     // the constructor of Battle will then communicate to the clients the roles of the players
 }
 
 // destructor
 Game::~Game(){
-    delete card_manager_;
-    delete current_battle_;
+    // delete shared ptr of battle and card manager
+    current_battle_.reset();
+    card_manager_.reset();
 }
 
 bool Game::createBattle(){
@@ -108,7 +109,7 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
-        current_battle_ = new Battle(false, player_roles_, *card_manager_);
+        std::shared_ptr<Battle> current_battle_ = std::make_shared<Battle>(false, player_roles_, *card_manager_);
     return false;
 }
 

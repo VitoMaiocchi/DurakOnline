@@ -21,6 +21,9 @@
 //da chunt alles ine wo grendered wird während es game lauft
 //endscreen und so nöd nur das mit de charte i de mitti und so
 
+//TODO: MIT 0 karte neue finnished state (au wenn du fertig bisch)
+//TODO: trump card wenns deck leer isch
+
 Suit GlobalState::trump_suit = SUIT_HEARTS;
 
 void sortCards(std::vector<Card> &cards) {

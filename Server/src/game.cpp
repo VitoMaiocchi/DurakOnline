@@ -162,6 +162,18 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
     }
     else{
         createBattle();
+        if(current_battle_ != nullptr){
+            PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
+
+            //calls game function handleClientCardEvent();
+            std::vector<Card> vector_of_cards;
+            for(auto card : return_pce->cards){
+                vector_of_cards.push_back(card);
+            }
+            CardSlot slot = return_pce->slot;
+
+            current_battle_->handleCardEvent(vector_of_cards, client, slot);
+        }
     }
     return false;
 }

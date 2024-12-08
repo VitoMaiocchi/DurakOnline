@@ -181,10 +181,6 @@ void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> f
     function(settings_button);
 }
 
-void LobbyNode::handleAvailableActionUpdate(AvailableActionUpdate update){
-    update.ok; //für ready
-}
-
 //-----------------------------------------------------------------------------------------------------
  
 LoginScreenNode::LoginScreenNode(Extends ext){

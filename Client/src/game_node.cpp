@@ -307,21 +307,20 @@ class PlayerBarNode : public TreeNode {
     }
 
     void updateExtends(Extends ext) {
-        ext = getCompactExtends(ext);
-        extends = ext; //TODO: das isch hässlich
+        extends = getCompactExtends(ext);
 
         const uint N = playerNodes.size();
         if(N == 0) return;
         if(N == 1) {
-            (*playerNodes.begin())->updateExtends(ext);
+            (*playerNodes.begin())->updateExtends(extends);
             return;
         }
 
-        const float s = ext.height;
-        const float delta = (ext.width - s) / (N -1);
-        float x = ext.x;
+        const float s = extends.height;
+        const float delta = (extends.width - s) / (N -1);
+        float x = extends.x;
         for(auto &player : playerNodes) {
-            player->updateExtends({x, ext.y, s, s});
+            player->updateExtends({x, extends.y, s, s});
             x += delta;
         }
     }
@@ -399,6 +398,11 @@ class PlayerActionNode : public TreeNode {
     }
 
     Extends getCompactExtends(Extends ext) {
+        const float max_w = ext.height * 1.4f;
+        if(ext.width < max_w) return ext;
+
+        ext.x = ext.x + ext.width - max_w;
+        ext.width = max_w;
         return ext;
     }
 };
@@ -562,7 +566,7 @@ void GameNode::updateExtends(Extends ext) {
 
     Extends hand_ext = {
         extends.x + extends.width / 4,
-        extends.y,
+        extends.y - extends.height * 0.2f * CARD_OFFSET_FACTOR,
         extends.width / 2,
         extends.height * 0.2f
     };

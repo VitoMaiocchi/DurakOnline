@@ -9,6 +9,7 @@ namespace GlobalState {
     extern GameState game_state;
     extern std::set<Player> players;
     extern ClientID clientID; //client id of this client;
+    extern Suit trump_suit;
 }
 
 namespace Viewport {

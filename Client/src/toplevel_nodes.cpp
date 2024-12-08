@@ -3,6 +3,7 @@
 #include "drawable.hpp"
 #include "global_state.hpp"
 #include <Networking/network.hpp>
+#include <random>
 
 // LobbyNode
 class Lobby : public LeafNode {
@@ -213,8 +214,13 @@ LoginScreenNode::LoginScreenNode(Extends ext){
         std::cout << "Trying to connect to server..." << std::endl;
         GlobalState::clientID = Network::openConnection("localhost", 42069);
 
-        // Use the entered name, or a default if empty
-        if (name.empty()) name = "Durak";
+        //Set random name if player doesnt choose name
+        std::random_device rd;                        
+        std::mt19937 gen(rd());                         
+        std::uniform_int_distribution<> distr(1, 100000);
+        int randomNumber = distr(gen);
+        if (name.empty()) name = "Player"+std::to_string(randomNumber);
+        //Send message to connect
         ClientConnectEvent event;
         event.username = name;
         Network::sendMessage(std::make_unique<ClientConnectEvent>(event));

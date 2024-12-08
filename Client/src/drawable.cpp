@@ -162,19 +162,18 @@ void TextInputNode::draw() {
 
     // Draw the text within the field
     glm::vec3 textColor = glm::vec3(0, 0, 0);
-    /* funktioniert irgendwie nöd
     if(text == placeholder){
-        glm::vec3 textColor = glm::vec3(1, 0.5, 1);
-    }*/
+        textColor = glm::vec3(0.5, 0.5, 0.5);
+    }
     OpenGL::drawText(text, extends, textColor, TEXTSIZE_LARGE);
 }
 
 void TextInputNode::sendClickEvent(float x, float y) {
     if (x >= extends.x && x <= extends.x + extends.width &&
         y >= extends.y && y <= extends.y + extends.height) {
-        focused = true;  // Activate focus on this field
+        focused = true;
     } else {
-        focused = false; // Deactivate focus
+        focused = false;
     }
 }
 

@@ -84,6 +84,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
 
     std::cout << "handleCardEvent was called" << std::endl;
 
+    
     //calls isvalidmove and gives the message parameters with the function,
     //here we should handle the list and maybe break it down? by card, then we can call isValidMove multiple 
     //times and check if each card is valid, and if yes, then we give to go

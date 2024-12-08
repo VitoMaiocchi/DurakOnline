@@ -8,6 +8,7 @@
 #include <vector>
 #include <tuple>
 #include <map>
+#include <set>
 
 using player_id = unsigned int;
 class Battle; //forward declaration to avoid circular dependencies
@@ -23,6 +24,8 @@ class Game{
         
         // pointer to the card manager
         CardManager* card_manager_;
+
+        std::set<ClientID> finished_players_;
 
     public:
         // constructor taking in an array of player ids

@@ -87,7 +87,7 @@ Game::Game(std::vector<ClientID> player_ids){
     }
     // - Start the first battle
     // only decomment this when constructor of battle uses map
-    current_battle_ = new Battle(true, player_roles_, *card_manager_);
+    current_battle_ = new Battle(true, player_roles_, *card_manager_, finished_players_);
     // the constructor of Battle will then communicate to the clients the roles of the players
 }
 
@@ -109,7 +109,7 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
-        current_battle_ = new Battle(false, player_roles_, *card_manager_);
+        current_battle_ = new Battle(false, player_roles_, *card_manager_, finished_players_);
     return false;
 }
 

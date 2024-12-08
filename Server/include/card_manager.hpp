@@ -53,19 +53,21 @@ public:
     std::vector<Card> getPlayerHand (ClientID PlayerID);
     std::vector<std::pair<std::optional<Card>,std::optional<Card>>> getMiddle();
     unsigned int getNumberActivePlayers();
-    unsigned int getNumberOfCardsInHand(ClientID PlayerID);
+    unsigned int getNumberOfCardsInHand(ClientID playerID);
     unsigned int getNumberOfCardsOnDeck() const;
+    bool gameIsOver();
+    bool playerFinished(ClientID playerID);
     Suit getTrump();
 
-    bool attackCard(Card card, ClientID PlayerID);
-    void defendCard(Card card, ClientID PlayerID, unsigned int slot);
+    bool attackCard(Card card, ClientID playerID);
+    void defendCard(Card card, ClientID playerID, unsigned int slot);
 
     // game actions
-    bool playCard(Card card, ClientID PlayerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
+    bool playCard(Card card, ClientID playerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
     bool clearMiddle();         //When attack is succesfully defended
-    void pickUp(ClientID PlayerID_def);              //When attack wasn't succesfully defended
+    void pickUp(ClientID playerID_def);              //When attack wasn't succesfully defended
     void distributeNewCards(std::deque<ClientID> attack_order_, ClientID current_defender, bool succesful_defend);
-    void drawFromMiddle(ClientID PlayerID);
+    void drawFromMiddle(ClientID playerID);
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();
@@ -75,7 +77,7 @@ public:
 
     // functions for testing purposes
     void placeAttackCard(Card card, int slot);
-    void addCardToPlayerHand(ClientID PlayerID, const Card& card);
+    void addCardToPlayerHand(ClientID playerID, const Card& card);
 
     //getter function for testing purposes
     Card getLastCard(){ return *last_card_;}

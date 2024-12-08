@@ -11,12 +11,12 @@ protected:
     Battle* battle;
     std::map<ClientID, PlayerRole> players_bs;
     std::vector<ClientID> clients;
-
+    std::set<ClientID> finshed;
     void SetUp() override {
         clients = {1, 2, 3}; // Reinitialize clients
         players_bs = {{1, ATTACKER}, {2, DEFENDER}, {3, CO_ATTACKER}}; // Reinitialize roles
         card_manager = new CardManager(clients); // Create a new CardManager
-        battle = new Battle(false, players_bs, *card_manager); // Create a new Battle
+        battle = new Battle(false, players_bs, *card_manager, finshed); // Create a new Battle
     }
 
     void TearDown() override {

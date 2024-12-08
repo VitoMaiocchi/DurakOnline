@@ -87,7 +87,7 @@ Game::Game(std::vector<ClientID> player_ids){
     }
     // - Start the first battle
     // only decomment this when constructor of battle uses map
-    current_battle_ = new Battle(true, player_roles_, *card_manager_);
+    current_battle_ = new Battle(true, player_roles_, *card_manager_, finished_players_);
     // the constructor of Battle will then communicate to the clients the roles of the players
 }
 
@@ -109,7 +109,7 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
-        current_battle_ = new Battle(false, player_roles_, *card_manager_);
+        current_battle_ = new Battle(false, player_roles_, *card_manager_, finished_players_);
     return false;
 }
 
@@ -164,8 +164,8 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
         CardSlot slot = return_pce->slot;
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
-    }
-    else if(current_battle_ == nullptr){
+        return true;
+    } else { // there is no battle, we need to create a new one (first card played by the current attacker)
         createBattle();
         if(current_battle_ != nullptr){
             PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
@@ -178,9 +178,12 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
             CardSlot slot = return_pce->slot;
 
             current_battle_->handleCardEvent(vector_of_cards, client, slot);
+            return true;
+        } else {
+            // the battle was not correctly created and currrent_battle_ was not correctly set
+            std::cout << "Error: Battle was not correctly created" << std::endl;
+            return false;
         }
-    } else {
-        std::cerr << "Error: 'current_battle_' is an unknown pointer" << std::endl;
     }
     return false;
 }

@@ -114,6 +114,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                 //player update first
                 PlayerUpdate player_update;
                 player_update.durak = 0; //getlastplayer
+                player_update.player_count = clients.size();
                 
                 GameStateUpdate game_update;
                 game_update.state = GAMESTATE_DURAK_SCREEN;

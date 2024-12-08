@@ -13,9 +13,9 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager) : 
-                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager) 
-                                    ,curr_attacks_(0){
+Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
+                                    finished_players_(finished_players), curr_attacks_(0){
     
     // max_attacks_ = first_battle ? 5 : 6;
     if(first_battle){
@@ -64,6 +64,11 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
         std::cout << "Debugging purposes: id: " << pl.first << ": role" << pl.second << std::endl;
     }
 
+    //the finished players are automatically just observers
+    for(ClientID f : finished_players_){
+        bsu_msg.idle.push_back(f);
+    }
+
     for(auto& pl : players_bs_){
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
     }
@@ -79,6 +84,7 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
 
     std::cout << "handleCardEvent was called" << std::endl;
 
+    
     //calls isvalidmove and gives the message parameters with the function,
     //here we should handle the list and maybe break it down? by card, then we can call isValidMove multiple 
     //times and check if each card is valid, and if yes, then we give to go

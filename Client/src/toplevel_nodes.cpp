@@ -3,6 +3,7 @@
 #include "drawable.hpp"
 #include "global_state.hpp"
 #include <Networking/network.hpp>
+#include <random>
 
 // LobbyNode
 class Lobby : public LeafNode {
@@ -182,20 +183,31 @@ void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> f
 }
 
 //-----------------------------------------------------------------------------------------------------
- 
 LoginScreenNode::LoginScreenNode(Extends ext){
-    /*
-    OpenGL::setCharacterInputCallback([](char c) {
-        std::cout << c << std::endl;
-        name.push_back(c);
-    });*/
+    //Text input field for name and for Ip
+    name_input = std::make_unique<TextInputNode>("Enter your name");
+    name_input->visible = true;
+    ip_input = std::make_unique<TextInputNode>("IP Adress");
+    ip_input->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
-        std::cout << c << std::endl;
-        name.push_back(c);
+        if(ip_input->isFocused()){
+            if (ip_input) {
+            ip_input->handleCharacterInput(c);
+            ip = ip_input->getText();
+            }
+        }
+        if(name_input->isFocused()){
+            if (name_input) {
+            name_input->handleCharacterInput(c);
+            name = name_input->getText();
+            }
+        }
     });
+
+    //Connect button
     connect_button = std::make_unique<ButtonNode>("CONNECT");
-    connect_button->setClickEventCallback([this](float x, float y){
-        std::cout << "Trying to connet to server..." << std::endl;
+    connect_button->setClickEventCallback([this](float x, float y) {
+        std::cout << "Trying to connect to server..." << std::endl;
         GlobalState::clientID = Network::openConnection("localhost", 42069);
         if(!GlobalState::clientID) {
             //CONNECTION FAILED
@@ -204,13 +216,22 @@ LoginScreenNode::LoginScreenNode(Extends ext){
             return;
         }
 
-        //place holder: da muss mer den de actual name schicke
-        if(name.size() == 0) name = "Durak";
+        //Set random name if player doesnt choose name
+        std::random_device rd;                        
+        std::mt19937 gen(rd());                         
+        std::uniform_int_distribution<> distr(1, 100000);
+        int randomNumber = distr(gen);
+        if (name.empty()) name = "Player"+std::to_string(randomNumber);
+        //Send message to connect
         ClientConnectEvent event;
         event.username = name;
         Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
     });
-    cast(ButtonNode, connect_button)->visible = true;
+
+    connect_button->visible = true;
+    name_input->visible = true;
+    ip_input->visible = true;
+
     updateExtends(ext);
 }
 
@@ -220,6 +241,20 @@ void LoginScreenNode::updateExtends(Extends ext){
     connect_button->updateExtends({
         ext.x + ext.width * 0.25f,
         ext.y + ext.height * 0.1f,
+        ext.width * 0.5f,
+        ext.height * 0.1f,
+    });
+
+    name_input->updateExtends({
+        ext.x + ext.width * 0.25f,
+        ext.y + ext.height * 0.25f,
+        ext.width * 0.5f,
+        ext.height * 0.1f,
+    });
+
+    ip_input->updateExtends({
+        ext.x + ext.width * 0.25f,
+        ext.y + ext.height * 0.45f,
         ext.width * 0.5f,
         ext.height * 0.1f,
     });
@@ -240,22 +275,24 @@ void LoginScreenNode::draw() {
             extends.height * 0.3f,
     };
     OpenGL::drawText("DURAK", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
-    /*Extends server_ip_ext = {
+    Extends server_ip_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.45f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
     OpenGL::drawText("SERVER IP:", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
-    */
     Extends player_name_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.25f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("PLAYER NAME: (type in name and press connect)", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    OpenGL::drawText("PLAYER NAME:", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+
     connect_button->draw();
+    name_input->draw();
+    ip_input->draw();
 }
 
 Extends LoginScreenNode::getCompactExtends(Extends ext){
@@ -264,6 +301,8 @@ Extends LoginScreenNode::getCompactExtends(Extends ext){
 
 void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node> &)> function) {
     function(connect_button);
+    function(name_input);
+    function(ip_input);
 }
 
 //--------------------------------------------------------------------------------------------------

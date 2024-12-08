@@ -457,7 +457,7 @@ class DeckNode : public LeafNode {
             return;
         }
 
-        std::string image = "PLACEHOLDER (suit image): ";
+        std::string image = CLIENT_RES_DIR + "cards/trump_of_";
         switch(trump_suit) {
             case SUIT_CLUBS:
                 image +="clubs.png";
@@ -473,7 +473,7 @@ class DeckNode : public LeafNode {
             break;
         }
 
-        OpenGL::drawText(image, image_ext, glm::vec3(0.1,0.2,1), TEXTSIZE_LARGE);
+        OpenGL::drawImage(image, image_ext);
     }
 
     void handleCardUpdate(CardUpdate update) {
@@ -638,6 +638,8 @@ void GameNode::handleCardUpdate(CardUpdate update) {
 }
 
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
+    for(auto &player : GlobalState::players) player.game->state = PLAYERSTATE_NONE;
+
     for(ClientID id : update.attackers) {
         auto it = GlobalState::players.find({id});
         throwServerErrorIF("trying to assign attacking state to nonexistent player", it == GlobalState::players.end());

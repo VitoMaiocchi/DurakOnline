@@ -19,9 +19,9 @@ class Game{
         // has to be stored here because battle might be destructed
         std::map<ClientID, PlayerRole> player_roles_;
         // pointer to the current battle
-        Battle* current_battle_;
+        std::shared_ptr<Battle> current_battle_;
         // pointer to the card manager
-        CardManager* card_manager_;
+        std::shared_ptr<CardManager> card_manager_;
 
     public:
         // constructor taking in an array of player ids
@@ -41,8 +41,8 @@ class Game{
         bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
 
         //getter function for testing purposes
-        Battle* getCurrentBattle(){ return current_battle_;}
-        CardManager* getCardManager(){ return card_manager_;}
+        std::shared_ptr<Battle> getCurrentBattle(){ return current_battle_;}
+        std::shared_ptr<CardManager> getCardManager(){ return card_manager_;}
         std::map<ClientID, PlayerRole> getPlayerRoles(){ return player_roles_;}
 
 };

@@ -5,10 +5,12 @@
 #include <tuple>
 #include <unordered_map>
 #include <map>
+#include <set>
 #include <algorithm>
 #include <iterator>
 #include <optional>
 #include <iostream>
+
 
 #include "card_manager.hpp"
 
@@ -24,6 +26,8 @@ class Battle {
         //we might not need that because the other vector saves it already
         // std::vector<int> players; //saves the player ids of the players
         std::map<ClientID, PlayerRole> players_bs_; //attacking, defending, spectating
+        std::set<ClientID> finished_players_; //they get the battle state update idle 
+
         bool defending_flag_ = false;
         int max_attacks_ = 6;
         int curr_attacks_ = 0;
@@ -58,7 +62,7 @@ class Battle {
     public:
         
         Battle(); //default Constructor
-        Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager /*,Game &game*/);
+        Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
         ~Battle(); //default Destructor
         
         //add friend class

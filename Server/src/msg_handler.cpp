@@ -122,7 +122,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             if(players_map.size() < 2){
                 current_game.reset();
                 GameStateUpdate game_update;
-                game_update = GAMESTATE_LOBBY;
+                game_update.state = GAMESTATE_LOBBY;
                 for(auto c : ready_clients){
                     //send message to send the players into the lobby
                     Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);

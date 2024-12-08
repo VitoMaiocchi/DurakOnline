@@ -4,6 +4,8 @@
 #include <iostream>
 #include <unordered_set>
 #include <optional>
+#include <algorithm>
+#include <vector>
 
 #define NETWORKTYPE_CLIENT
 #include <Networking/network.hpp>
@@ -19,15 +21,21 @@
 //da chunt alles ine wo grendered wird während es game lauft
 //endscreen und so nöd nur das mit de charte i de mitti und so
 
-void sortCards(std::list<Card> &cards) {
-    //TODO
-    //da muss mer wüsse was trumpf isch und so
+Suit GlobalState::trump_suit = SUIT_HEARTS;
+
+void sortCards(std::vector<Card> &cards) {
+    std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
+        if(a.suit == GlobalState::trump_suit && b.suit != GlobalState::trump_suit) return false;
+        if(a.suit != GlobalState::trump_suit && b.suit == GlobalState::trump_suit) return true;
+        if(a.rank == b.rank) a.suit > b.suit; 
+        return a.rank > b.rank;
+    });
 }
 
 
 class HandNode : public LeafNode {
     private:
-        std::list<Card> cards;
+        std::vector<Card> cards;
         std::unordered_set<Card> selected;
         std::optional<Card> hover;
 
@@ -112,7 +120,7 @@ class HandNode : public LeafNode {
             }
         }
 
-        void updateHand(std::list<Card> &cards) {
+        void updateHand(std::vector<Card> &cards) {
             sortCards(cards);
             this->cards = cards;
         }
@@ -283,12 +291,12 @@ class PlayerBarNode : public TreeNode {
         auto it = you_it;
         it++;
         while(it != GlobalState::players.end()) {
-            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it), true));
+            playerNodes.push_front(std::make_unique<PlayerNode>(&(*it), true));
             it++;
         }
         it = GlobalState::players.begin();
         while(it != you_it) {
-            playerNodes.push_back(std::make_unique<PlayerNode>(&(*it), true));
+            playerNodes.push_front(std::make_unique<PlayerNode>(&(*it), true));
             it++;
         }
 
@@ -600,7 +608,9 @@ Extends GameNode::getCompactExtends(Extends ext) {
 }
 
 void GameNode::handleCardUpdate(CardUpdate update) {
-    cast(HandNode, handNode)->updateHand(update.hand);
+    GlobalState::trump_suit = update.trump_suit;
+    auto cards = std::vector<Card>(update.hand.begin(), update.hand.end());
+    cast(HandNode, handNode)->updateHand(cards);
     cast(MiddleNode, middleNode)->setCards(update.middle_cards);
     cast(DeckNode, deckNode)->handleCardUpdate(update);
 

@@ -216,7 +216,7 @@ bool CardManager::clearMiddle(){
 /**
  * POST: All cards in the middle are assigned to the defenders hands
 */
-void CardManager::pickUp(ClientID PlayerID_def){
+void CardManager::pickUp(ClientID playerID_def){
 
     assert(middle_.size()<=6 && "middle shouldn't have more than six slots");
 
@@ -226,13 +226,13 @@ void CardManager::pickUp(ClientID PlayerID_def){
         for(auto& slot : middle_){
             //place the bottom card into the defenders hand
             if(slot.first.has_value()){
-                player_hands_[PlayerID_def].push_back(slot.first.value());
-                player_number_of_cards_[PlayerID_def]++;
+                player_hands_[playerID_def].push_back(slot.first.value());
+                player_number_of_cards_[playerID_def]++;
             }
             //place the top card into the defenders hand
             if(slot.second.has_value()){
-                player_hands_[PlayerID_def].push_back(slot.second.value());
-                player_number_of_cards_[PlayerID_def]++;
+                player_hands_[playerID_def].push_back(slot.second.value());
+                player_number_of_cards_[playerID_def]++;
             }
             //set slot to no value top and bottom 
             slot = {std::nullopt, std::nullopt};
@@ -267,13 +267,13 @@ void CardManager::distributeNewCards(std::deque<ClientID> attack_order_, ClientI
 
 //PRE: Valid PlayerID
 //POST: Fills up the Hand of player with ID PlayerID with cards from deck until that player has 6 cards
-void CardManager::drawFromMiddle(ClientID PlayerID){
+void CardManager::drawFromMiddle(ClientID playerID){
     // If there are cards in the deck and the player has less than six cards, assign cards to the players hand until the player has 6
-    while (getNumberOfCardsInHand(PlayerID) < 6 && getNumberOfCardsOnDeck()){
-        player_hands_[PlayerID].push_back(deck_.front());
+    while (getNumberOfCardsInHand(playerID) < 6 && getNumberOfCardsOnDeck()){
+        player_hands_[playerID].push_back(deck_.front());
         deck_.pop_front();
         --number_cards_in_deck_;
-        ++player_number_of_cards_[PlayerID];
+        ++player_number_of_cards_[playerID];
     }
 }
 
@@ -304,18 +304,18 @@ void CardManager::placeAttackCard(Card card, int slot){
     middle_[slot % 6].first = card;
 }
 
-void CardManager::addCardToPlayerHand(ClientID PlayerID, const Card& card) {
+void CardManager::addCardToPlayerHand(ClientID playerID, const Card& card) {
     bool flag = false;
 
-    for(int i = 0; i < player_hands_[PlayerID].size(); ++i){
-        if (player_hands_[PlayerID].at(i)== card){
+    for(int i = 0; i < player_hands_[playerID].size(); ++i){
+        if (player_hands_[playerID].at(i)== card){
             flag = true; //card is already in the hand
             break;
         }
     }
     if(flag == false){
-        player_hands_[PlayerID].push_back(card);
-        player_number_of_cards_[PlayerID]++;
+        player_hands_[playerID].push_back(card);
+        player_number_of_cards_[playerID]++;
     }
 
     // send message to all clients
@@ -353,3 +353,15 @@ void CardManager::sendCardUpdateMsg(ClientID client_id){
     Network::sendMessage(std::make_unique<CardUpdate>(card_message), client_id);
 
 }
+
+//POST: Checks if the the game is over (game is over if there are no cards in the middle & only one player has cards)
+bool CardManager::gameIsOver(){
+    return getNumberActivePlayers() == 1;
+}
+
+//PRE: If middle is not empty, this function should only be called  after cards have been distributed
+//POST: returns true if a player has finished the game (no cards left)
+bool CardManager::playerFinished(ClientID playerID){
+    return !getNumberOfCardsInHand(playerID);
+}
+

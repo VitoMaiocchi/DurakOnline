@@ -562,7 +562,7 @@ void GameNode::updateExtends(Extends ext) {
 
     Extends hand_ext = {
         extends.x + extends.width / 4,
-        extends.y,
+        extends.y - extends.height * 0.2f * CARD_OFFSET_FACTOR,
         extends.width / 2,
         extends.height * 0.2f
     };

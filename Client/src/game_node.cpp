@@ -18,11 +18,6 @@
 
 #define BUTTON_BUFFER 10
 #define DECK_BUFFER 10
-//da chunt alles ine wo grendered wird während es game lauft
-//endscreen und so nöd nur das mit de charte i de mitti und so
-
-//TODO: MIT 0 karte neue finnished state (au wenn du fertig bisch)
-//TODO: trump card wenns deck leer isch
 
 Suit GlobalState::trump_suit = SUIT_HEARTS;
 
@@ -166,8 +161,8 @@ class CardStackNode : public LeafNode {
         }
 
         void draw() {
-            if(hover) OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.4));
-            else OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.2));
+            if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,2*DEFAULT_TRANSPARANCY));
+            else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
             Extends ext = {
                 extends.x      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
@@ -189,7 +184,7 @@ class CardStackNode : public LeafNode {
                     ext.y + 0.5f*offset,
                     ext.width - offset,
                     ext.height - offset
-                }, glm::vec4(0.4,0.2,0.2,0.2));
+                }, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
             }
 
             if(bottom_card.has_value() && !top_card.has_value()) {
@@ -421,7 +416,7 @@ class DeckNode : public LeafNode {
     }
 
     void draw() {
-        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
+        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
         const float b = Viewport::global_scalefactor * DECK_BUFFER;
         Extends ext = {

@@ -8,6 +8,8 @@
 #include <functional>
 #include <vector>
 
+#define DEFAULT_TRANSPARANCY 0.1f
+
 class Node {
     public:
         virtual void draw() = 0;

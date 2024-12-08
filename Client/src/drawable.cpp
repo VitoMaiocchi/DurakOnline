@@ -149,9 +149,6 @@ void PlayerNode::draw() {
     else drawLobbyPlayer(extends, player->name);
 }
 
-TextInputNode::TextInputNode(const std::string& placeholder)
-    : text(placeholder) {}
-
 Extends TextInputNode::getCompactExtends(Extends ext) {
     return ext;
 }
@@ -165,11 +162,14 @@ void TextInputNode::draw() {
 
     // Draw the text within the field
     glm::vec3 textColor = glm::vec3(0, 0, 0);
+    /* funktioniert irgendwie nöd
+    if(text == placeholder){
+        glm::vec3 textColor = glm::vec3(1, 0.5, 1);
+    }*/
     OpenGL::drawText(text, extends, textColor, TEXTSIZE_LARGE);
 }
 
 void TextInputNode::sendClickEvent(float x, float y) {
-    // Check if the click is within the bounds of the text input field
     if (x >= extends.x && x <= extends.x + extends.width &&
         y >= extends.y && y <= extends.y + extends.height) {
         focused = true;  // Activate focus on this field
@@ -181,13 +181,14 @@ void TextInputNode::sendClickEvent(float x, float y) {
 void TextInputNode::handleCharacterInput(char c) {
     if (focused) {
         if (c == '\b') {
-            // Handle backspace
+            //delete
             if (!text.empty()) {
                 text.pop_back();
             }
         } else if (std::isprint(c)) {
-            // Append printable characters to the text
+            if(text == placeholder) text.clear();
             text.push_back(c);
         }
     }
 }
+

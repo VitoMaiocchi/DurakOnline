@@ -25,9 +25,11 @@ class LoginScreenNode : public Node {
 
     private:
         std::string name;
+        std::string ip;
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> connect_button;
         std::unique_ptr<Node> name_input;
+        std::unique_ptr<Node> ip_input;
 };
 
 class GameOverScreenNode : public Node {

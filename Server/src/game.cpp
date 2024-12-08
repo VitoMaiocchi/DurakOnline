@@ -160,7 +160,7 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
     }
-    else{
+    else if(current_battle_ == nullptr){
         createBattle();
         if(current_battle_ != nullptr){
             PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
@@ -174,6 +174,8 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
 
             current_battle_->handleCardEvent(vector_of_cards, client, slot);
         }
+    } else {
+        std::cerr << "Error: 'current_battle_' is an unknown pointer" << std::endl;
     }
     return false;
 }

@@ -197,6 +197,12 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     connect_button->setClickEventCallback([this](float x, float y){
         std::cout << "Trying to connet to server..." << std::endl;
         GlobalState::clientID = Network::openConnection("localhost", 42069);
+        if(!GlobalState::clientID) {
+            //CONNECTION FAILED
+            //TODO: (eric) connection error message displaye oder so ka
+            std::cout << "Connection failed..." << std::endl;
+            return;
+        }
 
         //place holder: da muss mer den de actual name schicke
         if(name.size() == 0) name = "Durak";

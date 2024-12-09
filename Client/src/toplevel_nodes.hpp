@@ -12,6 +12,7 @@ class LobbyNode : public TreeNode {
         std::unique_ptr<Node> back_button;
         std::unique_ptr<Node> ready_button;
         std::unique_ptr<Node> settings_button;
+        std::vector<std::unique_ptr<Node>> player_nodes;
 };
 
 class LoginScreenNode : public Node {

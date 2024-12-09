@@ -8,6 +8,7 @@
 #include <Networking/util.hpp>
 #include <Networking/message.hpp>
 #include <algorithm>
+#include <mutex>
 
 namespace GlobalState {
     GameState game_state;
@@ -18,6 +19,8 @@ namespace Viewport {
     Extends extends = {0,0,0,0};
     float global_scalefactor = 1000;
     std::unique_ptr<Node> master_node;
+
+    std::string popup_text = "sample text";
 
     void setup() {
         GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;
@@ -39,8 +42,13 @@ namespace Viewport {
         master_node->sendClickEvent(x,y);
     }
 
+    void drawPopup(std::string, uint time, uint end_time) {
+
+    }
+
     void draw() {
         master_node->draw();
+        drawPopup(popup_text, 1, 1);
     }
 
     void handleGameStateUpdate(GameStateUpdate update) {

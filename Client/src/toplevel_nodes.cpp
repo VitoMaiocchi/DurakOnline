@@ -180,6 +180,31 @@ bool isNumber(const std::string& str) {
     return true;
 }
 
+
+void LoginScreenNode::connect() {
+    std::cout << "Trying to connect to server..." << std::endl;
+    if(ip.empty()) ip = "localhost";
+    GlobalState::clientID = Network::openConnection(ip, 42069);
+    if(!GlobalState::clientID) {
+        //CONNECTION FAILED
+        //TODO: (eric) connection error message displaye oder so ka
+
+        std::cout << "Connection failed..." << std::endl;
+        return;
+    }
+
+    //Set random name if player doesnt choose name
+    std::random_device rd;                        
+    std::mt19937 gen(rd());                         
+    std::uniform_int_distribution<> distr(1, 100000);
+    int randomNumber = distr(gen);
+    if (name.empty()) name = "Player"+std::to_string(randomNumber);
+    //Send message to connect
+    ClientConnectEvent event;
+    event.username = name;
+    Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+}
+
 LoginScreenNode::LoginScreenNode(Extends ext){
     //Text input field for name and for Ip
     name_input = std::make_unique<TextInputNode>("Enter your name");
@@ -187,6 +212,10 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     ip_input = std::make_unique<TextInputNode>("localhost");
     ip_input->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
+        if(c == '\n') {
+            connect();
+            return;
+        }
         if(ip_input->isFocused()){
             if (ip_input) {
             cast(TextInputNode, ip_input)->handleCharacterInput(c);
@@ -202,30 +231,9 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     });
 
     //Connect button
-    //TODO: wenn mer enter druck au das mache (char = '\n')
     connect_button = std::make_unique<ButtonNode>("CONNECT");
     connect_button->setClickEventCallback([this](float x, float y) {
-        std::cout << "Trying to connect to server..." << std::endl;
-        if(ip.empty()) ip = "localhost";
-        GlobalState::clientID = Network::openConnection(ip, 42069);
-        if(!GlobalState::clientID) {
-            //CONNECTION FAILED
-            //TODO: (eric) connection error message displaye oder so ka
-
-            std::cout << "Connection failed..." << std::endl;
-            return;
-        }
-
-        //Set random name if player doesnt choose name
-        std::random_device rd;                        
-        std::mt19937 gen(rd());                         
-        std::uniform_int_distribution<> distr(1, 100000);
-        int randomNumber = distr(gen);
-        if (name.empty()) name = "Player"+std::to_string(randomNumber);
-        //Send message to connect
-        ClientConnectEvent event;
-        event.username = name;
-        Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+        connect();
     });
 
     connect_button->visible = true;

@@ -23,6 +23,7 @@ class LoginScreenNode : public Node {
         LoginScreenNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
+        void connect();
 
     private:
         std::string name;

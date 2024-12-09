@@ -85,7 +85,7 @@ namespace Viewport {
         }
 
         if(GlobalState::game_state == GAMESTATE_GAME) cast(GameNode, master_node)->playerUpdateNotify();
-        //if(GlobalState::game_state == GAMESTATE_LOBBY) cast(LobbyNode, lobby_node)->playerUpdateNotify();
+        if(GlobalState::game_state == GAMESTATE_LOBBY) cast(LobbyNode, master_node)->playerUpdateNotify();
     }
 
     void handleMessage(std::unique_ptr<Message> message) {

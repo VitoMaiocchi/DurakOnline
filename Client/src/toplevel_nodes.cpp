@@ -3,13 +3,13 @@
 #include "drawable.hpp"
 #include "global_state.hpp"
 #include <Networking/network.hpp>
+#include <random>
+#include <iostream>
 
 // LobbyNode
 class Lobby : public LeafNode {
-private:
-
 public:
-    Lobby () {}
+    Lobby() {}
 
     void updateExtends(Extends new_extends) override {
         extends = new_extends;
@@ -33,81 +33,10 @@ public:
             extends.height * 0.3f,
         };
         OpenGL::drawText("LOBBY", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
-
-        // Player extends
-        Extends player_ext = {
-            extends.x + extends.width * 0.1f,
-            extends.y + extends.height * 0.3f,
-            extends.width * 0.8f,
-            extends.height * 0.25f,
-        };
-        drawPlayers(player_ext);
-    }
-
-    void drawPlayers(const Extends& player_ext) {
-        int num_players = GlobalState::players.size();
-        if (num_players == 0) return;
-        float player_width = player_ext.width / num_players;
-
-        int index = 0;
-        for (const auto& player : GlobalState::players) {
-            // Calculate the extends for the current player
-            Extends current_player_ext = {
-                player_ext.x + index * player_width,
-                player_ext.y,
-                player_width,
-                player_ext.height,
-            };
-
-            // Draw player image and name
-            drawPlayer(player, current_player_ext);
-            ++index;
-        }
-    }
-
-    void drawPlayer(const Player& player, const Extends& extends) {
-        std::string skin_type = "skins/durak_bot.png";
-        if(player.name == "danil" || player.name == "Danil") skin_type = "skins/player.png";
-        if(player.name == "thomas" || player.name == "Thomas") skin_type = "skins/clown.png";
-        auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR + skin_type);
-        Extends skin_ext = computeCompactExtends({
-            extends.x,
-            extends.y + extends.height * 0.3f,
-            extends.width,
-            extends.height * 0.7f
-        }, size.second, size.first);
-        OpenGL::drawImage(CLIENT_RES_DIR + skin_type, skin_ext);
-        OpenGL::drawText(player.name, {
-            extends.x,
-            extends.y,
-            extends.width,
-            extends.height * 0.3f
-        }, glm::vec3(0, 0, 0), TEXTSIZE_MEDIUM);
     }
 
     Extends getCompactExtends(Extends ext) override {
         return ext;
-    }
-
-private:
-    Extends computeCompactExtends(const Extends& ext, float image_width, float image_height) {
-        float ext_aspect = ext.width / ext.height;
-        float image_aspect = image_width / image_height;
-
-        Extends result = ext;
-
-        if (ext_aspect > image_aspect) {
-            // Extends is wider than the image aspect ratio
-            float new_width = ext.height * image_aspect;
-            result.x += (ext.width - new_width) / 2.0f;
-            result.width = new_width;
-        } else {
-            // Extends is taller than the image aspect ratio
-            float new_height = ext.width / image_aspect;
-            result.y += (ext.height - new_height) / 2.0f;
-            result.height = new_height;
-        }
-        return result;
     }
 };
 
@@ -137,6 +66,9 @@ LobbyNode::LobbyNode(Extends ext) {
         std::cout << "settings" << std::endl;
     });
     cast(ButtonNode, settings_button)->visible = true;
+
+    playerUpdateNotify();
+
     updateExtends(ext);
 }
 
@@ -168,6 +100,28 @@ void LobbyNode::updateExtends(Extends ext) {
         button_width,
         ext.height * 0.1f,
     });
+
+    Extends player_ext = {
+        ext.x + ext.width * 0.1f,
+        ext.y + ext.height * 0.3f,
+        ext.width * 0.8f,
+        ext.height * 0.25f,
+    };
+
+    int num_players = static_cast<int>(player_nodes.size());
+    float player_width = player_ext.width / num_players;
+
+    int i = 0; // Counter for player index
+    for (auto& node : player_nodes) { // Use a range-based loop or iterator
+        Extends current_player_ext = {
+            player_ext.x + i * player_width,
+            player_ext.y,
+            player_width,
+            player_ext.height,
+        };
+        node->updateExtends(current_player_ext); // Update the current player's extends
+        ++i;
+    }
 }
 
 Extends LobbyNode::getCompactExtends(Extends ext) {
@@ -179,38 +133,113 @@ void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> f
     function(back_button);
     function(ready_button);
     function(settings_button);
+    for (auto &player_node : player_nodes) {
+        function(player_node);
+    }
+}
+
+void LobbyNode::playerUpdateNotify() {
+    player_nodes.clear();
+    if(GlobalState::players.size() == 0) return;
+
+    auto you_it = GlobalState::players.find({GlobalState::clientID});
+    throwServerErrorIF("This client ClientID is not part of the player update", you_it == GlobalState::players.end());
+
+    auto it = you_it;
+    it++;
+    std::cout<<"ahfasdfhsk";
+    while(it != GlobalState::players.end()) {
+        player_nodes.push_front(std::make_unique<PlayerNode>(&(*it), false));
+        it++;
+    }
+    it = GlobalState::players.begin();
+    while(it != you_it) {
+        player_nodes.push_front(std::make_unique<PlayerNode>(&(*it), false));
+        it++;
+    }
+
+    updateExtends(extends);
+}
+
+void LobbyNode::draw() {
+    lobby->draw();
+    back_button->draw();
+    ready_button->draw();
+    settings_button->draw();
+    for (auto &player_node : player_nodes) {
+        player_node->draw();
+    }
 }
 
 //-----------------------------------------------------------------------------------------------------
- 
+bool isNumber(const std::string& str) {
+    if (str.empty()) return false;
+    for (char ch : str) {
+        if (!std::isdigit(ch)) return false;
+    }
+    return true;
+}
+
+
+void LoginScreenNode::connect() {
+    std::cout << "Trying to connect to server..." << std::endl;
+    if(ip.empty()) ip = "localhost";
+    GlobalState::clientID = Network::openConnection(ip, 42069);
+    if(!GlobalState::clientID) {
+        //CONNECTION FAILED
+        //TODO: (eric) connection error message displaye oder so ka
+
+        std::cout << "Connection failed..." << std::endl;
+        return;
+    }
+
+    //Set random name if player doesnt choose name
+    std::random_device rd;                        
+    std::mt19937 gen(rd());                         
+    std::uniform_int_distribution<> distr(1, 100000);
+    int randomNumber = distr(gen);
+    if (name.empty()) name = "Player"+std::to_string(randomNumber);
+    //Send message to connect
+    ClientConnectEvent event;
+    event.username = name;
+    Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+}
+
 LoginScreenNode::LoginScreenNode(Extends ext){
-    /*
-    OpenGL::setCharacterInputCallback([](char c) {
-        std::cout << c << std::endl;
-        name.push_back(c);
-    });*/
+    //Text input field for name and for Ip
+    name_input = std::make_unique<TextInputNode>("Enter your name");
+    name_input->visible = true;
+    ip_input = std::make_unique<TextInputNode>("localhost");
+    ip_input->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
-        std::cout << c << std::endl;
-        name.push_back(c);
-    });
-    connect_button = std::make_unique<ButtonNode>("CONNECT");
-    connect_button->setClickEventCallback([this](float x, float y){
-        std::cout << "Trying to connet to server..." << std::endl;
-        GlobalState::clientID = Network::openConnection("localhost", 42069);
-        if(!GlobalState::clientID) {
-            //CONNECTION FAILED
-            //TODO: (eric) connection error message displaye oder so ka
-            std::cout << "Connection failed..." << std::endl;
+        if(c == '\n') {
+            connect();
             return;
         }
-
-        //place holder: da muss mer den de actual name schicke
-        if(name.size() == 0) name = "Durak";
-        ClientConnectEvent event;
-        event.username = name;
-        Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+        if(ip_input->isFocused()){
+            if (ip_input) {
+            cast(TextInputNode, ip_input)->handleCharacterInput(c);
+            ip = cast(TextInputNode, ip_input)->getText();
+            }
+        }
+        if(name_input->isFocused()){
+            if (name_input) {
+            cast(TextInputNode, name_input)->handleCharacterInput(c);
+            name = cast(TextInputNode, name_input)->getText();
+            }
+        }
     });
-    cast(ButtonNode, connect_button)->visible = true;
+
+    //Connect button
+    connect_button = std::make_unique<ButtonNode>("CONNECT");
+    connect_button->setClickEventCallback([this](float x, float y) {
+        connect();
+    });
+
+    connect_button->visible = true;
+    name_input->visible = true;
+    ip_input->visible = true;
+
     updateExtends(ext);
 }
 
@@ -220,6 +249,20 @@ void LoginScreenNode::updateExtends(Extends ext){
     connect_button->updateExtends({
         ext.x + ext.width * 0.25f,
         ext.y + ext.height * 0.1f,
+        ext.width * 0.5f,
+        ext.height * 0.1f,
+    });
+
+    ip_input->updateExtends({
+        ext.x + ext.width * 0.25f,
+        ext.y + ext.height * 0.25f,
+        ext.width * 0.5f,
+        ext.height * 0.1f,
+    });
+
+    name_input->updateExtends({
+        ext.x + ext.width * 0.25f,
+        ext.y + ext.height * 0.45f,
         ext.width * 0.5f,
         ext.height * 0.1f,
     });
@@ -239,23 +282,26 @@ void LoginScreenNode::draw() {
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("DURAK", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
-    /*Extends server_ip_ext = {
+    auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+"fonts/durak.png");
+    OpenGL::drawImage(CLIENT_RES_DIR+"fonts/durak.png", computeCompactExtends(title_ext, size.second, size.first));
+    Extends server_ip_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.45f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("SERVER IP:", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
-    */
+    OpenGL::drawText("PLAYER NAME", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
     Extends player_name_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.25f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("PLAYER NAME: (type in name and press connect)", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    OpenGL::drawText("HOSTNAME / IP", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+
     connect_button->draw();
+    name_input->draw();
+    ip_input->draw();
 }
 
 Extends LoginScreenNode::getCompactExtends(Extends ext){
@@ -264,6 +310,8 @@ Extends LoginScreenNode::getCompactExtends(Extends ext){
 
 void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node> &)> function) {
     function(connect_button);
+    function(name_input);
+    function(ip_input);
 }
 
 //--------------------------------------------------------------------------------------------------

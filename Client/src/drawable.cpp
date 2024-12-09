@@ -1,4 +1,5 @@
 #include "drawable.hpp"
+#include "global_state.hpp"
 #include <cmath>
 #include <iostream>
 
@@ -147,3 +148,55 @@ void PlayerNode::draw() {
     if(game) drawGamePlayer(extends, player->name, player->game->cards, player->game->state);
     else drawLobbyPlayer(extends, player->name);
 }
+
+Extends TextInputNode::getCompactExtends(Extends ext) {
+    return ext;
+}
+
+void TextInputNode::draw() {
+    if (!visible) return;
+
+    //outline of the button
+    OpenGL::drawRectangle(extends, glm::vec4(1.0f, 0.0f, 0.0f, 0.5f));
+    //button
+    glm::vec4 backgroundColor = focused ? glm::vec4(0.8, 0.8, 0.8, 1.0) : glm::vec4(1.0, 1.0, 1.0, 1.0);
+    const float b = TEXTFIELD_BORDER * Viewport::global_scalefactor;
+    Extends reduced_extends = {
+        extends.x + b,
+        extends.y + b,
+        extends.width - 2*b,
+        extends.height - 2*b,
+    };
+    OpenGL::drawRectangle(reduced_extends, backgroundColor);
+
+    // Draw the text within the field
+    glm::vec3 textColor = glm::vec3(0, 0, 0);
+    if(text == placeholder){
+        textColor = glm::vec3(0.5, 0.5, 0.5);
+    }
+    OpenGL::drawText(text, extends, textColor, TEXTSIZE_LARGE);
+}
+
+void TextInputNode::sendClickEvent(float x, float y) {
+    if (x >= extends.x && x <= extends.x + extends.width &&
+        y >= extends.y && y <= extends.y + extends.height) {
+        focused = true;
+    } else {
+        focused = false;
+    }
+}
+
+void TextInputNode::handleCharacterInput(char c) {
+    if (focused) {
+        if (c == '\b') {
+            //delete
+            if (!text.empty()) {
+                text.pop_back();
+            }
+        } else if (std::isprint(c)) {
+            if(text == placeholder) text.clear();
+            text.push_back(c);
+        }
+    }
+}
+

@@ -31,7 +31,11 @@ namespace Network {
         assert(!connected); //cannt connect twice
 
         std::cout << "opening connection..." << std::endl;
-        if(!send_connector.connect(sockpp::inet_address(ip, port))) return 0;
+        try {
+            if(!send_connector.connect(sockpp::inet_address(ip, port))) return 0;
+        } catch (...) {
+            return 0;
+        }
         send_connector.send("request id");
         char buffer[BUFFER_SIZE];
         size_t n = 0;

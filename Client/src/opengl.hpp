@@ -47,7 +47,7 @@ namespace OpenGL {
     
     void drawImage(std::string path, Extends ext);
     void drawRectangle(Extends ext, glm::vec4 color);
-    void drawText(std::string, Extends ext, glm::vec3 color, TextSize size, TextAlignment align = TEXTALIGN_CENTER);
+    void drawText(std::string, Extends ext, glm::vec4 color, TextSize size, TextAlignment align = TEXTALIGN_CENTER);
 
     std::pair<uint, uint> getImageDimensions(std::string path);
     std::pair<float, float> getTextDimensions(std::string text, TextSize size);

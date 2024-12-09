@@ -44,34 +44,26 @@ namespace Viewport {
         master_node->sendClickEvent(x,y);
     }
 
+    #define POPUP_DISTANCE 0.15f
+    #define POPUP_HEIGHT 0.1f
+    #define IN_TIME 200
+    #define OUT_TIME 500
+
     void drawPopup(std::string, uint time, uint end_time) {
-        double move = 0.25;
-        double fade = 0.25;
-        double stay = 1 - move - fade;
+        float opacity = 1.0f;
+        float fade_in_factor = 1.0f;
 
-        int move_time = floor(end_time*move);
-        float move_p = (1/move_time)*time;
-        if(move_p > 1) move_p = 1;
+        if((time + OUT_TIME) > end_time) opacity = (float) (end_time - time) / OUT_TIME;
+        if(time < IN_TIME) fade_in_factor = (float) time / IN_TIME;
 
-        int stay_time = floor(end_time*stay_time);
-
-        int fade_time = floor(end_time*fade);
-        float fade_p = (1/fade_time)*(fade_time-end_time);
-        if(fade_p < 0) move_p = 1;
         Extends base_ext = {
-            extends.x + extends.width*0.2,
-            extends.y + extends.height*(1*(1-move_p) +0.2*move_p),
-            extends.width*0.6,
-            extends.height*0.6,
+            extends.x + extends.width*0.25f,
+            extends.y + extends.height*(1-POPUP_DISTANCE*fade_in_factor),
+            extends.width * 0.5f,
+            extends.height * POPUP_HEIGHT,
         };
-        Extends base_ext2 = {
-            extends.x + extends.width*0.2,
-            extends.y + extends.height*0.2f,
-            extends.width*0.6,
-            extends.height*0.6,
-        };
-        printExt("popup ext", base_ext);
-        OpenGL::drawRectangle(base_ext2, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f*(1-fade_p)));
+
+        OpenGL::drawRectangle(base_ext, glm::vec4(0.5f, 0.5f, 0.5f, opacity));
     }
 
     void createPopup(std::string text, uint seconds) {

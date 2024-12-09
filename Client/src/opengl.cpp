@@ -96,9 +96,10 @@ namespace OpenGL {
         glClear(GL_COLOR_BUFFER_BIT);
 
         auto now = std::chrono::high_resolution_clock::now();
-        auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - time_stamp);
+        uint millis = std::chrono::duration_cast<std::chrono::milliseconds>(now - time_stamp).count();
+        if(millis > 50) millis = 50; //in case a frame takes very long, for exmaple establishing network connection
         time_stamp = now;
-        Viewport::draw(delta.count());
+        Viewport::draw(millis);
 
         glfwSwapBuffers(window);
         glfwPollEvents();    

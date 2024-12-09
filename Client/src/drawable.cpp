@@ -1,4 +1,5 @@
 #include "drawable.hpp"
+#include "global_state.hpp"
 #include <cmath>
 #include <iostream>
 
@@ -159,11 +160,12 @@ void TextInputNode::draw() {
     OpenGL::drawRectangle(extends, glm::vec4(1.0f, 0.0f, 0.0f, 0.5f));
     //button
     glm::vec4 backgroundColor = focused ? glm::vec4(0.8, 0.8, 0.8, 1.0) : glm::vec4(1.0, 1.0, 1.0, 1.0);
+    const float b = TEXTFIELD_BORDER * Viewport::global_scalefactor;
     Extends reduced_extends = {
-        extends.x + extends.width * 0.0075f,
-        extends.y + extends.height * 0.05f,
-        extends.width * 0.985f,
-        extends.height * 0.9f,
+        extends.x + b,
+        extends.y + b,
+        extends.width - 2*b,
+        extends.height - 2*b,
     };
     OpenGL::drawRectangle(reduced_extends, backgroundColor);
 

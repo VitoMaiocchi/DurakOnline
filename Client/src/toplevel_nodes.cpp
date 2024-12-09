@@ -282,7 +282,8 @@ void LoginScreenNode::draw() {
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("DURAK", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
+    auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+"fonts/durak.png");
+    OpenGL::drawImage(CLIENT_RES_DIR+"fonts/durak.png", computeCompactExtends(title_ext, size.second, size.first));
     Extends server_ip_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.45f,

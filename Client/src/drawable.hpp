@@ -9,6 +9,7 @@
 #include <vector>
 
 #define DEFAULT_TRANSPARANCY 0.1f
+#define TEXTFIELD_BORDER 5.0f
 
 class Node {
     public:

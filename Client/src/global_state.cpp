@@ -20,7 +20,9 @@ namespace Viewport {
     float global_scalefactor = 1000;
     std::unique_ptr<Node> master_node;
 
-    std::string popup_text = "sample text";
+    std::string popup_text = "";
+    uint popup_time = 0;
+    uint popup_time_end = 0;
 
     void setup() {
         GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;
@@ -43,12 +45,53 @@ namespace Viewport {
     }
 
     void drawPopup(std::string, uint time, uint end_time) {
+        double move = 0.25;
+        double fade = 0.25;
+        double stay = 1 - move - fade;
 
+        int move_time = floor(end_time*move);
+        float move_p = (1/move_time)*time;
+        if(move_p > 1) move_p = 1;
+
+        int stay_time = floor(end_time*stay_time);
+
+        int fade_time = floor(end_time*fade);
+        float fade_p = (1/fade_time)*(fade_time-end_time);
+        if(fade_p < 0) move_p = 1;
+        Extends base_ext = {
+            extends.x + extends.width*0.2,
+            extends.y + extends.height*(1*(1-move_p) +0.2*move_p),
+            extends.width*0.6,
+            extends.height*0.6,
+        };
+        Extends base_ext2 = {
+            extends.x + extends.width*0.2,
+            extends.y + extends.height*0.2f,
+            extends.width*0.6,
+            extends.height*0.6,
+        };
+        printExt("popup ext", base_ext);
+        OpenGL::drawRectangle(base_ext2, glm::vec4(0.5f, 0.5f, 0.5f, 1.0f*(1-fade_p)));
     }
 
-    void draw() {
+    void createPopup(std::string text, uint seconds) {
+        popup_text = text;
+        popup_time_end = seconds * 1000;
+        popup_time = 0;
+    }
+
+    void draw(uint time_delta) {
         master_node->draw();
-        drawPopup(popup_text, 1, 1);
+        
+        if(popup_time_end == 0) return;
+        popup_time += time_delta;
+        if(popup_time < popup_time_end) {
+            drawPopup(popup_text, popup_time, popup_time_end);
+            return;
+        }
+        drawPopup(popup_text, popup_time_end, popup_time_end);
+        popup_time = 0;
+        popup_time_end = 0;
     }
 
     void handleGameStateUpdate(GameStateUpdate update) {

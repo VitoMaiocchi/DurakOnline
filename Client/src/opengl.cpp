@@ -12,6 +12,7 @@
 #include <map>
 #include <exception>
 #include <ft2build.h>
+#include <chrono>
 #include FT_FREETYPE_H
 
 #define FONT_PATH "../Client/resources/fonts/OpenSans-Bold.ttf"
@@ -47,6 +48,8 @@ namespace OpenGL {
     unsigned int VAO; //Vertex Array
     int success;
 
+    std::chrono::_V2::system_clock::time_point time_stamp;
+
     bool setupWindow();
     void setupVertexArray();
     void generateCharacterTextures();
@@ -80,7 +83,11 @@ namespace OpenGL {
         */
         generateCharacterTextures();
 
+        /*
+        set initial time stamp and window size
+        */
         Viewport::sizeUpdateNotify();
+        time_stamp = std::chrono::high_resolution_clock::now();
         return true;
     }
     
@@ -88,7 +95,10 @@ namespace OpenGL {
         glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        Viewport::draw();
+        auto now = std::chrono::high_resolution_clock::now();
+        auto delta = std::chrono::duration_cast<std::chrono::milliseconds>(now - time_stamp);
+        time_stamp = now;
+        Viewport::draw(delta.count());
 
         glfwSwapBuffers(window);
         glfwPollEvents();    

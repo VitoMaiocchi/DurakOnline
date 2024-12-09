@@ -142,21 +142,7 @@ void LobbyNode::playerUpdateNotify() {
     player_nodes.clear();
     if(GlobalState::players.size() == 0) return;
 
-    auto you_it = GlobalState::players.find({GlobalState::clientID});
-    throwServerErrorIF("This client ClientID is not part of the player update", you_it == GlobalState::players.end());
-
-    auto it = you_it;
-    it++;
-    std::cout<<"ahfasdfhsk";
-    while(it != GlobalState::players.end()) {
-        player_nodes.push_front(std::make_unique<PlayerNode>(&(*it), false));
-        it++;
-    }
-    it = GlobalState::players.begin();
-    while(it != you_it) {
-        player_nodes.push_front(std::make_unique<PlayerNode>(&(*it), false));
-        it++;
-    }
+    for(auto &player : GlobalState::players) player_nodes.push_back(std::make_unique<PlayerNode>(&player, false));
 
     updateExtends(extends);
 }
@@ -188,7 +174,7 @@ void LoginScreenNode::connect() {
     if(!GlobalState::clientID) {
         //CONNECTION FAILED
         //TODO: (eric) connection error message displaye oder so ka
-
+        Viewport::createPopup("Connection Failed...", 3);
         std::cout << "Connection failed..." << std::endl;
         return;
     }

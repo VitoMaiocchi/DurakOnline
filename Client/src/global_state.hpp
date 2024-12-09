@@ -24,5 +24,5 @@ namespace Viewport {
     void hoverEventNotify(float x, float y);
     void clickEventNotify(float x, float y);
     void createPopup(std::string text, uint seconds);
-    void draw();
+    void draw(uint time_delta);
 };

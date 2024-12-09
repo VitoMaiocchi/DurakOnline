@@ -155,9 +155,17 @@ Extends TextInputNode::getCompactExtends(Extends ext) {
 void TextInputNode::draw() {
     if (!visible) return;
 
-    // Draw the input field rectangle
+    //outline of the button
+    OpenGL::drawRectangle(extends, glm::vec4(1.0f, 0.0f, 0.0f, 0.5f));
+    //button
     glm::vec4 backgroundColor = focused ? glm::vec4(0.8, 0.8, 0.8, 1.0) : glm::vec4(1.0, 1.0, 1.0, 1.0);
-    OpenGL::drawRectangle(extends, backgroundColor);
+    Extends reduced_extends = {
+        extends.x + extends.width * 0.0075f,
+        extends.y + extends.height * 0.05f,
+        extends.width * 0.985f,
+        extends.height * 0.9f,
+    };
+    OpenGL::drawRectangle(reduced_extends, backgroundColor);
 
     // Draw the text within the field
     glm::vec3 textColor = glm::vec3(0, 0, 0);

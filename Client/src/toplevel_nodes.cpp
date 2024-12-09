@@ -208,7 +208,8 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     connect_button = std::make_unique<ButtonNode>("CONNECT");
     connect_button->setClickEventCallback([this](float x, float y) {
         std::cout << "Trying to connect to server..." << std::endl;
-        GlobalState::clientID = Network::openConnection("localhost", 42069);
+        if(ip.empty()) return;
+        GlobalState::clientID = Network::openConnection("localhost", std::stoi(ip));
         if(!GlobalState::clientID) {
             //CONNECTION FAILED
             //TODO: (eric) connection error message displaye oder so ka
@@ -281,7 +282,7 @@ void LoginScreenNode::draw() {
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("SERVER IP:", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    OpenGL::drawText("SERVER IP: (42069)", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
     Extends player_name_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.25f,

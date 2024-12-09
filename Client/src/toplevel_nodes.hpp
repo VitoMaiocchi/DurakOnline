@@ -3,16 +3,18 @@
 
 class LobbyNode : public TreeNode {
     public:
+        void draw();
         LobbyNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
+        void playerUpdateNotify();
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> lobby;
         std::unique_ptr<Node> back_button;
         std::unique_ptr<Node> ready_button;
         std::unique_ptr<Node> settings_button;
-        std::vector<std::unique_ptr<Node>> player_nodes;
+        std::list<std::unique_ptr<Node>> player_nodes;
 };
 
 class LoginScreenNode : public Node {

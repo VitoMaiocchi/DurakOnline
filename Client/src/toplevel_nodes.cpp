@@ -67,11 +67,7 @@ LobbyNode::LobbyNode(Extends ext) {
     });
     cast(ButtonNode, settings_button)->visible = true;
 
-    std::cout << "GlobalState::players.size() = " << GlobalState::players.size() << std::endl;
-    for (const auto &player : GlobalState::players) {
-        std::cout << "Inside player loop" << std::endl;
-        player_nodes.push_back(std::make_unique<PlayerNode>(&player, false));
-    }
+    playerUpdateNotify();
 
     updateExtends(ext);
 }
@@ -105,26 +101,26 @@ void LobbyNode::updateExtends(Extends ext) {
         ext.height * 0.1f,
     });
 
-    // Update player nodes layout
+    Extends player_ext = {
+        ext.x + ext.width * 0.1f,
+        ext.y + ext.height * 0.3f,
+        ext.width * 0.8f,
+        ext.height * 0.25f,
+    };
+
     int num_players = static_cast<int>(player_nodes.size());
-    if (num_players > 0) {
-        Extends player_ext = {
-            ext.x + ext.width * 0.1f,
-            ext.y + ext.height * 0.3f,
-            ext.width * 0.8f,
-            ext.height * 0.25f,
+    float player_width = player_ext.width / num_players;
+
+    int i = 0; // Counter for player index
+    for (auto& node : player_nodes) { // Use a range-based loop or iterator
+        Extends current_player_ext = {
+            player_ext.x + i * player_width,
+            player_ext.y,
+            player_width,
+            player_ext.height,
         };
-        
-        float player_width = player_ext.width / num_players;
-        for (int i = 0; i < num_players; ++i) {
-            Extends current_player_ext = {
-                player_ext.x + i * player_width,
-                player_ext.y,
-                player_width,
-                player_ext.height,
-            };
-            player_nodes[i]->updateExtends(current_player_ext);
-        }
+        node->updateExtends(current_player_ext); // Update the current player's extends
+        ++i;
     }
 }
 
@@ -139,6 +135,39 @@ void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> f
     function(settings_button);
     for (auto &player_node : player_nodes) {
         function(player_node);
+    }
+}
+
+void LobbyNode::playerUpdateNotify() {
+    player_nodes.clear();
+    if(GlobalState::players.size() == 0) return;
+
+    auto you_it = GlobalState::players.find({GlobalState::clientID});
+    throwServerErrorIF("This client ClientID is not part of the player update", you_it == GlobalState::players.end());
+
+    auto it = you_it;
+    it++;
+    std::cout<<"ahfasdfhsk";
+    while(it != GlobalState::players.end()) {
+        player_nodes.push_front(std::make_unique<PlayerNode>(&(*it), false));
+        it++;
+    }
+    it = GlobalState::players.begin();
+    while(it != you_it) {
+        player_nodes.push_front(std::make_unique<PlayerNode>(&(*it), false));
+        it++;
+    }
+
+    updateExtends(extends);
+}
+
+void LobbyNode::draw() {
+    lobby->draw();
+    back_button->draw();
+    ready_button->draw();
+    settings_button->draw();
+    for (auto &player_node : player_nodes) {
+        player_node->draw();
     }
 }
 

@@ -113,6 +113,7 @@ namespace Viewport {
         for(auto player : GlobalState::players) {
             if(update.player_names.find(player.id) != update.player_names.end()) continue;
             delete player.game;
+            delete player.lobby;
             GlobalState::players.erase(player);
         }
 
@@ -123,7 +124,8 @@ namespace Viewport {
                 entry.second,                                   //name
                 entry.first == update.durak ? true : false,     //durak
                 entry.first == GlobalState::clientID ? true : false,         //isYou
-                new PlayerGameData()
+                new PlayerGameData(),
+                new PlayerLobbyData()
             };
             GlobalState::players.insert(p);
         }
@@ -155,12 +157,8 @@ namespace Viewport {
                 handleGameStateUpdate(*dynamic_cast<GameStateUpdate*>(message.get()));
             break;
             case MESSAGETYPE_READY_UPDATE:
-                {
-                    ReadyUpdate update = *dynamic_cast<ReadyUpdate*>(message.get());
-                    std::cout << "READY PLAYERS: {";
-                    for(ClientID id : update.players) std::cout << id<<",";
-                    std::cout << "}" << std::endl;
-                }
+                if(GlobalState::game_state == GAMESTATE_LOBBY)
+                    cast(LobbyNode, master_node)->handleReadyUpdate(*dynamic_cast<ReadyUpdate*>(message.get()));
             default:
                 //print debug warning: unknown message type
             break;

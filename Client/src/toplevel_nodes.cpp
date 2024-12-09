@@ -147,10 +147,17 @@ void LobbyNode::playerUpdateNotify() {
     updateExtends(extends);
 }
 
+void LobbyNode::handleReadyUpdate(ReadyUpdate update) {
+    for(const Player &player : GlobalState::players) {
+        if(update.players.find(player.id) == update.players.end()) player.lobby->ready = false;
+        else player.lobby->ready = true;
+    }
+}
+
 void LobbyNode::draw() {
     lobby->draw();
     back_button->draw();
-    ready_button->draw();
+    if(!GlobalState::players.find({GlobalState::clientID})->lobby->ready) ready_button->draw();
     settings_button->draw();
     for (auto &player_node : player_nodes) {
         player_node->draw();

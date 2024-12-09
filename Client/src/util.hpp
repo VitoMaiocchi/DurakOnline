@@ -30,12 +30,17 @@ struct PlayerGameData {
     int cards = -1;
 };
 
+struct PlayerLobbyData {
+    bool ready = false;
+};
+
 struct Player {
     ClientID id = 0;
     std::string name = "";
     bool durak = false;
     bool is_you = false;
     PlayerGameData* game;
+    PlayerLobbyData* lobby;
 
     bool operator<(const Player& other) const;
     bool operator==(const Player& other) const;

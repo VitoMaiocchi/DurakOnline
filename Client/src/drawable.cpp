@@ -101,19 +101,23 @@ void drawGamePlayer(Extends extends, const std::string &name, const uint cards, 
     OpenGL::drawText(name, alignExtends(extends, 0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
-void drawLobbyPlayer(Extends extends, const std::string &name) {
+void drawLobbyPlayer(Extends extends, std::string name, bool ready, bool you) {
     const std::string path = getPlayerIconPath(name);
     auto size = OpenGL::getImageDimensions(path);
 
+    if(you) name = "YOU";
+
     Extends ext = computeCompactExtends(alignExtends(extends, 0, 0.15f, 1, 0.85f), size.second, size.first);
     OpenGL::drawImage(path, ext);
-    OpenGL::drawText(name, alignExtends(extends,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
+    //TODO: das no schönner mache
+    if(ready) OpenGL::drawText(name + " (READY)", alignExtends(extends,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
+    else OpenGL::drawText(name, alignExtends(extends,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
 void PlayerNode::draw() {
     if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
     if(game) drawGamePlayer(extends, player->name, player->game->cards, player->game->state);
-    else drawLobbyPlayer(extends, player->name);
+    else drawLobbyPlayer(extends, player->name, player->lobby->ready, player->is_you);
 }
 
 Extends TextInputNode::getCompactExtends(Extends ext) {

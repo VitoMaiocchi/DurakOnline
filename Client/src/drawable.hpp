@@ -19,8 +19,6 @@ class Node {
 
         virtual void sendClickEvent(float x, float y);
         virtual void sendHoverEvent(float x, float y);
-        virtual void handleCharacterInput(char c) {}
-        virtual std::string getText() const { return ""; } // Default implementation
         virtual bool isFocused() const {return false;}
         void setClickEventCallback(std::function<void(float, float)> callback);
     protected:
@@ -75,9 +73,9 @@ public:
     Extends getCompactExtends(Extends ext) override;
     void draw() override;
     void sendClickEvent(float x, float y) override;
-    void handleCharacterInput(char c) override;
+    void handleCharacterInput(char c);
 
-    std::string getText() const override{return text;}
+    std::string getText() const {return text;}
     bool isFocused() const {return focused;}
 };
 

@@ -184,19 +184,19 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     //Text input field for name and for Ip
     name_input = std::make_unique<TextInputNode>("Enter your name");
     name_input->visible = true;
-    ip_input = std::make_unique<TextInputNode>("IP Adress");
+    ip_input = std::make_unique<TextInputNode>("localhost");
     ip_input->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
         if(ip_input->isFocused()){
             if (ip_input) {
-            ip_input->handleCharacterInput(c);
-            ip = ip_input->getText();
+            cast(TextInputNode, ip_input)->handleCharacterInput(c);
+            ip = cast(TextInputNode, ip_input)->getText();
             }
         }
         if(name_input->isFocused()){
             if (name_input) {
-            name_input->handleCharacterInput(c);
-            name = name_input->getText();
+            cast(TextInputNode, name_input)->handleCharacterInput(c);
+            name = cast(TextInputNode, name_input)->getText();
             }
         }
     });
@@ -205,7 +205,7 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     connect_button = std::make_unique<ButtonNode>("CONNECT");
     connect_button->setClickEventCallback([this](float x, float y) {
         std::cout << "Trying to connect to server..." << std::endl;
-        if(ip.empty()) return;
+        if(ip.empty()) ip = "localhost";
         GlobalState::clientID = Network::openConnection(ip, 42069);
         if(!GlobalState::clientID) {
             //CONNECTION FAILED
@@ -287,7 +287,7 @@ void LoginScreenNode::draw() {
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("SERVER IP: (42069)", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    OpenGL::drawText("HOSTNAME / IP", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
 
     connect_button->draw();
     name_input->draw();

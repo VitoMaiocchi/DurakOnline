@@ -202,6 +202,7 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     });
 
     //Connect button
+    //TODO: wenn mer enter druck au das mache (char = '\n')
     connect_button = std::make_unique<ButtonNode>("CONNECT");
     connect_button->setClickEventCallback([this](float x, float y) {
         std::cout << "Trying to connect to server..." << std::endl;

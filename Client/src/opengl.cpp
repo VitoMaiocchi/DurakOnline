@@ -155,6 +155,11 @@ namespace OpenGL {
         if (codepoint <= 0x7F) character_input_callback(static_cast<char>(codepoint));
     }
 
+    void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+        if(key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS) character_input_callback('\b');
+        if(key == GLFW_KEY_ENTER && action == GLFW_PRESS) character_input_callback('\n');
+    }
+
     bool setupWindow() {
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -184,6 +189,7 @@ namespace OpenGL {
         glfwSetMouseButtonCallback(window, mouse_button_callback);
         glfwSetCursorPosCallback(window, cursor_position_callback);
         glfwSetCharCallback(window, character_callback);
+        glfwSetKeyCallback(window, key_callback);
         return true;
     }
 

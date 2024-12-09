@@ -676,6 +676,11 @@ void Battle::attack(ClientID client, Card card){
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
+    
+    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
+        battle_done_=true;
+    }
+        
 
 }
 
@@ -687,6 +692,10 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
     sendAvailableActionUpdate(1, client); //ok false, pick up true, pass on false
+
+    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
+        battle_done_=true;
+    }
 }
 
 

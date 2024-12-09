@@ -32,7 +32,7 @@ public:
             extends.width * 0.7f,
             extends.height * 0.3f,
         };
-        OpenGL::drawText("LOBBY", title_ext, glm::vec4(0,0,0,1), TEXTSIZE_XLARGE);
+        OpenGL::drawText("LOBBY", title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
     }
 
     Extends getCompactExtends(Extends ext) override {
@@ -276,14 +276,14 @@ void LoginScreenNode::draw() {
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("PLAYER NAME", server_ip_ext, glm::vec4(0,0,0,1), TEXTSIZE_LARGE);
+    OpenGL::drawText("PLAYER NAME", server_ip_ext, COLOR_BLACK, TEXTSIZE_LARGE);
     Extends player_name_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.25f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("HOSTNAME / IP", player_name_ext, glm::vec4(0,0,0,1), TEXTSIZE_LARGE);
+    OpenGL::drawText("HOSTNAME / IP", player_name_ext, COLOR_BLACK, TEXTSIZE_LARGE);
 
     connect_button->draw();
     name_input->draw();

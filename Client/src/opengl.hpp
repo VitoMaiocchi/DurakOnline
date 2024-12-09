@@ -38,6 +38,8 @@ enum TextAlignment {
     TEXTALIGN_LEFT
 };
 
+#define COLOR_BLACK glm::vec4(0,0,0,1)
+
 namespace OpenGL {
     bool setup(); //sets up the client window
     void drawFrame(); //draws the current frame including everything in the Viewport

@@ -443,9 +443,9 @@ class DeckNode : public LeafNode {
             ext.width,
             delta
         };
-        OpenGL::drawText("Trump Card", text_ext, glm::vec4(0,0,0,1), TEXTSIZE_MEDIUM);
+        OpenGL::drawText("Trump Card", text_ext, COLOR_BLACK, TEXTSIZE_MEDIUM);
         text_ext.y += delta;
-        OpenGL::drawText("Cards Left: "+std::to_string(draw_pile_cards), text_ext, glm::vec4(0,0,0,1), TEXTSIZE_MEDIUM);
+        OpenGL::drawText("Cards Left: "+std::to_string(draw_pile_cards), text_ext, COLOR_BLACK, TEXTSIZE_MEDIUM);
 
         if(draw_pile_cards != 0) {
             OpenGL::drawImage(trump_card.getFileName(), image_ext);
@@ -525,7 +525,7 @@ class PlayerStateNode : public LeafNode {
             extends.height
         };
 
-        OpenGL::drawText(text, text_ext, glm::vec4(0,0,0,1), TEXTSIZE_MEDIUM);
+        OpenGL::drawText(text, text_ext, COLOR_BLACK, TEXTSIZE_MEDIUM);
         OpenGL::drawImage(path, image_ext);
     }
 

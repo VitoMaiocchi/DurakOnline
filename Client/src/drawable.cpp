@@ -53,7 +53,7 @@ void ButtonNode::draw() {
     if(!visible) return;
     if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,2*DEFAULT_TRANSPARANCY));
     else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
-    OpenGL::drawText(text, extends, glm::vec4(0,0,0,1), TEXTSIZE_LARGE);
+    OpenGL::drawText(text, extends, COLOR_BLACK, TEXTSIZE_LARGE);
 }
 
 PlayerNode::PlayerNode(const Player* player, const bool game) : player(player), game(game) {}
@@ -102,7 +102,7 @@ void drawGamePlayer(Extends extends, const std::string &name, const uint cards, 
         extends.y + extends.height * 0.15f,
         extends.width * 0.2f,
         extends.height * 0.15f
-    }, glm::vec4(0,0,0,1), TEXTSIZE_LARGE, TEXTALIGN_LEFT);
+    }, COLOR_BLACK, TEXTSIZE_LARGE, TEXTALIGN_LEFT);
 
     if(state != PLAYERSTATE_NONE) {
         const std::string s = getPlayerStateIcon(state);
@@ -120,7 +120,7 @@ void drawGamePlayer(Extends extends, const std::string &name, const uint cards, 
         extends.y,
         extends.width,
         extends.height * 0.15f
-    }, glm::vec4(0,0,0,1), TEXTSIZE_MEDIUM);
+    }, COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
 void drawLobbyPlayer(Extends extends, const std::string &name) {
@@ -140,7 +140,7 @@ void drawLobbyPlayer(Extends extends, const std::string &name) {
         extends.y,
         extends.width,
         extends.height * 0.15f
-    }, glm::vec4(0,0,0,1), TEXTSIZE_MEDIUM);
+    }, COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
 void PlayerNode::draw() {
@@ -170,7 +170,7 @@ void TextInputNode::draw() {
     OpenGL::drawRectangle(reduced_extends, backgroundColor);
 
     // Draw the text within the field
-    glm::vec4 textColor = glm::vec4(0,0,0,1);
+    glm::vec4 textColor = COLOR_BLACK;
     if(text == placeholder){
         textColor = glm::vec4(0.5, 0.5, 0.5, 1);
     }

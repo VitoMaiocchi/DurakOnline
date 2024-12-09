@@ -206,7 +206,7 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     connect_button->setClickEventCallback([this](float x, float y) {
         std::cout << "Trying to connect to server..." << std::endl;
         if(ip.empty()) return;
-        lobalState::clientID = Network::openConnection(ip, 42069);
+        GlobalState::clientID = Network::openConnection(ip, 42069);
         if(!GlobalState::clientID) {
             //CONNECTION FAILED
             //TODO: (eric) connection error message displaye oder so ka

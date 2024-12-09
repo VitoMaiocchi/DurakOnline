@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <unordered_set>
+#include <set>
 #include <list>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -19,6 +20,7 @@ enum MessageType {
     MESSAGETYPE_BATTLE_STATE_UPDATE, // Server:Battle to Client:MasterNode, contains info on player roles (attackers, defender, idle)
     MESSAGETYPE_AVAILABLE_ACTION_UPDATE, // Server:Battle to Client:MasterNode, tells the client what actions are available
     MESSAGETYPE_GAME_STATE_UPDATE, // Server:* to Client:MasterNode, update game screen (lobby, game, spectator, game over, Durak screen)
+    MESSAGETYPE_READY_UPDATE,
     // Client:MasterNode to Server:*
     MESSAGETYPE_PLAYCARD_EVENT, // Client:MasterNode to Server:Server->Game->Battle, informs server that a player is trying to play a card
     MESSAGETYPE_CLIENT_ACTION_EVENT, // Client:MasterNode to Server:Server->Game->Battle, info about which client action was performed
@@ -49,6 +51,14 @@ struct TestMessage : public Message {
     int x;
     int y;
     std::string string;
+};
+
+struct ReadyUpdate : public Message {
+    ReadyUpdate();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+
+    std::set<ClientID> players;
 };
 
 struct RemoteDisconnectEvent : public Message {

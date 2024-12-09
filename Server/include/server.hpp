@@ -6,7 +6,7 @@
 #include "../include/server.hpp"
 #include "../include/game.hpp"
 
-#include <unordered_set>
+#include <set>
 #include <memory>
 #include <csignal>
 #include <iostream>
@@ -24,7 +24,7 @@ namespace DurakServer{
     extern std::unordered_set<ClientID> clients;
 
     // Track ready clients
-    extern std::unordered_set<ClientID> ready_clients;
+    extern std::set<ClientID> ready_clients;
 
     // Game instance
     extern std::unique_ptr<Game> current_game;

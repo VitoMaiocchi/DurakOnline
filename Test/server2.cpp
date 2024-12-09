@@ -5,6 +5,7 @@
 #include "../Server/include/server.hpp"
 #include "../Server/include/game.hpp"
 #include <unordered_set>
+#include <set>
 #include <iostream>
 #include <unistd.h>
 
@@ -13,7 +14,7 @@
 
 namespace DurakServer{
     std::unordered_set<ClientID> clients;
-    std::unordered_set<ClientID> ready_clients;
+    std::set<ClientID> ready_clients;
     std::unique_ptr<Game> current_game = nullptr;
     std::map<ClientID, Player> players_map;
 }

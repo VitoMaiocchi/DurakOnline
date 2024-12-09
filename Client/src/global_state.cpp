@@ -154,6 +154,13 @@ namespace Viewport {
             case MESSAGETYPE_GAME_STATE_UPDATE:
                 handleGameStateUpdate(*dynamic_cast<GameStateUpdate*>(message.get()));
             break;
+            case MESSAGETYPE_READY_UPDATE:
+                {
+                    ReadyUpdate update = *dynamic_cast<ReadyUpdate*>(message.get());
+                    std::cout << "READY PLAYERS: {";
+                    for(ClientID id : update.players) std::cout << id<<",";
+                    std::cout << "}" << std::endl;
+                }
             default:
                 //print debug warning: unknown message type
             break;

@@ -158,14 +158,6 @@ void LobbyNode::draw() {
 }
 
 //-----------------------------------------------------------------------------------------------------
-bool isNumber(const std::string& str) {
-    if (str.empty()) return false;
-    for (char ch : str) {
-        if (!std::isdigit(ch)) return false;
-    }
-    return true;
-}
-
 
 void LoginScreenNode::connect() {
     std::cout << "Trying to connect to server..." << std::endl;
@@ -173,7 +165,6 @@ void LoginScreenNode::connect() {
     GlobalState::clientID = Network::openConnection(ip, 42069);
     if(!GlobalState::clientID) {
         //CONNECTION FAILED
-        //TODO: (eric) connection error message displaye oder so ka
         Viewport::createPopup("Connection Failed...", 3);
         std::cout << "Connection failed..." << std::endl;
         return;
@@ -204,14 +195,18 @@ LoginScreenNode::LoginScreenNode(Extends ext){
         }
         if(ip_input->isFocused()){
             if (ip_input) {
-            cast(TextInputNode, ip_input)->handleCharacterInput(c);
-            ip = cast(TextInputNode, ip_input)->getText();
+                cast(TextInputNode, ip_input)->handleCharacterInput(c);
+                ip = cast(TextInputNode, ip_input)->getText();
             }
         }
         if(name_input->isFocused()){
             if (name_input) {
-            cast(TextInputNode, name_input)->handleCharacterInput(c);
-            name = cast(TextInputNode, name_input)->getText();
+                if(name.size() > 30 && c != '\b'){
+                    Viewport::createPopup("Name to long", 3);
+                }else{
+                    cast(TextInputNode, name_input)->handleCharacterInput(c);
+                    name = cast(TextInputNode, name_input)->getText();
+                }
             }
         }
     });
@@ -302,7 +297,7 @@ void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node
 
 //--------------------------------------------------------------------------------------------------
 
-GameOverScreenNode::GameOverScreenNode(bool durak):durak(durak){
+GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     back_button = std::make_unique<ButtonNode>("BACK");
     back_button->setClickEventCallback([](float x, float y){
         std::cout << "back" << std::endl;
@@ -314,7 +309,7 @@ GameOverScreenNode::GameOverScreenNode(bool durak):durak(durak){
         std::cout << "rematch" << std::endl;
     });
     cast(ButtonNode, rematch_button)->visible = true;
-
+    updateExtends(ext);
 }
 
 void GameOverScreenNode::updateExtends(Extends ext){

@@ -44,9 +44,9 @@ namespace Viewport {
         master_node->sendClickEvent(x,y);
     }
 
-    #define POPUP_DISTANCE 0.15f
+    #define POPUP_DISTANCE 0.2f
     #define POPUP_HEIGHT 0.1f
-    #define IN_TIME 200
+    #define IN_TIME 350
     #define OUT_TIME 500
 
     void drawPopup(std::string text, uint time, uint end_time) {
@@ -56,9 +56,11 @@ namespace Viewport {
         if((time + OUT_TIME) > end_time) opacity = (float) (end_time - time) / OUT_TIME;
         if(time < IN_TIME) fade_in_factor = (float) time / IN_TIME;
 
+        float fade_parabula = 3.79*std::pow(fade_in_factor,3)-8.43*std::pow(fade_in_factor,2)+5.69*fade_in_factor;
+
         Extends base_ext = {
             extends.x + extends.width*0.25f,
-            extends.y + extends.height*(1-POPUP_DISTANCE*fade_in_factor),
+            extends.y + extends.height*(1-POPUP_DISTANCE*fade_parabula),
             extends.width * 0.5f,
             extends.height * POPUP_HEIGHT,
         };
@@ -101,8 +103,7 @@ namespace Viewport {
                 //das bruchts nur wenn mer server disconnect handled
                 break;
             case GAMESTATE_GAME_OVER:
-                master_node = std::make_unique<GameOverScreenNode>();
-                master_node->updateExtends(extends); //TODO: (eric) das in constructor ine tue
+                master_node = std::make_unique<GameOverScreenNode>(extends);
                 break;
         }
 

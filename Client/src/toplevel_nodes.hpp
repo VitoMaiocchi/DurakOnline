@@ -38,7 +38,7 @@ class LoginScreenNode : public Node {
 class GameOverScreenNode : public Node {
     public:
         void draw();
-        GameOverScreenNode(bool durak= 1);
+        GameOverScreenNode(Extends ext, bool durak=1);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 

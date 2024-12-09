@@ -44,7 +44,7 @@ namespace Viewport {
         master_node->sendClickEvent(x,y);
     }
 
-    #define POPUP_DISTANCE 0.2f
+    #define POPUP_DISTANCE 0.175f
     #define POPUP_HEIGHT 0.1f
     #define IN_TIME 350
     #define OUT_TIME 500

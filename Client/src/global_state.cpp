@@ -49,7 +49,7 @@ namespace Viewport {
     #define IN_TIME 200
     #define OUT_TIME 500
 
-    void drawPopup(std::string, uint time, uint end_time) {
+    void drawPopup(std::string text, uint time, uint end_time) {
         float opacity = 1.0f;
         float fade_in_factor = 1.0f;
 
@@ -64,6 +64,7 @@ namespace Viewport {
         };
 
         OpenGL::drawRectangle(base_ext, glm::vec4(0.5f, 0.5f, 0.5f, opacity));
+        OpenGL::drawText(text, base_ext, glm::vec4(0, 0, 0, opacity), TEXTSIZE_LARGE);
     }
 
     void createPopup(std::string text, uint seconds) {
@@ -134,8 +135,7 @@ namespace Viewport {
     void handleMessage(std::unique_ptr<Message> message) {
         switch (message->messageType) {
             case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-                //do nothing
-                //print to console for debugs
+                createPopup(dynamic_cast<IllegalMoveNotify*>(message.get())->error, 3);
             break;
             case MESSAGETYPE_CARD_UPDATE:
                 throwServerErrorIF("card update can only be processed during game state", GlobalState::game_state != GAMESTATE_GAME);

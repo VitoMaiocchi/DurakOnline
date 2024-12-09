@@ -81,66 +81,33 @@ inline std::string getPlayerIconPath(const std::string &name) {
 void drawGamePlayer(Extends extends, const std::string &name, const uint cards, const PlayerState state) {
     const std::string path = getPlayerIconPath(name);
     auto size = OpenGL::getImageDimensions(path);
-    Extends ext = computeCompactExtends({
-        extends.x,
-        extends.y + extends.height * 0.3f,
-        extends.width,
-        extends.height * 0.7f
-    }, size.second, size.first);
+    Extends ext = computeCompactExtends(alignExtends(extends,0,0.3f,1,0.7f), size.second, size.first);
     OpenGL::drawImage(path, ext);
 
     size = OpenGL::getImageDimensions(CLIENT_RES_DIR + "icons/hand.png");
-    OpenGL::drawImage(CLIENT_RES_DIR + "icons/hand.png", computeCompactExtends({
-        extends.x + extends.width * 0.15f,
-        extends.y + extends.height * 0.15f,
-        extends.width * 0.2f,
-        extends.height * 0.15f
-    }, size.second, size.first));
+    OpenGL::drawImage(CLIENT_RES_DIR + "icons/hand.png", 
+        computeCompactExtends(alignExtends(extends, 0.15f, 0.15f, 0.2f, 0.15f), size.second, size.first));
 
-    OpenGL::drawText(std::to_string(cards), {
-        extends.x + extends.width * 0.35f,
-        extends.y + extends.height * 0.15f,
-        extends.width * 0.2f,
-        extends.height * 0.15f
-    }, COLOR_BLACK, TEXTSIZE_LARGE, TEXTALIGN_LEFT);
+    OpenGL::drawText(std::to_string(cards), 
+        alignExtends(extends, 0.35f, 0.15f, 0.2f, 0.15f), COLOR_BLACK, TEXTSIZE_LARGE, TEXTALIGN_LEFT);
 
     if(state != PLAYERSTATE_NONE) {
         const std::string s = getPlayerStateIcon(state);
         size = OpenGL::getImageDimensions(s);
-        OpenGL::drawImage(s, computeCompactExtends({
-            extends.x + extends.width * 0.65f,
-            extends.y + extends.height * 0.15f,
-            extends.width * 0.2f,
-            extends.height * 0.15f
-        }, size.second, size.first));
+        OpenGL::drawImage(s, 
+            computeCompactExtends(alignExtends(extends, 0.65f, 0.15f, 0.2f, 0.15f), size.second, size.first));
     }
 
-    OpenGL::drawText(name, {
-        extends.x,
-        extends.y,
-        extends.width,
-        extends.height * 0.15f
-    }, COLOR_BLACK, TEXTSIZE_MEDIUM);
+    OpenGL::drawText(name, alignExtends(extends, 0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
 void drawLobbyPlayer(Extends extends, const std::string &name) {
     const std::string path = getPlayerIconPath(name);
     auto size = OpenGL::getImageDimensions(path);
 
-    Extends ext = computeCompactExtends({
-        extends.x,
-        extends.y + extends.height * 0.15f,
-        extends.width,
-        extends.height * 0.85f
-    }, size.second, size.first);
+    Extends ext = computeCompactExtends(alignExtends(extends, 0, 0.15f, 1, 0.85f), size.second, size.first);
     OpenGL::drawImage(path, ext);
-
-    OpenGL::drawText(name, {
-        extends.x,
-        extends.y,
-        extends.width,
-        extends.height * 0.15f
-    }, COLOR_BLACK, TEXTSIZE_MEDIUM);
+    OpenGL::drawText(name, alignExtends(extends,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
 void PlayerNode::draw() {

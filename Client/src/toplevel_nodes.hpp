@@ -6,14 +6,13 @@ class LobbyNode : public TreeNode {
         LobbyNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
-
-        void handleAvailableActionUpdate(AvailableActionUpdate update);
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> lobby;
         std::unique_ptr<Node> back_button;
         std::unique_ptr<Node> ready_button;
         std::unique_ptr<Node> settings_button;
+        std::vector<std::unique_ptr<Node>> player_nodes;
 };
 
 class LoginScreenNode : public Node {
@@ -25,8 +24,11 @@ class LoginScreenNode : public Node {
 
     private:
         std::string name;
+        std::string ip;
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> connect_button;
+        std::unique_ptr<Node> name_input;
+        std::unique_ptr<Node> ip_input;
 };
 
 class GameOverScreenNode : public Node {

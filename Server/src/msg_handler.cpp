@@ -88,7 +88,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                 }
             }
             else if(action && action->action == CLIENTACTION_PICK_UP || 
-                                action->action ==CLIENTACTION_PASS_ON ||
+                                action->action == CLIENTACTION_PASS_ON ||
                                 action->action == CLIENTACTION_OK){
                 std::cout << "pick up message received from client: " << client << std::endl;
                 if(current_game){
@@ -107,26 +107,29 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
         case MESSAGETYPE_PLAYCARD_EVENT: {
             // Handle card play event if a game is active
             if (current_game) {
-                current_game->handleClientCardEvent(std::move(msg_r), client);
-            } 
-            if(current_game->endGame()){
-                //clean up
-                //player update first
-                PlayerUpdate player_update;
-                player_update.durak = 0; //getlastplayer
-                player_update.player_count = clients.size();
-                
-                GameStateUpdate game_update;
-                game_update.state = GAMESTATE_DURAK_SCREEN;
-
-                for(auto c : clients){
-                    Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
-                    Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
-                    ready_clients.erase(c);
+                if(!current_game->endGame()){
+                    current_game->handleClientCardEvent(std::move(msg_r), client);
                 }
+            
+                else if(current_game->endGame()){
+                    //clean up
+                    //player update first
+                    PlayerUpdate player_update;
+                    player_update.durak = 0; //getlastplayer
+                    player_update.player_count = clients.size();
+                    for(auto player : players_map){
+                        player_update.player_names[player.first] = player.second.name;
+                    }
+                    
+                    GameStateUpdate game_update;
+                    game_update.state = GAMESTATE_DURAK_SCREEN;
 
-
-
+                    for(auto c : clients){
+                        Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                        Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
+                        // ready_clients.erase(c);
+                    }
+                }
             }
             else {
                 std::cerr << "No active game to handle play card event!" << std::endl;

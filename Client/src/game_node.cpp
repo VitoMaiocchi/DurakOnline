@@ -18,11 +18,6 @@
 
 #define BUTTON_BUFFER 10
 #define DECK_BUFFER 10
-//da chunt alles ine wo grendered wird während es game lauft
-//endscreen und so nöd nur das mit de charte i de mitti und so
-
-//TODO: MIT 0 karte neue finnished state (au wenn du fertig bisch)
-//TODO: trump card wenns deck leer isch
 
 Suit GlobalState::trump_suit = SUIT_HEARTS;
 
@@ -166,8 +161,8 @@ class CardStackNode : public LeafNode {
         }
 
         void draw() {
-            if(hover) OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.4));
-            else OpenGL::drawRectangle(extends, glm::vec4(0.4,0.2,0.2,0.2));
+            if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,2*DEFAULT_TRANSPARANCY));
+            else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
             Extends ext = {
                 extends.x      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
@@ -189,7 +184,7 @@ class CardStackNode : public LeafNode {
                     ext.y + 0.5f*offset,
                     ext.width - offset,
                     ext.height - offset
-                }, glm::vec4(0.4,0.2,0.2,0.2));
+                }, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
             }
 
             if(bottom_card.has_value() && !top_card.has_value()) {
@@ -307,21 +302,20 @@ class PlayerBarNode : public TreeNode {
     }
 
     void updateExtends(Extends ext) {
-        ext = getCompactExtends(ext);
-        extends = ext; //TODO: das isch hässlich
+        extends = getCompactExtends(ext);
 
         const uint N = playerNodes.size();
         if(N == 0) return;
         if(N == 1) {
-            (*playerNodes.begin())->updateExtends(ext);
+            (*playerNodes.begin())->updateExtends(extends);
             return;
         }
 
-        const float s = ext.height;
-        const float delta = (ext.width - s) / (N -1);
-        float x = ext.x;
+        const float s = extends.height;
+        const float delta = (extends.width - s) / (N -1);
+        float x = extends.x;
         for(auto &player : playerNodes) {
-            player->updateExtends({x, ext.y, s, s});
+            player->updateExtends({x, extends.y, s, s});
             x += delta;
         }
     }
@@ -399,6 +393,11 @@ class PlayerActionNode : public TreeNode {
     }
 
     Extends getCompactExtends(Extends ext) {
+        const float max_w = ext.height * 1.4f;
+        if(ext.width < max_w) return ext;
+
+        ext.x = ext.x + ext.width - max_w;
+        ext.width = max_w;
         return ext;
     }
 };
@@ -417,7 +416,7 @@ class DeckNode : public LeafNode {
     }
 
     void draw() {
-        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,0.1));
+        if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
         const float b = Viewport::global_scalefactor * DECK_BUFFER;
         Extends ext = {
@@ -453,7 +452,7 @@ class DeckNode : public LeafNode {
             return;
         }
 
-        std::string image = "PLACEHOLDER (suit image): ";
+        std::string image = CLIENT_RES_DIR + "cards/trump_of_";
         switch(trump_suit) {
             case SUIT_CLUBS:
                 image +="clubs.png";
@@ -469,7 +468,7 @@ class DeckNode : public LeafNode {
             break;
         }
 
-        OpenGL::drawText(image, image_ext, glm::vec3(0.1,0.2,1), TEXTSIZE_LARGE);
+        OpenGL::drawImage(image, image_ext);
     }
 
     void handleCardUpdate(CardUpdate update) {
@@ -488,8 +487,10 @@ class PlayerStateNode : public LeafNode {
 
     void draw() {
         const auto state = GlobalState::players.find({GlobalState::clientID})->game->state;
+        if(state == PLAYERSTATE_NONE) return;
 
-        std::string text = "You are currently ";
+        const std::string path = getPlayerStateIcon(state);
+        std::string text = " You are currently ";
         switch(state) {
             case PLAYERSTATE_ATTACK:
             text += "attacking";
@@ -502,23 +503,30 @@ class PlayerStateNode : public LeafNode {
             break;
         }
 
-        OpenGL::drawText(text, {
-            extends.x + 0.2f*extends.width,
-            extends.y,
-            extends.width * 0.8f,
-            extends.height
-        }, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+        auto tsize = OpenGL::getTextDimensions(text, TEXTSIZE_MEDIUM);
+        auto isize = OpenGL::getImageDimensions(path);
+        isize.second = extends.height / 2.0f * isize.second / isize.first;
+        isize.first = extends.height / 2.0f;
 
-        if(state != PLAYERSTATE_NONE) {
-            const std::string path = getPlayerStateIcon(state);
-            auto size = OpenGL::getImageDimensions(path);
-            OpenGL::drawImage(path, computeCompactExtends({
-                extends.x,
-                extends.y + extends.height * 0.25f,
-                extends.width * 0.2f,
-                extends.height * 0.5f
-            }, size.second, size.first));
-        }
+        float w = tsize.first + isize.first;
+        float x = extends.x + (extends.width - w)/2;
+
+        Extends image_ext = {
+            x,
+            extends.y + extends.height * 0.25f,
+            (float) isize.first,
+            (float) isize.second
+        };
+
+        Extends text_ext = {
+            x + isize.first,
+            extends.y,
+            tsize.first,
+            extends.height
+        };
+
+        OpenGL::drawText(text, text_ext, glm::vec3(0,0,0), TEXTSIZE_MEDIUM);
+        OpenGL::drawImage(path, image_ext);
     }
 
 
@@ -553,7 +561,7 @@ void GameNode::updateExtends(Extends ext) {
 
     Extends hand_ext = {
         extends.x + extends.width / 4,
-        extends.y,
+        extends.y - extends.height * 0.2f * CARD_OFFSET_FACTOR,
         extends.width / 2,
         extends.height * 0.2f
     };
@@ -625,6 +633,8 @@ void GameNode::handleCardUpdate(CardUpdate update) {
 }
 
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
+    for(auto &player : GlobalState::players) player.game->state = PLAYERSTATE_NONE;
+
     for(ClientID id : update.attackers) {
         auto it = GlobalState::players.find({id});
         throwServerErrorIF("trying to assign attacking state to nonexistent player", it == GlobalState::players.end());

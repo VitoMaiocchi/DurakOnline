@@ -58,7 +58,7 @@ namespace Viewport {
                 break;
             case GAMESTATE_GAME_OVER:
                 master_node = std::make_unique<GameOverScreenNode>();
-                master_node->updateExtends(extends); //TODO: das in constructor ine tue
+                master_node->updateExtends(extends); //TODO: (eric) das in constructor ine tue
                 break;
         }
 
@@ -107,8 +107,6 @@ namespace Viewport {
             case MESSAGETYPE_AVAILABLE_ACTION_UPDATE:
                 if(GlobalState::game_state == GAMESTATE_GAME)
                     cast(GameNode, master_node)->handleAvailableActionUpdate(*dynamic_cast<AvailableActionUpdate*>(message.get()));
-                if(GlobalState::game_state == GAMESTATE_LOBBY) //TODO: das bruchts eig nöd
-                    cast(LobbyNode, master_node)->handleAvailableActionUpdate(*dynamic_cast<AvailableActionUpdate*>(message.get()));
             break;
             case MESSAGETYPE_GAME_STATE_UPDATE:
                 handleGameStateUpdate(*dynamic_cast<GameStateUpdate*>(message.get()));

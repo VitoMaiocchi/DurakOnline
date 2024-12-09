@@ -41,7 +41,7 @@ CardManager::~CardManager() = default;
 void CardManager::shuffleCards(){
     // Check if deck has been initialized properly
     assert(deck_.size() == 52 && "Deck must contain exactly 52 cards before shuffling");
-    // Define random number generator (Ich weiss nöd öb das de besti rng isch)
+    // Define pseudo random number generator (Ich weiss nöd öb das de besti rng isch)
     std::random_device rd;
     std::mt19937 g(rd());
     // shuffle the deck
@@ -204,6 +204,7 @@ bool CardManager::clearMiddle(){
             sendCardUpdateMsg(id);
         }
     }
+    //TODO: change to assertion
     else{
         std::cerr << "middle was already empty" << std::endl;
     }

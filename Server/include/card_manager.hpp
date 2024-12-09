@@ -18,27 +18,31 @@ class CardManager
 {
 private:
     std::deque<Card> deck_;              //represents cards in the middle
+    //TODO: replace with optional
     std::shared_ptr<Card> last_card_=std::make_shared<Card>(); //Pointer to the last card in the deck, maybe make it const
     unsigned int number_cards_in_deck_;  //Number of cards in the deck
     bool endgame_;                       //Could be useful for endgame functions, delete if it is not used
     std::vector<Card> discarded_cards_;  //Charte wo "weg" sind
     unsigned int number_discarded_cards_; // azahl charte wo "weg" sind
-    Suit trump_;                           //included from card.hpp if we remove/change this inclusion we have to find another solution
+    Suit trump_;                          //included from card.hpp if we remove/change this inclusion we have to find another solution
+    //TODO: bruchemer das?
     Card trump_card_;
     
     std::vector<ClientID> player_ids_; // saves the player ids as a private member of CardManager
+    //TODO: evtl replace vector with set es burcht denn halt en < operator und so aber isch effizienter (nöd mega nötig)
     std::map<ClientID, std::vector<Card>> player_hands_;
     std::map<ClientID, unsigned int> player_number_of_cards_;
 
 
     //middle has always six slot pairs, top and bottom, it is initialized as std::nullopt meaning it has no value
+    //TODO: typedef für middle
     std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle_ = 
                                         std::vector<std::pair<std::optional<Card>, std::optional<Card>>>(6, {std::nullopt, std::nullopt}); //represents the battlefield in the middle
     
     unsigned int number_cards_middle_ = 0; //Number of cards in the middle
     
 
-
+//TODO: Change bool functions to void functions with assert
 public:
     //constructor and destructor
     //Constructor where the number of players is passed

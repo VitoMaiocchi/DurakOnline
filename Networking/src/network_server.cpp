@@ -104,7 +104,8 @@ namespace Network {
     }
 
     void openSocket(uint port) {
-        acceptor = sockpp::tcp_acceptor(port);
+        acceptor = sockpp::tcp_acceptor();
+        acceptor.open(port, 4, SO_REUSEPORT);
         if(!acceptor) THROW_ERROR("FAILED TO CREATE ACCEPTOR");
         client_acceptor = std::thread(acceptConnections);
     }

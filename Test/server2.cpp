@@ -19,14 +19,6 @@ namespace DurakServer{
     std::map<ClientID, Player> players_map;
 }
 
-
-void cleanup(int signum) {
-    std::cout << "\nDisconnecting all clients before closing...\n";
-    for(ClientID id : DurakServer::clients) Network::sendMessage(std::make_unique<RemoteDisconnectEvent>(), id);
-    sleep(1); //give clients time to disconnect gracefully
-    exit(0);
-}
-
 //zb map<ClientID, player(username ka)> 
 //state (lobby, game, etc)
 
@@ -36,8 +28,6 @@ void broadcastMessage(std::unique_ptr<Message> message) {
 }
 
 int main() {
-
-    signal(SIGINT, cleanup);
 
     //start networking
     Network::openSocket(42069);

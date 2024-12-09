@@ -159,6 +159,13 @@ namespace Viewport {
             case MESSAGETYPE_READY_UPDATE:
                 if(GlobalState::game_state == GAMESTATE_LOBBY)
                     cast(LobbyNode, master_node)->handleReadyUpdate(*dynamic_cast<ReadyUpdate*>(message.get()));
+            break;
+            case MESSAGETYPE_REMOTE_DISCONNECT_EVENT:
+                GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;
+                master_node = std::make_unique<LoginScreenNode>(extends);
+                createPopup("You got disconnected from the Server", 3);
+
+            break;
             default:
                 //print debug warning: unknown message type
             break;

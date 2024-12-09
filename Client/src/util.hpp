@@ -54,6 +54,24 @@ inline std::string getPlayerStateIcon(PlayerState state) {
     return "error";
 }
 
+inline Extends alignExtends(Extends ext, float x, float y, float width, float height) {
+    return {
+        ext.x + ext.width * x,
+        ext.y + ext.height * y,
+        ext.width * width,
+        ext.height * height
+    };
+}
+
+inline Extends applyBorder(Extends ext, float b) {
+    return {
+            ext.x + b,
+            ext.y + b,
+            ext.width - 2*b,
+            ext.height - 2*b
+    };
+}
+
 Extends computeCompactExtends(Extends ext, float height, float width);
 
 inline void printExt(std::string name, Extends ext) {

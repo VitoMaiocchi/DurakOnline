@@ -144,19 +144,9 @@ class CardStackNode : public LeafNode {
         Extends getCompactExtends(Extends ext) {
             constexpr float h = (float)CARD_TEXTURE_HEIGHT/(1-CARD_OFFSET_FACTOR);
             constexpr float w = CARD_TEXTURE_WIDTH  + h*CARD_OFFSET_FACTOR;
-            ext = {
-                ext.x      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                ext.y      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                ext.width  - 2*CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                ext.height - 2*CARD_OFFSET_BORDER*Viewport::global_scalefactor
-            };
+            ext = applyBorder(ext, CARD_OFFSET_BORDER*Viewport::global_scalefactor);
             ext = computeCompactExtends(ext, h, w);
-            ext = {
-                ext.x      -   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                ext.y      -   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                ext.width  + 2*CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                ext.height + 2*CARD_OFFSET_BORDER*Viewport::global_scalefactor
-            };
+            ext = applyBorder(ext, -CARD_OFFSET_BORDER*Viewport::global_scalefactor);
             return ext;
         }
 
@@ -164,12 +154,7 @@ class CardStackNode : public LeafNode {
             if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,2*DEFAULT_TRANSPARANCY));
             else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
-            Extends ext = {
-                extends.x      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                extends.y      +   CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                extends.width  - 2*CARD_OFFSET_BORDER*Viewport::global_scalefactor,
-                extends.height - 2*CARD_OFFSET_BORDER*Viewport::global_scalefactor
-            };
+            Extends ext = applyBorder(extends, CARD_OFFSET_BORDER*Viewport::global_scalefactor);
 
             if(top_card.has_value() && !bottom_card.has_value()) {
                 //print warning oder so
@@ -378,13 +363,8 @@ class PlayerActionNode : public TreeNode {
         extends = getCompactExtends(ext);
 
         float delta = extends.height / 3;
-        const float b = BUTTON_BUFFER * Viewport::global_scalefactor;
-        ext = {
-            extends.x + b,
-            extends.y + b,
-            extends.width - 2*b,
-            delta - 2*b
-        };
+        ext.height = delta;
+        ext = applyBorder(ext, BUTTON_BUFFER * Viewport::global_scalefactor);
 
         for(auto &node : buttons) {
             node->updateExtends(ext);
@@ -419,21 +399,8 @@ class DeckNode : public LeafNode {
         if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
         const float b = Viewport::global_scalefactor * DECK_BUFFER;
-        Extends ext = {
-            extends.x + b,
-            extends.y + b,
-            extends.width - 2*b,
-            extends.height - 2*b
-        };
-
-        Extends ext2 = {
-            ext.x + b,
-            ext.y + b,
-            ext.width - 2*b,
-            ext.height - 2*b
-        };
-
-        Extends image_ext = computeCompactExtends(ext2, CARD_TEXTURE_HEIGHT, CARD_TEXTURE_WIDTH);
+        Extends ext = applyBorder(extends, b);
+        Extends image_ext = computeCompactExtends(applyBorder(ext, b), CARD_TEXTURE_HEIGHT, CARD_TEXTURE_WIDTH);
         image_ext.y = ext.y + b;
         const float h = image_ext.height + 2*b;
         float delta = (ext.height - h) / 2;
@@ -559,50 +526,12 @@ GameNode::GameNode(Extends ext) {
 void GameNode::updateExtends(Extends ext) {
     extends = ext;
 
-    Extends hand_ext = {
-        extends.x + extends.width / 4,
-        extends.y - extends.height * 0.2f * CARD_OFFSET_FACTOR,
-        extends.width / 2,
-        extends.height * 0.2f
-    };
-    handNode->updateExtends(hand_ext);
-
-    Extends playerbar_ext {
-        extends.x,
-        extends.y + extends.height * 0.775f,
-        extends.width,
-        extends.height * 0.2f
-    };
-    playerBarNode->updateExtends(playerbar_ext);
-
-    Extends middle_ext = {
-        extends.x + extends.width * 0.1f,
-        extends.y + extends.height * 0.25f,
-        extends.width * 0.8f,
-        extends.height * 0.5f
-    };
-    middleNode->updateExtends(middle_ext);
-
-    playerActionNode->updateExtends({
-        extends.x + extends.width * 0.75f,
-        extends.y,
-        extends.width * 0.25f,
-        extends.height * 0.2f
-    });
-
-    deckNode->updateExtends({
-        extends.x,
-        extends.y,
-        extends.width * 0.25f,
-        extends.height * 0.25f
-    });
-
-    playerStateNode->updateExtends({
-        extends.x + extends.width * 0.3f,
-        extends.y + extends.height * 0.2f,
-        extends.width * 0.4f,
-        extends.height * 0.05f
-    });
+    handNode->updateExtends(alignExtends(extends, 0.25f, -0.2f*CARD_OFFSET_FACTOR, 0.5f, 0.2f));
+    playerBarNode->updateExtends(alignExtends(extends, 0, 0.775f, 1, 0.2f));
+    middleNode->updateExtends(alignExtends(extends, 0.1f, 0.25f, 0.8f, 0.5f));
+    playerActionNode->updateExtends(alignExtends(extends, 0.75f, 0, 0.25f, 0.2f));
+    deckNode->updateExtends(alignExtends(extends, 0,0,0.25f,0.25f));
+    playerStateNode->updateExtends(alignExtends(extends, 0.3f, 0.2f, 0.4f, 0.05f));
 }
 
 void GameNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {

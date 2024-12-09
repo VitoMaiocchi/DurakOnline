@@ -265,9 +265,9 @@ void LoginScreenNode::draw() {
     };
     OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     Extends title_ext = {
-            extends.x + extends.width * 0.25f,
+            extends.x + extends.width * 0.175f,
             extends.y + extends.height * 0.65f,
-            extends.width * 0.5f,
+            extends.width * 0.65f,
             extends.height * 0.3f,
     };
     auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+"fonts/durak.png");

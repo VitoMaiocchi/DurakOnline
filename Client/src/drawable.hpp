@@ -49,6 +49,7 @@ class ButtonNode : public LeafNode {
     ButtonNode(std::string text);
     Extends getCompactExtends(Extends ext);
     void draw();
+    void sendClickEvent(float x, float y) override;
 };
 
 class PlayerNode : public LeafNode {

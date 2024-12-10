@@ -31,7 +31,7 @@ private:
     std::vector<ClientID> player_ids_; // saves the player ids as a private member of CardManager
     //TODO: evtl replace vector with set es burcht denn halt en < operator und so aber isch effizienter (nöd mega nötig)
     std::map<ClientID, std::vector<Card>> player_hands_;
-    std::map<ClientID, unsigned int> player_number_of_cards_;
+    std::map<ClientID, unsigned int> player_number_of_cards_; //DEPRECATED NO NOT USE
 
 
     //middle has always six slot pairs, top and bottom, it is initialized as std::nullopt meaning it has no value
@@ -40,7 +40,8 @@ private:
                                         std::vector<std::pair<std::optional<Card>, std::optional<Card>>>(6, {std::nullopt, std::nullopt}); //represents the battlefield in the middle
     
     unsigned int number_cards_middle_ = 0; //Number of cards in the middle
-    
+
+    void cardUpdate();    
 
 //TODO: Change bool functions to void functions with assert
 public:
@@ -75,9 +76,6 @@ public:
     bool compareCards(Card card1, Card card2);
 
     void fillDeck();
-
-    //send card update message
-    void sendCardUpdateMsg(ClientID client_id);
 
     // functions for testing purposes
     void placeAttackCard(Card card, int slot);

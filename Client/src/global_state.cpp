@@ -106,6 +106,12 @@ namespace Viewport {
             case GAMESTATE_GAME_OVER:
                 master_node = std::make_unique<GameOverScreenNode>(extends);
                 break;
+            case GAMESTATE_SPECTATOR:
+                //todo
+                break;
+            case GAMESTATE_DURAK_SCREEN:
+                //todo
+                break;
         }
 
         GlobalState::game_state = update.state;

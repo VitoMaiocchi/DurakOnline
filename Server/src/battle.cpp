@@ -42,7 +42,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             bsu_msg.attackers.push_front(pl.first);
             attack_order_.push_front(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
+            sendAvailableActionUpdate(1, pl.first);
         }
     }
     // then we iterate through another time to ensure the co attacker is appended to the list and does not come in front of the attacker
@@ -51,7 +51,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             bsu_msg.attackers.push_back(pl.first);
             attack_order_.push_back(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
+            sendAvailableActionUpdate(1, pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
@@ -504,7 +504,9 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     
     //check if valid move
     //this should happen before the player roles are moved
-    if(!isValidMove(card, player_id, slot)){
+    if(!isValidMove(card, player_id, slot) || curr_attacks_ == max_attacks_){
+        // PopupNotify popup;
+        // popup.message = "Illegal Move: "
         return false; //if the move is not valid
     }
     else {
@@ -625,6 +627,8 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         } 
     }
     if(role == ATTACKER){
+        //set max attacks to the amount of cards in defenders hand
+        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -646,6 +650,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     }
     //coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
+        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -679,13 +684,29 @@ void Battle::attack(ClientID client, Card card){
     std::cout << "attack() was called"<<std::endl;
     //calls attack
     card_manager_ptr_->attackCard(card, client);
-    if(defense_started_){
-        sendAvailableActionUpdate(1, getCurrentDefender());
-    }
+
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-    
+    //find oout the role of the client
+    PlayerRole role;
+    role = players_bs_[client];
+    if(role == ATTACKER && ok_msg_[CO_ATTACKER] == true){
+        ok_msg_[CO_ATTACKER] == false; //coatt must click it again
+    }
+    if(role == CO_ATTACKER && ok_msg_[ATTACKER] == true){
+        ok_msg_[ATTACKER] = false; //att must click it again
+    }
+    //now the attackers can press ok
+    for(auto c : players_bs_){
+        if(c.second == ATTACKER){
+            sendAvailableActionUpdate(0, c.first);
+        }
+        else if(c.second == CO_ATTACKER){
+            sendAvailableActionUpdate(0, c.first);
+        }
+    }
+
     if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
         battle_done_=true;
     }
@@ -722,6 +743,7 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
  */
 void Battle::movePlayerRoles(){
     std::cout << "moving the player roles" << std::endl;
+    //we need to update this if theres less than 3 players active (more precisely if 2 players activr)
     PlayerRole last_value = players_bs_.rbegin()->second;
 
     for(auto it = players_bs_.rbegin(); it != players_bs_.rend(); ++it){
@@ -734,35 +756,40 @@ void Battle::movePlayerRoles(){
     BattleStateUpdate bsu_msg;
     //set the first attacker pointer to the one that attacks first
     //while iterating prepare the message BattleStateUpdate to send to the client
-    for(auto& pl : players_bs_){
-        if(pl.second == ATTACKER){
-            bsu_msg.attackers.push_back(pl.first);
-            //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
+        for(auto& pl : players_bs_){
+            if(pl.second == ATTACKER){
+                bsu_msg.attackers.push_back(pl.first);
+                //send the normal action update
+                sendAvailableActionUpdate(0, pl.first);
+            }
+            else if(pl.second == DEFENDER){
+                bsu_msg.defender = pl.first;
+                //send the normal action update
+                sendAvailableActionUpdate(0, pl.first);
+            }
+            else if(pl.second == CO_ATTACKER){
+                bsu_msg.attackers.push_back(pl.first);
+                //send the normal action update
+                sendAvailableActionUpdate(0, pl.first);
+            }
+            else if(pl.second == IDLE){
+                bsu_msg.idle.push_back(pl.first);
+                //send the normal action update
+                sendAvailableActionUpdate(0, pl.first);
+            }
+            std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
         }
-        else if(pl.second == DEFENDER){
-            bsu_msg.defender = pl.first;
-            //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
-        }
-        else if(pl.second == CO_ATTACKER){
-            bsu_msg.attackers.push_back(pl.first);
-            //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
-        }
-        else if(pl.second == IDLE){
-            bsu_msg.idle.push_back(pl.first);
-            //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
-        }
-        std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
-    }
 
     for(auto& pl : players_bs_){
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
     }
 
-
+    //adapts the max attacks to the amount of cards the next player has
+    
+    if(card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) <= 6){
+        max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender());
+    }
+    
 
 }
 void Battle::sendAvailableActionUpdate(unsigned int setting, ClientID client){

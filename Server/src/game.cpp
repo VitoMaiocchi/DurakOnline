@@ -164,7 +164,7 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
         CardSlot slot = return_pce->slot;
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
-        if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()){
+        if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
             //TODO: Message an client schicke wer durak isch
             //TODO: Spiel beende
         }
@@ -183,9 +183,9 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
             CardSlot slot = return_pce->slot;
 
             current_battle_->handleCardEvent(vector_of_cards, client, slot);
-            if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()){
-            //TODO: Message an client schicke wer durak isch
-            //TODO: Spiel beende
+            if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
+                //TODO: Message an client schicke wer durak isch
+                //TODO: Spiel beende
             }
             return true;
         }

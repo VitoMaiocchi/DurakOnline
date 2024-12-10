@@ -386,7 +386,9 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         }
         if(valid){
             movePlayerRoles(); //moves player roles one to the right
-            UpdatePickUpOrder();
+            if(getPlayerRolesMap().size() >= 3){
+                UpdatePickUpOrder();
+            }
             return true;
         }
         else{

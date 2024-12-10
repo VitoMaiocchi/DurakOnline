@@ -143,9 +143,9 @@ void receiveMessages() {
                               << " | x: " << test_msg->x << " | y: " << test_msg->y << std::endl;
                     break;
                 }
-                case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY: {
-                    IllegalMoveNotify* err_msg = dynamic_cast<IllegalMoveNotify*>(msg.get());
-                    std::cout << "\nReceived Illegal Move Notify: " << err_msg->error << std::endl;
+                case MESSAGETYPE_SEND_POPUP: {
+                    PopupNotify* err_msg = dynamic_cast<PopupNotify*>(msg.get());
+                    std::cout << "\nReceived Illegal Move Notify: " << err_msg->message << std::endl;
                     break;
                 }
                 case MESSAGETYPE_CARD_UPDATE: {

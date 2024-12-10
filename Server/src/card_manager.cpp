@@ -2,6 +2,7 @@
 #include <cassert>
 #include <random>
 #include <iostream>
+#include "../include/server.hpp"
 #include "../include/card_manager.hpp"
 
 
@@ -22,10 +23,7 @@ CardManager::CardManager(std::vector<ClientID> player_ids) : player_ids_(player_
     //Trumpf bestimme
     determineTrump();
 
-    //send all the players the updates about their cards
-    for(auto id : player_ids_){
-        sendCardUpdateMsg(id);
-    }
+    cardUpdate();
     
     // at the end of the constructor card manager should communicate the current status of the cards in play
     // for this we use the message CARD_UPDATE
@@ -149,10 +147,8 @@ bool CardManager::attackCard(Card card, ClientID PlayerID){
     ++number_cards_middle_;
     --player_number_of_cards_[PlayerID];
 
-    //send message to clients
-    for(auto id : player_ids_){
-        sendCardUpdateMsg(id);
-    }
+    
+    cardUpdate();
     return 0;
 }
 
@@ -173,10 +169,8 @@ void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
     ++number_cards_middle_;
     --player_number_of_cards_[PlayerID];
 
-    //send message to clients
-    for(auto id : player_ids_){
-        sendCardUpdateMsg(id);
-    }
+    
+    cardUpdate();
 }
 
 //PRE:
@@ -199,10 +193,8 @@ bool CardManager::clearMiddle(){
             slot = {std::nullopt, std::nullopt};
         }
 
-        // send message to all clients
-        for(auto id : player_ids_){
-            sendCardUpdateMsg(id);
-        }
+        
+        cardUpdate();
     }
     //TODO: change to assertion
     else{
@@ -240,10 +232,8 @@ void CardManager::pickUp(ClientID playerID_def){
         }
     }
 
-    // send message to all clients
-    for(auto id : player_ids_){
-        sendCardUpdateMsg(id);
-    }
+
+    cardUpdate();
     
 }   
 
@@ -260,10 +250,8 @@ void CardManager::distributeNewCards(std::deque<ClientID> attack_order_, ClientI
     if (succesful_defend){
         drawFromMiddle(current_defender);
     }
-        // send message to all clients
-    for(auto id : player_ids_){
-        sendCardUpdateMsg(id);
-    }
+
+    cardUpdate();
 }
 
 //PRE: Valid PlayerID
@@ -319,26 +307,18 @@ void CardManager::addCardToPlayerHand(ClientID playerID, const Card& card) {
         player_number_of_cards_[playerID]++;
     }
 
-    // send message to all clients
-    for(auto id : player_ids_){
-        sendCardUpdateMsg(id);
-    }
+    cardUpdate();
 }
 
-
-void CardManager::sendCardUpdateMsg(ClientID client_id){
+//send a card update to each client
+void CardManager::cardUpdate() {
     CardUpdate card_message;
-    // card_message.opponent_cards is a map
-    for(auto pl : player_ids_){
-        card_message.opponent_cards[pl] = player_number_of_cards_[pl];
-    }
-    // card_message.draw_pile_cards is unsigned int
+    for(auto pl : player_ids_) card_message.opponent_cards[pl] = player_hands_[pl].size();
     card_message.draw_pile_cards = deck_.size();
-    // card_message.trump_card is Card
     card_message.trump_card = trump_card_;
-    // card_message.trump_suit is Suit
     card_message.trump_suit = trump_;
-    // card_message.middle_cards is a map
+
+    //iterate trough middle cards
     for(int i = 0; i < middle_.size(); ++i){
         if(middle_[i].first.has_value()){
             card_message.middle_cards[static_cast<CardSlot>(i)] = middle_[i].first.value();
@@ -347,12 +327,12 @@ void CardManager::sendCardUpdateMsg(ClientID client_id){
             card_message.middle_cards[static_cast<CardSlot>(i + 6)] = middle_[i].second.value();
         }
     }
-    // card_message.hand is a list
-    for(Card c : player_hands_[client_id]){
-        card_message.hand.push_front(c);
-    }
-    Network::sendMessage(std::make_unique<CardUpdate>(card_message), client_id);
 
+    //send a update to all players
+    for(ClientID client : DurakServer::clients) {
+        card_message.hand = std::list<Card>(player_hands_[client].begin(), player_hands_[client].end());
+        Network::sendMessage(std::make_unique<CardUpdate>(card_message), client);
+    }
 }
 
 //POST: Checks if the the game is over (game is over if there are no cards in the middle & only one player has cards)

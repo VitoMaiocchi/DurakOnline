@@ -137,8 +137,8 @@ namespace Viewport {
 
     void handleMessage(std::unique_ptr<Message> message) {
         switch (message->messageType) {
-            case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-                createPopup(dynamic_cast<IllegalMoveNotify*>(message.get())->error, 3);
+            case MESSAGETYPE_SEND_POPUP:
+                createPopup(dynamic_cast<PopupNotify*>(message.get())->message, 3);
             break;
             case MESSAGETYPE_CARD_UPDATE:
                 throwServerErrorIF("card update can only be processed during game state", GlobalState::game_state != GAMESTATE_GAME);

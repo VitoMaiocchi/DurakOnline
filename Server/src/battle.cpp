@@ -400,7 +400,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
 
     //pick up
-    else if(action == CLIENTACTION_PICK_UP){
+    else if(action == CLIENTACTION_PICK_UP && players_bs_[player_id] == DEFENDER){
 
         pickUp_msg_ = true;
         if(!successfulDefend()){

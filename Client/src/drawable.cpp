@@ -110,8 +110,20 @@ void drawLobbyPlayer(Extends extends, std::string name, bool ready, bool you) {
     Extends ext = computeCompactExtends(alignExtends(extends, 0, 0.15f, 1, 0.85f), size.second, size.first);
     OpenGL::drawImage(path, ext);
     //TODO: das no schönner mache
-    if(ready) OpenGL::drawText(name + " (READY)", alignExtends(extends,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
-    else OpenGL::drawText(name, alignExtends(extends,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
+    Extends ready_ext = {
+        extends.x,
+        extends.y-extends.height*0.05f,
+        extends.height,
+        extends.width
+    };
+    Extends name_ext = {
+        extends.x,
+        extends.y+extends.height*0.03f,
+        extends.height,
+        extends.width
+    };
+    if(ready) OpenGL::drawText("READY", alignExtends(ready_ext,0,0,1,0.15f), COLOR_GREY, TEXTSIZE_MEDIUMSMALL);
+    OpenGL::drawText(name, alignExtends(name_ext,0,0,1,0.15f), COLOR_BLACK, TEXTSIZE_MEDIUM);
 }
 
 void PlayerNode::draw() {

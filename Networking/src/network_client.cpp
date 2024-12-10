@@ -27,7 +27,21 @@ namespace Network {
     std::queue<std::string> message_queue;
     std::thread recive_thread;
 
+    void closeConnection() {
+        if(!connected) return;
+        connected = false;
+        message_queue_mut.lock();
+        message_queue.push(RemoteDisconnectEvent().toJson());
+        message_queue_mut.unlock();
+        recive_connector.close();
+        send_connector.close();
+    }
+    
     ClientID openConnection(std::string ip, uint port) {
+        if (connected) {
+            std::cerr << "Already connected. Disconnecting first..." << std::endl;
+            closeConnection();
+        }
         assert(!connected); //cannt connect twice
 
         std::cout << "opening connection..." << std::endl;
@@ -78,15 +92,6 @@ namespace Network {
         return client_id;
     }
 
-    void closeConnection() {
-        if(!connected) return;
-        connected = false;
-        message_queue_mut.lock();
-        message_queue.push(RemoteDisconnectEvent().toJson());
-        message_queue_mut.unlock();
-        recive_connector.close();
-        send_connector.close();
-    }
 
 
     std::chrono::system_clock::time_point last_message;

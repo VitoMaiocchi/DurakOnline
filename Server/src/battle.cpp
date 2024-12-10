@@ -692,7 +692,7 @@ void Battle::attack(ClientID client, Card card){
     PlayerRole role;
     role = players_bs_[client];
     if(role == ATTACKER && ok_msg_[CO_ATTACKER] == true){
-        ok_msg_[CO_ATTACKER] == false; //coatt must click it again
+        ok_msg_[CO_ATTACKER] = false; //coatt must click it again
     }
     if(role == CO_ATTACKER && ok_msg_[ATTACKER] == true){
         ok_msg_[ATTACKER] = false; //att must click it again

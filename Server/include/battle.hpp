@@ -19,7 +19,13 @@
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
 
-
+enum BattlePhase {
+    BATTLEPHASE_FIRST_ATTACK, //waiting for first attack
+    BATTLEPHASE_OPEN,         //undefeneded waiting for pick up, more attacks, or defend
+    BATTLEPHASE_DEFENDED,     //defended waiting for ready or more attacks
+    BATTLEPHASE_POST_PICKUP,  //waiting for ready or post pickup throw ins
+    BATTLEPHASE_DONE          //weiss nonig obs das brucht  
+};
 
 class Battle {
     private:
@@ -27,6 +33,8 @@ class Battle {
         // std::vector<int> players; //saves the player ids of the players
         std::map<ClientID, PlayerRole> players_bs_; //attacking, defending, spectating
         std::set<ClientID> finished_players_; //they get the battle state update idle 
+
+        BattlePhase phase;
 
         bool defending_flag_ = false;
         int max_attacks_ = 6;
@@ -59,6 +67,10 @@ class Battle {
         //this will save all the cards from the middle, so the attackers can throw in more cards
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> picked_up_cards_;
 
+        void attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
+        void coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
+        void defenderCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
+
     public:
         
         Battle(); //default Constructor
@@ -69,7 +81,7 @@ class Battle {
         friend class DurakBattleTest;
         friend class DurakGameTest;
 
-        bool handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSlot slot);
+        bool handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
         bool handleActionEvent(ClientID player_id, ClientAction action);
         bool successfulDefend();
         bool passOn(Card card, ClientID player_id, CardSlot slot);

@@ -118,9 +118,20 @@ bool Game::isStarted(){
 //check if game is ended
 bool Game::endGame(){
     //only one player has cards left in his hand
-    if(card_manager_.getNumberActivePlayers() == 1){
+    // if(card_manager_.getNumberActivePlayers() == 1){
+    //     return true;
+    // }
+    unsigned count = 0;
+    for(auto c : player_roles_){
+        unsigned int player_hand = card_manager_.getPlayerHand(c.first).size();
+        if(player_hand == 0){
+            count++; //count how many players have 0 cards
+        }
+    }
+    if(card_manager_.getNumberOfCardsOnDeck() == 0 && count == player_roles_.size() - 1){
         return true;
     }
+
     return false;
 }
 

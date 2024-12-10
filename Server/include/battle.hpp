@@ -71,6 +71,10 @@ class Battle {
         void coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
         void defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot);
 
+        void doneEvent(ClientID clientID);
+        void reflectEvent(ClientID clientID);
+        void pickupEvent(ClientID clientID);
+
     public:
         
         Battle(); //default Constructor

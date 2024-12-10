@@ -342,6 +342,11 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
         }
     }
 
+    if(first_battle_) {
+        sendPopup("Can not pass on: First battle", clientID);
+        return;
+    }
+
     //TODO: das gaht nur mit einere karte...
     passOn(*cards.begin(), clientID, slot);
     phase = BATTLEPHASE_OPEN;
@@ -390,31 +395,53 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
 
     return false;
 }
-/**
- * PRE: takes the message (already broken down)
- * POST: calls the next functions, either pick_up or pass_on, returns true if this succeeded
- */
-bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 
-    std::vector<Card> hand = card_manager_ptr_->getPlayerHand(player_id); 
+void Battle::doneEvent(ClientID clientID) {
+    //the turn should finish after the two attackers clicked ok 
+    // -> clear middle
+    if(players_bs_[clientID] == ATTACKER) {
+        ok_msg_[ATTACKER] = true;
+        sendAvailableActionUpdate(1, clientID);
+    }
+    if(players_bs_[clientID] == CO_ATTACKER){
+        ok_msg_[CO_ATTACKER] = true;
+        sendAvailableActionUpdate(1, clientID);
+    }
+    if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
+                                    (pickUp_ == true || successfulDefend())){
+        card_manager_ptr_->clearMiddle();
+        //New cards from middle are distributed to players
+        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
+        //Find a way to handle players that are now finished
+        movePlayerRoles();
+        if(pickUp_){ //need a better if statement
+            movePlayerRoles(); //defender loses the ability to attack
+        }
+
+        battle_done_ = true;
+    }
+}
+
+void Battle::reflectEvent(ClientID clientID) {
+    std::vector<Card> hand = card_manager_ptr_->getPlayerHand(clientID); 
     Suit trump = card_manager_ptr_->getTrump();
     std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
 
     //pass on -> check for trump -> if valid card we can passOn() but without playing the card
-    if(action == CLIENTACTION_PASS_ON && players_bs_[player_id] == DEFENDER){
+    if(players_bs_[clientID] == DEFENDER){
         if(defense_started_){ //cannot pass the attack on if already started defending
             //send illegal action notification
             PopupNotify notify;
             notify.message = "Illegal move: 'Cannot pass the attack on if already started defending'";
-            Network::sendMessage(std::make_unique<PopupNotify>(notify), player_id);
+            Network::sendMessage(std::make_unique<PopupNotify>(notify), clientID);
 
-            return false;
+            return;
         }
         if(first_battle_){
             PopupNotify notify;
             notify.message = "Illegal move: 'Cannot pass the attack on when it's the first battle'";
-            Network::sendMessage(std::make_unique<PopupNotify>(notify), player_id);
-            return false;
+            Network::sendMessage(std::make_unique<PopupNotify>(notify), clientID);
+            return;
         }
         //for every card in the middle i want to test the whole hand if there is a card that is trump
         //and that matches the rank of the card, if yes then we can say break and then call 
@@ -434,77 +461,60 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         }
         if(valid){
             movePlayerRoles(); //moves player roles one to the right
-            return true;
+            return;
         }
         else{
             PopupNotify err_msg;
             err_msg.message = "Illegal move: 'Cannot pass on with your cards'";
-            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
+            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), clientID);
         }
     }
+}
 
+void Battle::pickupEvent(ClientID clientID) {
+    pickUp_msg_ = true;
+    if(!successfulDefend()){
+        picked_up_cards_ = card_manager_ptr_->getMiddle();
+        sendAvailableActionUpdate(2, clientID);
+        card_manager_ptr_->pickUp(clientID);
+        pickUp_ = true;
 
-    //pick up
-    else if(action == CLIENTACTION_PICK_UP){
-
-        pickUp_msg_ = true;
-        if(!successfulDefend()){
-            picked_up_cards_ = card_manager_ptr_->getMiddle();
-            sendAvailableActionUpdate(2, player_id);
-            card_manager_ptr_->pickUp(player_id);
-            pickUp_ = true;
-
-            //if both attackers already pressed ok, and the defender only now presses pick up
-            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
-                card_manager_ptr_->clearMiddle();
-                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
-                movePlayerRoles();
-                movePlayerRoles(); //loses right to attack when picking up
-                battle_done_ = true;
-                phase = BATTLEPHASE_POST_PICKUP;
-            }
-            return true;
-        }
-        if(successfulDefend()){
-            //notify with illegal move (studid, why pick up when you defended everything lol)
-            PopupNotify err_msg;
-            err_msg.message = "Illegal move: 'All cards have been defended, cannot pick them up.'";
-            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
-            return false;
-        }
-
-        return false;
-    }
-
-    //ok
-    else if(action == CLIENTACTION_OK){
-        //the turn should finish after the two attackers clicked ok 
-        // -> clear middle
-        if(players_bs_[player_id] == ATTACKER) {
-            ok_msg_[ATTACKER] = true;
-            sendAvailableActionUpdate(1, player_id);
-        }
-        if(players_bs_[player_id] == CO_ATTACKER){
-            ok_msg_[CO_ATTACKER] = true;
-            sendAvailableActionUpdate(1, player_id);
-        }
-        if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
-                                        (pickUp_ == true || successfulDefend())){
+        //if both attackers already pressed ok, and the defender only now presses pick up
+        if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
             card_manager_ptr_->clearMiddle();
-            //New cards from middle are distributed to players
             card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
-            //Find a way to handle players that are now finished
             movePlayerRoles();
-            if(pickUp_){ //need a better if statement
-                movePlayerRoles(); //defender loses the ability to attack
-            }
-
+            movePlayerRoles(); //loses right to attack when picking up
             battle_done_ = true;
+            phase = BATTLEPHASE_POST_PICKUP;
         }
-        return true;
+        return;
     }
-    
-    return false;
+    if(successfulDefend()){
+        //notify with illegal move (studid, why pick up when you defended everything lol)
+        PopupNotify err_msg;
+        err_msg.message = "Illegal move: 'All cards have been defended, cannot pick them up.'";
+        Network::sendMessage(std::make_unique<PopupNotify>(err_msg), clientID);
+        return;
+    }
+}
+
+/**
+ * PRE: takes the message (already broken down)
+ * POST: calls the next functions, either pick_up or pass_on, returns true if this succeeded
+ */
+bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
+    switch(action) {
+        case CLIENTACTION_PASS_ON:
+            reflectEvent(player_id);
+            return true;
+        case CLIENTACTION_OK:
+            doneEvent(player_id);
+            return true;
+        case CLIENTACTION_PICK_UP:
+            pickupEvent(player_id);
+    }
+    return true;
 }
 
 bool Battle::successfulDefend(){

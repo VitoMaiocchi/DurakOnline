@@ -290,6 +290,19 @@ bool checkIdenticalSuit(std::unordered_set<Card> &cards, ClientID clientID) {
     return false;
 }
 
+bool Battle::topSlotsClear() {
+    for(uint i = 6; i<12; i++) if(card_manager_ptr_->getMiddleSlot(i).has_value()) return false;
+    return true;
+}
+
+bool Battle::passOnRankMatch(Rank rank) {
+    for(uint i = 0; i<6; i++) {
+        if(!card_manager_ptr_->getMiddleSlot(i).has_value()) continue;
+        if(card_manager_ptr_->getMiddleSlot(i).value().rank != rank) return false;
+    }
+    return true;
+}
+
 void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot) {
     switch (phase) {
         case BATTLEPHASE_FIRST_ATTACK:
@@ -315,11 +328,7 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
         }
         if(isValidMove(*cards.begin(), clientID, slot)) {
             defend(clientID, *cards.begin(), slot);
-            phase = BATTLEPHASE_DEFENDED;
-            for(uint i = 0; i<6; i++)
-                if(card_manager_ptr_->getMiddleSlot(i).has_value() 
-                    && !card_manager_ptr_->getMiddleSlot(i+6).has_value())
-                        phase = BATTLEPHASE_OPEN;
+            if(successfulDefend()) phase = BATTLEPHASE_DEFENDED;
         }
         else sendPopup("invalid defend", clientID);
         return;
@@ -328,18 +337,14 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     //Slot is empty: try to pass on
     if(checkIdenticalSuit(cards, clientID)) return;
 
-    for(uint i = 6; i<12; i++) if(card_manager_ptr_->getMiddleSlot(i).has_value()) {
+    if(!topSlotsClear()) {
         sendPopup("you allready defended a card. Pass on is not possilbe", clientID);
         return;
     }
 
-    Rank rank = cards.begin()->rank;
-    for(uint i = 0; i<6; i++) {
-        if(!card_manager_ptr_->getMiddleSlot(i).has_value()) continue;
-        if(card_manager_ptr_->getMiddleSlot(i).value().rank != rank) {
-            sendPopup("Can not pass on: Ranks don't match", clientID);
-            return;
-        }
+    if(!passOnRankMatch(cards.begin()->rank)) {
+        sendPopup("Can not pass on: Ranks don't match", clientID);
+        return;
     }
 
     if(first_battle_) {
@@ -422,53 +427,34 @@ void Battle::doneEvent(ClientID clientID) {
     }
 }
 
-void Battle::reflectEvent(ClientID clientID) {
+std::optional<Card> Battle::getReflectCard(ClientID clientID) {
+    std::cout << "1" << std::endl;
+    if(players_bs_[clientID] != DEFENDER) return std::nullopt;
+    std::cout << "2" << std::endl;
+    if(first_battle_) return std::nullopt;
+    std::cout << "3" << std::endl;
+    if(!topSlotsClear()) return std::nullopt;
+    std::cout << "4" << std::endl;
+    
     std::vector<Card> hand = card_manager_ptr_->getPlayerHand(clientID); 
     Suit trump = card_manager_ptr_->getTrump();
-    std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
 
-    //pass on -> check for trump -> if valid card we can passOn() but without playing the card
-    if(players_bs_[clientID] == DEFENDER){
-        if(defense_started_){ //cannot pass the attack on if already started defending
-            //send illegal action notification
-            PopupNotify notify;
-            notify.message = "Illegal move: 'Cannot pass the attack on if already started defending'";
-            Network::sendMessage(std::make_unique<PopupNotify>(notify), clientID);
-
-            return;
-        }
-        if(first_battle_){
-            PopupNotify notify;
-            notify.message = "Illegal move: 'Cannot pass the attack on when it's the first battle'";
-            Network::sendMessage(std::make_unique<PopupNotify>(notify), clientID);
-            return;
-        }
-        //for every card in the middle i want to test the whole hand if there is a card that is trump
-        //and that matches the rank of the card, if yes then we can say break and then call 
-        //moveplayer roles, but if not then if it reaches the end of the middle vector without finding
-        //anything it should send an IllegalNotify message = illegal action
-        bool valid = false;
-        for(auto slot : field){
-            for(auto card : hand){
-                if(card.suit == trump){
-                    if(card.rank == slot.first->rank){
-                        //correct
-                        valid = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if(valid){
-            movePlayerRoles(); //moves player roles one to the right
-            return;
-        }
-        else{
-            PopupNotify err_msg;
-            err_msg.message = "Illegal move: 'Cannot pass on with your cards'";
-            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), clientID);
-        }
+    for(Card card : hand) {
+        if(card.suit != trump) continue;
+        if(!passOnRankMatch(card.rank)) continue;
+        return card;
     }
+    std::cout << "5" << std::endl;
+
+    return std::nullopt;
+}
+
+void Battle::reflectEvent(ClientID clientID) {
+    auto card = getReflectCard(clientID);
+    std::cout << "reflect event" << std::endl;
+    if(!card.has_value()) return;
+    std::cout << "reflect event succesfull" << std::endl;
+    movePlayerRoles();
 }
 
 void Battle::pickupEvent(ClientID clientID) {
@@ -517,21 +503,49 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
     return true;
 }
 
+void Battle::updateAvailableAction() {
+    for(auto bs : players_bs_) {
+        const ClientID id = bs.first;
+        const PlayerRole role = bs.second;
+
+        AvailableActionUpdate update;
+        update.ok = false;
+        if(role == ATTACKER || role == DEFENDER)
+            if(phase == BATTLEPHASE_POST_PICKUP || phase == BATTLEPHASE_DEFENDED) update.ok = true;
+        
+        update.pass_on = false;
+        if(role == DEFENDER) 
+            if(getReflectCard(id).has_value()) update.pass_on = true;
+        
+        update.pick_up = false;
+        if(role == DEFENDER && phase == BATTLEPHASE_OPEN)
+            update.pick_up = true;
+        
+        Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), id);
+    }
+}
+
 bool Battle::successfulDefend(){
-    //fetches middle from the cardmanager, loops over the middle checks if all the attacks have been
-    //defended, or we do
-    std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
-    for(const auto slot : field){
-        if(slot.first.has_value() && !slot.second.has_value()){
-            return false;
-        }
-    }
-    if(attacks_to_defend_ == 0){
-        // ----------> send message ok = true, pick up = false, pass on = false
-        sendAvailableActionUpdate(2, getCurrentDefender());
-        return true;
-    }
+    for(uint i = 0; i<6; i++)
+        if(card_manager_ptr_->getMiddleSlot(i).has_value() 
+            && !card_manager_ptr_->getMiddleSlot(i+6).has_value())
+                return false;
     return true;
+
+    // //fetches middle from the cardmanager, loops over the middle checks if all the attacks have been
+    // //defended, or we do
+    // std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
+    // for(const auto slot : field){
+    //     if(slot.first.has_value() && !slot.second.has_value()){
+    //         return false;
+    //     }
+    // }
+    // if(attacks_to_defend_ == 0){
+    //     // ----------> send message ok = true, pick up = false, pass on = false
+    //     sendAvailableActionUpdate(2, getCurrentDefender());
+    //     return true;
+    // }
+    // return true;
 }
 
 /**

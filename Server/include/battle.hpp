@@ -75,6 +75,12 @@ class Battle {
         void reflectEvent(ClientID clientID);
         void pickupEvent(ClientID clientID);
 
+        std::optional<Card> getReflectCard(ClientID clientID);
+        bool topSlotsClear();
+        bool passOnRankMatch(Rank rank);
+
+        void updateAvailableAction();
+
     public:
         
         Battle(); //default Constructor

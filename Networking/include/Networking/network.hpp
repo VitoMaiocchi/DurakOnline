@@ -18,6 +18,7 @@ namespace Network {
     //CLIENT USE
     #ifdef NETWORKTYPE_CLIENT
     ClientID openConnection(std::string ip, uint port);
+    void closeConnection();
     void sendMessage(std::unique_ptr<Message> message);
     std::unique_ptr<Message> reciveMessage();
     #endif

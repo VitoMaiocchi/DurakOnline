@@ -50,10 +50,13 @@ namespace Network {
         std::cout << "client id ["<< client_id<<"]" << std::endl;
         if(!recive_connector.connect(sockpp::inet_address(ip, port))) return 0;
         recive_connector.send("recive " + std::to_string(client_id));
+        recive_connector.read_timeout(std::chrono::microseconds(1000));
         recive_thread = std::thread([](){
             char buffer[BUFFER_SIZE];
-            while(true) {
-                size_t n = recive_connector.recv(buffer, sizeof(buffer)).value_or_throw();
+            while(connected) {
+                auto r = recive_connector.recv(buffer, sizeof(buffer));
+                if(r.error()) continue; //PROBABLY TIMEOUT
+                size_t n = r.value();
                 if(n == 0) { //disconnect
                     message_queue_mut.lock();
                     message_queue.push(RemoteDisconnectEvent().toJson());
@@ -73,6 +76,16 @@ namespace Network {
 
         connected = true;
         return client_id;
+    }
+
+    void closeConnection() {
+        if(!connected) return;
+        connected = false;
+        message_queue_mut.lock();
+        message_queue.push(RemoteDisconnectEvent().toJson());
+        message_queue_mut.unlock();
+        recive_connector.close();
+        send_connector.close();
     }
 
 

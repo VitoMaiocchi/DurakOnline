@@ -48,6 +48,7 @@ LobbyNode::LobbyNode(Extends ext) {
     back_button = std::make_unique<ButtonNode>("BACK");
     back_button->setClickEventCallback([](float x, float y){
         std::cout << "back" << std::endl;
+        Network::closeConnection();
     });
     cast(ButtonNode, back_button)->visible = true;
 

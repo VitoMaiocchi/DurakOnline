@@ -55,6 +55,8 @@ inline std::string getPlayerStateIcon(PlayerState state) {
             return CLIENT_RES_DIR + "icons/defend.png";
         case PLAYERSTATE_IDLE:
             return CLIENT_RES_DIR + "icons/watch.png";
+        case PLAYERSTATE_NONE:
+            return CLIENT_RES_DIR + "icons/none.png";
     }
     return "error";
 }

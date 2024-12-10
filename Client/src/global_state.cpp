@@ -44,10 +44,11 @@ namespace Viewport {
         master_node->sendClickEvent(x,y);
     }
 
-    #define POPUP_DISTANCE 0.175f
-    #define POPUP_HEIGHT 0.1f
+    #define POPUP_DISTANCE 0.123f
+    #define POPUP_HEIGHT 0.05f
     #define IN_TIME 350
     #define OUT_TIME 500
+    #define POPUP_TEXT_MARGIN 10.0f
 
     void drawPopup(std::string text, uint time, uint end_time) {
         float opacity = 1.0f;
@@ -65,8 +66,8 @@ namespace Viewport {
             extends.height * POPUP_HEIGHT,
         };
 
-        OpenGL::drawRectangle(base_ext, glm::vec4(0.5f, 0.5f, 0.5f, opacity));
-        OpenGL::drawText(text, base_ext, glm::vec4(0, 0, 0, opacity), TEXTSIZE_LARGE);
+        OpenGL::drawRectangle(base_ext, glm::vec4(0.9f, 0.9f, 0.9f, opacity));
+        OpenGL::drawText(text, applyBorder(base_ext, POPUP_TEXT_MARGIN*Viewport::global_scalefactor), glm::vec4(0, 0, 0, opacity), TEXTSIZE_LARGE);
     }
 
     void createPopup(std::string text, uint seconds) {

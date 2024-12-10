@@ -7,13 +7,13 @@
 
 
 //constructor
-CardManager::CardManager(std::vector<ClientID> player_ids) : player_ids_(player_ids){
+CardManager::CardManager(std::set<ClientID> players) : players(players){
     //Deck erstelle mit 52 charte TODO:
     fillDeck();
 
     //initialize the map playerHands with empty vectors to the corresponding players 
     //so we dont access a empty map
-    for(ClientID& id : player_ids_){
+    for(ClientID id : players){
         player_hands_[id] = std::vector<Card>();
     }
     
@@ -47,7 +47,7 @@ void CardManager::shuffleCards(){
 
     
     //distribute cards to player
-    for (auto pl : player_ids_){
+    for (auto pl : players){
         //Check if players hands are empty
         assert(player_hands_[pl].empty() && "Player's hand should be empty before dealing");
 
@@ -313,7 +313,7 @@ void CardManager::addCardToPlayerHand(ClientID playerID, const Card& card) {
 //send a card update to each client
 void CardManager::cardUpdate() {
     CardUpdate card_message;
-    for(auto pl : player_ids_) card_message.opponent_cards[pl] = player_hands_[pl].size();
+    for(ClientID pl : players) card_message.opponent_cards[pl] = player_hands_[pl].size();
     card_message.draw_pile_cards = deck_.size();
     card_message.trump_card = trump_card_;
     card_message.trump_suit = trump_;

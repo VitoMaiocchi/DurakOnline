@@ -28,7 +28,7 @@ private:
     //TODO: bruchemer das?
     Card trump_card_;
     
-    std::vector<ClientID> player_ids_; // saves the player ids as a private member of CardManager
+    std::set<ClientID> players;
     //TODO: evtl replace vector with set es burcht denn halt en < operator und so aber isch effizienter (nöd mega nötig)
     std::map<ClientID, std::vector<Card>> player_hands_;
     std::map<ClientID, unsigned int> player_number_of_cards_; //DEPRECATED NO NOT USE
@@ -47,7 +47,7 @@ private:
 public:
     //constructor and destructor
     //Constructor where the number of players is passed
-    CardManager(std::vector<ClientID> player_ids);
+    CardManager(std::set<ClientID> players);
     ~CardManager();
 
     //At the beginning of the game

@@ -25,7 +25,7 @@ void sortCards(std::vector<Card> &cards) {
     std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
         if(a.suit == GlobalState::trump_suit && b.suit != GlobalState::trump_suit) return false;
         if(a.suit != GlobalState::trump_suit && b.suit == GlobalState::trump_suit) return true;
-        if(a.rank == b.rank) a.suit > b.suit; 
+        if(a.rank == b.rank) return a.suit > b.suit; 
         return a.rank > b.rank;
     });
 }
@@ -433,6 +433,8 @@ class DeckNode : public LeafNode {
             case SUIT_SPADES:
                 image +="spades.png";
             break;
+            default:
+                throwServerError("Invalid Suit");
         }
 
         OpenGL::drawImage(image, image_ext);
@@ -468,6 +470,8 @@ class PlayerStateNode : public LeafNode {
             case PLAYERSTATE_IDLE:
             text += "watching";
             break;
+            default:
+            throwServerError("Invalid PlayerState");
         }
 
         auto tsize = OpenGL::getTextDimensions(text, TEXTSIZE_MEDIUM);

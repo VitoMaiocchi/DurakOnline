@@ -31,6 +31,7 @@ enum MessageType {
 typedef rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> Allocator;
 
 struct Message {
+    virtual ~Message() = default; // i dont know if this is needed but like this i dont get errors on Mac
     MessageType messageType;
     std::string toJson() const;
     virtual void fromJson(const rapidjson::Value& obj) = 0;

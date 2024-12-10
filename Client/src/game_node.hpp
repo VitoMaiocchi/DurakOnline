@@ -8,8 +8,8 @@ class GameNode : public TreeNode {
     public:
         GameNode(Extends ext);
         virtual ~GameNode() = default;
-        void updateExtends(Extends ext);
-        Extends getCompactExtends(Extends ext);
+        void updateExtends(Extends ext) override;
+        Extends getCompactExtends(Extends ext) override;
 
         //message handling
         void handleCardUpdate(CardUpdate update);
@@ -17,7 +17,7 @@ class GameNode : public TreeNode {
         void handleAvailableActionUpdate(AvailableActionUpdate update);
         void playerUpdateNotify();
     private:
-        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) override;
         std::unique_ptr<Node> handNode;
         std::unique_ptr<Node> middleNode;
         std::unique_ptr<Node> playerBarNode;

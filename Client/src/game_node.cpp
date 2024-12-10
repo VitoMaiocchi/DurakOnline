@@ -82,9 +82,9 @@ class HandNode : public LeafNode {
         }
 
     public:
-        Extends getCompactExtends(Extends ext) {return ext;}
+        Extends getCompactExtends(Extends ext) override {return ext;}
 
-        void draw() {
+        void draw() override {
             float card_width, delta;
             uint N;
             if(!computeDelta(delta, card_width, N)) return;
@@ -141,7 +141,7 @@ class CardStackNode : public LeafNode {
             else bottom_card = card;
         }
 
-        Extends getCompactExtends(Extends ext) {
+        Extends getCompactExtends(Extends ext) override {
             constexpr float h = (float)CARD_TEXTURE_HEIGHT/(1-CARD_OFFSET_FACTOR);
             constexpr float w = CARD_TEXTURE_WIDTH  + h*CARD_OFFSET_FACTOR;
             ext = applyBorder(ext, CARD_OFFSET_BORDER*Viewport::global_scalefactor);
@@ -150,7 +150,7 @@ class CardStackNode : public LeafNode {
             return ext;
         }
 
-        void draw() {
+        void draw() override {
             if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,2*DEFAULT_TRANSPARANCY));
             else OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
@@ -204,7 +204,7 @@ class MiddleNode : public TreeNode {
     private:
         std::unique_ptr<Node> cardStacks[6];
 
-        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+        void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) override {
             for(auto &stack : cardStacks) function(stack);
         }
 
@@ -213,7 +213,7 @@ class MiddleNode : public TreeNode {
             for(auto &stack : cardStacks) stack = std::make_unique<CardStackNode>();
         }
 
-        void updateExtends(Extends ext) {
+        void updateExtends(Extends ext) override {
             extends = getCompactExtends(ext);
             const float w = extends.width / 3;
             const float h = extends.height / 2;
@@ -223,7 +223,7 @@ class MiddleNode : public TreeNode {
             }
         }
 
-        Extends getCompactExtends(Extends ext) {
+        Extends getCompactExtends(Extends ext) override {
             float width = 3*cardStacks[0]->getCompactExtends({0,0, MAX_FLOAT, ext.height/2}).width;
             float height = 2*cardStacks[0]->getCompactExtends({0,0, ext.width/3, MAX_FLOAT}).height;
             if(width > ext.width) width = ext.width;
@@ -259,7 +259,7 @@ class MiddleNode : public TreeNode {
 class PlayerBarNode : public TreeNode {
     std::list<std::unique_ptr<Node>> playerNodes;
 
-    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) override {
         for(auto &player : playerNodes) function(player);
     }
 
@@ -286,7 +286,7 @@ class PlayerBarNode : public TreeNode {
         updateExtends(extends);
     }
 
-    void updateExtends(Extends ext) {
+    void updateExtends(Extends ext) override {
         extends = getCompactExtends(ext);
 
         const uint N = playerNodes.size();
@@ -305,7 +305,7 @@ class PlayerBarNode : public TreeNode {
         }
     }
 
-    Extends getCompactExtends(Extends ext) {
+    Extends getCompactExtends(Extends ext) override {
         const uint N = playerNodes.size();
         if(ext.width > ext.height * N) return ext;
         const float h = ext.width / N;
@@ -323,7 +323,7 @@ class PlayerActionNode : public TreeNode {
     // {ok,pickup,passon}
     std::unique_ptr<Node> buttons[3];
 
-    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) override {
         for(auto &node : buttons) function(node);
     }
 
@@ -359,7 +359,7 @@ class PlayerActionNode : public TreeNode {
         cast(ButtonNode, buttons[2])->visible = update.pass_on;
     }
 
-    void updateExtends(Extends ext) {
+    void updateExtends(Extends ext) override {
         extends = getCompactExtends(ext);
 
         float delta = extends.height / 3;
@@ -372,7 +372,7 @@ class PlayerActionNode : public TreeNode {
         }
     }
 
-    Extends getCompactExtends(Extends ext) {
+    Extends getCompactExtends(Extends ext) override {
         const float max_w = ext.height * 1.4f;
         if(ext.width < max_w) return ext;
 
@@ -389,13 +389,13 @@ class DeckNode : public LeafNode {
     uint draw_pile_cards = 0;
 
     public:
-    Extends getCompactExtends(Extends ext) {
+    Extends getCompactExtends(Extends ext) override {
         Extends e = computeCompactExtends(ext, 1.8f, 1);
         e.x = ext.x;
         return e;
     }
 
-    void draw() {
+    void draw() override {
         if(hover) OpenGL::drawRectangle(extends, glm::vec4(0,0,0,DEFAULT_TRANSPARANCY));
 
         const float b = Viewport::global_scalefactor * DECK_BUFFER;
@@ -450,11 +450,11 @@ class DeckNode : public LeafNode {
 class PlayerStateNode : public LeafNode {
 
     public:
-    Extends getCompactExtends(Extends ext) {
+    Extends getCompactExtends(Extends ext) override {
         return ext;
     }
 
-    void draw() {
+    void draw() override {
         const auto state = GlobalState::players.find({GlobalState::clientID})->game->state;
         if(state == PLAYERSTATE_NONE) return;
 

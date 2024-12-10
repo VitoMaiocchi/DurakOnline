@@ -47,8 +47,8 @@ class ButtonNode : public LeafNode {
     public:
     bool visible = true;
     ButtonNode(std::string text);
-    Extends getCompactExtends(Extends ext);
-    void draw();
+    Extends getCompactExtends(Extends ext) override;
+    void draw() override;
     void sendClickEvent(float x, float y) override;
 };
 

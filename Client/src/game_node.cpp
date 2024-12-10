@@ -329,7 +329,7 @@ class PlayerActionNode : public TreeNode {
 
     public:
     PlayerActionNode() {
-        buttons[0] = std::make_unique<ButtonNode>("Ready");
+        buttons[0] = std::make_unique<ButtonNode>("Done");
         buttons[1] = std::make_unique<ButtonNode>("Pick Up");
         buttons[2] = std::make_unique<ButtonNode>("Reflect");
         buttons[0]->setClickEventCallback([](float x, float y){

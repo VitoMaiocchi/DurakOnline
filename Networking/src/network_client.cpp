@@ -31,7 +31,17 @@ namespace Network {
         assert(!connected); //cannt connect twice
 
         std::cout << "opening connection..." << std::endl;
-        if(!send_connector.connect(sockpp::inet_address(ip, port))) return 0;
+
+        //reset everything incase it was allready connected
+        if(recive_thread.joinable()) recive_thread.join();
+        send_connector = sockpp::tcp_connector();
+        recive_connector = sockpp::tcp_connector();
+
+        try {
+            if(!send_connector.connect(sockpp::inet_address(ip, port))) return 0;
+        } catch (...) {
+            return 0;
+        }
         send_connector.send("request id");
         char buffer[BUFFER_SIZE];
         size_t n = 0;
@@ -48,6 +58,9 @@ namespace Network {
                     message_queue_mut.lock();
                     message_queue.push(RemoteDisconnectEvent().toJson());
                     message_queue_mut.unlock();
+                    recive_connector.close();
+                    send_connector.close();
+                    connected = false;
                     return;
                 }
                 message_queue_mut.lock();
@@ -79,8 +92,6 @@ namespace Network {
     }
 
     std::unique_ptr<Message> reciveMessage() {
-        if(!connected) return nullptr;
-        
         message_queue_mut.lock();
         if(!message_queue.empty()) {
             auto m = message_queue.front();

@@ -8,16 +8,9 @@
 
 std::unordered_set<ClientID> clients;
 
-void cleanup(int signum) {
-    std::cout << "\nDisconnecting all clients before closing...\n";
-    for(ClientID id : clients) Network::sendMessage(std::make_unique<RemoteDisconnectEvent>(), id);
-    sleep(1); //give clients time to disconnect gracefully
-    exit(0);
-}
 
 int main() {
 
-    signal(SIGINT, cleanup);
 
     assert(Card(Card(RANK_QUEEN, SUIT_SPADES).toInt()) == Card(RANK_QUEEN, SUIT_SPADES));
 

@@ -32,7 +32,7 @@ public:
             extends.width * 0.7f,
             extends.height * 0.3f,
         };
-        OpenGL::drawText("LOBBY", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
+        OpenGL::drawText("LOBBY", title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
     }
 
     Extends getCompactExtends(Extends ext) override {
@@ -67,11 +67,7 @@ LobbyNode::LobbyNode(Extends ext) {
     });
     cast(ButtonNode, settings_button)->visible = true;
 
-    std::cout << "GlobalState::players.size() = " << GlobalState::players.size() << std::endl;
-    for (const auto &player : GlobalState::players) {
-        std::cout << "Inside player loop" << std::endl;
-        player_nodes.push_back(std::make_unique<PlayerNode>(&player, false));
-    }
+    playerUpdateNotify();
 
     updateExtends(ext);
 }
@@ -105,26 +101,26 @@ void LobbyNode::updateExtends(Extends ext) {
         ext.height * 0.1f,
     });
 
-    // Update player nodes layout
+    Extends player_ext = {
+        ext.x + ext.width * 0.1f,
+        ext.y + ext.height * 0.3f,
+        ext.width * 0.8f,
+        ext.height * 0.25f,
+    };
+
     int num_players = static_cast<int>(player_nodes.size());
-    if (num_players > 0) {
-        Extends player_ext = {
-            ext.x + ext.width * 0.1f,
-            ext.y + ext.height * 0.3f,
-            ext.width * 0.8f,
-            ext.height * 0.25f,
+    float player_width = player_ext.width / num_players;
+
+    int i = 0; // Counter for player index
+    for (auto& node : player_nodes) { // Use a range-based loop or iterator
+        Extends current_player_ext = {
+            player_ext.x + i * player_width,
+            player_ext.y,
+            player_width,
+            player_ext.height,
         };
-        
-        float player_width = player_ext.width / num_players;
-        for (int i = 0; i < num_players; ++i) {
-            Extends current_player_ext = {
-                player_ext.x + i * player_width,
-                player_ext.y,
-                player_width,
-                player_ext.height,
-            };
-            player_nodes[i]->updateExtends(current_player_ext);
-        }
+        node->updateExtends(current_player_ext); // Update the current player's extends
+        ++i;
     }
 }
 
@@ -142,32 +138,82 @@ void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> f
     }
 }
 
-//-----------------------------------------------------------------------------------------------------
-bool isNumber(const std::string& str) {
-    if (str.empty()) return false;
-    for (char ch : str) {
-        if (!std::isdigit(ch)) return false;
+void LobbyNode::playerUpdateNotify() {
+    player_nodes.clear();
+    if(GlobalState::players.size() == 0) return;
+
+    for(auto &player : GlobalState::players) player_nodes.push_back(std::make_unique<PlayerNode>(&player, false));
+
+    updateExtends(extends);
+}
+
+void LobbyNode::handleReadyUpdate(ReadyUpdate update) {
+    for(const Player &player : GlobalState::players) {
+        if(update.players.find(player.id) == update.players.end()) player.lobby->ready = false;
+        else player.lobby->ready = true;
     }
-    return true;
+}
+
+void LobbyNode::draw() {
+    lobby->draw();
+    back_button->draw();
+    if(!GlobalState::players.find({GlobalState::clientID})->lobby->ready) ready_button->draw();
+    settings_button->draw();
+    for (auto &player_node : player_nodes) {
+        player_node->draw();
+    }
+}
+
+//-----------------------------------------------------------------------------------------------------
+
+void LoginScreenNode::connect() {
+    std::cout << "Trying to connect to server..." << std::endl;
+    if(ip.empty()) ip = "localhost";
+    GlobalState::clientID = Network::openConnection(ip, 42069);
+    if(!GlobalState::clientID) {
+        //CONNECTION FAILED
+        Viewport::createPopup("Connection Failed...", 3);
+        std::cout << "Connection failed..." << std::endl;
+        return;
+    }
+
+    //Set random name if player doesnt choose name
+    std::random_device rd;                        
+    std::mt19937 gen(rd());                         
+    std::uniform_int_distribution<> distr(1, 100000);
+    int randomNumber = distr(gen);
+    if (name.empty()) name = "Player"+std::to_string(randomNumber);
+    //Send message to connect
+    ClientConnectEvent event;
+    event.username = name;
+    Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
 }
 
 LoginScreenNode::LoginScreenNode(Extends ext){
     //Text input field for name and for Ip
     name_input = std::make_unique<TextInputNode>("Enter your name");
     name_input->visible = true;
-    ip_input = std::make_unique<TextInputNode>("IP Adress");
+    ip_input = std::make_unique<TextInputNode>("localhost");
     ip_input->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
-        if(ip_input->isFocused()){
+        if(c == '\n') {
+            connect();
+            return;
+        }
+        if(cast(TextInputNode, ip_input)->isFocused()){
             if (ip_input) {
-            ip_input->handleCharacterInput(c);
-            ip = ip_input->getText();
+                cast(TextInputNode, ip_input)->handleCharacterInput(c);
+                ip = cast(TextInputNode, ip_input)->getText();
             }
         }
-        if(name_input->isFocused()){
+        if(cast(TextInputNode, name_input)->isFocused()){
             if (name_input) {
-            name_input->handleCharacterInput(c);
-            name = name_input->getText();
+                if(name.size() > 30 && c != '\b'){
+                    Viewport::createPopup("Name to long", 3);
+                }else{
+                    cast(TextInputNode, name_input)->handleCharacterInput(c);
+                    name = cast(TextInputNode, name_input)->getText();
+                }
             }
         }
     });
@@ -175,28 +221,7 @@ LoginScreenNode::LoginScreenNode(Extends ext){
     //Connect button
     connect_button = std::make_unique<ButtonNode>("CONNECT");
     connect_button->setClickEventCallback([this](float x, float y) {
-        std::cout << "Trying to connect to server..." << std::endl;
-        if(ip.empty()) return;
-        if (!isNumber(ip)) return;
-        GlobalState::clientID = Network::openConnection("localhost", std::stoi(ip));
-        if(!GlobalState::clientID) {
-            //CONNECTION FAILED
-            //TODO: (eric) connection error message displaye oder so ka
-
-            std::cout << "Connection failed..." << std::endl;
-            return;
-        }
-
-        //Set random name if player doesnt choose name
-        std::random_device rd;                        
-        std::mt19937 gen(rd());                         
-        std::uniform_int_distribution<> distr(1, 100000);
-        int randomNumber = distr(gen);
-        if (name.empty()) name = "Player"+std::to_string(randomNumber);
-        //Send message to connect
-        ClientConnectEvent event;
-        event.username = name;
-        Network::sendMessage(std::make_unique<ClientConnectEvent>(event));
+        connect();
     });
 
     connect_button->visible = true;
@@ -240,26 +265,27 @@ void LoginScreenNode::draw() {
     };
     OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     Extends title_ext = {
-            extends.x + extends.width * 0.25f,
+            extends.x + extends.width * 0.175f,
             extends.y + extends.height * 0.65f,
-            extends.width * 0.5f,
+            extends.width * 0.65f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("DURAK", title_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_XLARGE);
+    auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+"fonts/durak.png");
+    OpenGL::drawImage(CLIENT_RES_DIR+"fonts/durak.png", computeCompactExtends(title_ext, size.second, size.first));
     Extends server_ip_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.45f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("PLAYER NAME", server_ip_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    OpenGL::drawText("PLAYER NAME", server_ip_ext, COLOR_BLACK, TEXTSIZE_LARGE);
     Extends player_name_ext = {
             extends.x + extends.width * 0.25f,
             extends.y + extends.height * 0.25f,
             extends.width * 0.5f,
             extends.height * 0.3f,
     };
-    OpenGL::drawText("SERVER IP: (42069)", player_name_ext, glm::vec3(0.0f, 0.0f, 0.0f), TEXTSIZE_LARGE);
+    OpenGL::drawText("HOSTNAME / IP", player_name_ext, COLOR_BLACK, TEXTSIZE_LARGE);
 
     connect_button->draw();
     name_input->draw();
@@ -278,7 +304,7 @@ void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node
 
 //--------------------------------------------------------------------------------------------------
 
-GameOverScreenNode::GameOverScreenNode(bool durak):durak(durak){
+GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     back_button = std::make_unique<ButtonNode>("BACK");
     back_button->setClickEventCallback([](float x, float y){
         std::cout << "back" << std::endl;
@@ -290,7 +316,7 @@ GameOverScreenNode::GameOverScreenNode(bool durak):durak(durak){
         std::cout << "rematch" << std::endl;
     });
     cast(ButtonNode, rematch_button)->visible = true;
-
+    updateExtends(ext);
 }
 
 void GameOverScreenNode::updateExtends(Extends ext){

@@ -3,16 +3,19 @@
 
 class LobbyNode : public TreeNode {
     public:
+        void draw();
         LobbyNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
+        void playerUpdateNotify();
+        void handleReadyUpdate(ReadyUpdate update);
     private:
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
         std::unique_ptr<Node> lobby;
         std::unique_ptr<Node> back_button;
         std::unique_ptr<Node> ready_button;
         std::unique_ptr<Node> settings_button;
-        std::vector<std::unique_ptr<Node>> player_nodes;
+        std::list<std::unique_ptr<Node>> player_nodes;
 };
 
 class LoginScreenNode : public Node {
@@ -21,6 +24,7 @@ class LoginScreenNode : public Node {
         LoginScreenNode(Extends ext);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
+        void connect();
 
     private:
         std::string name;
@@ -34,7 +38,7 @@ class LoginScreenNode : public Node {
 class GameOverScreenNode : public Node {
     public:
         void draw();
-        GameOverScreenNode(bool durak= 1);
+        GameOverScreenNode(Extends ext, bool durak=1);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
 

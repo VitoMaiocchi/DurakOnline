@@ -61,6 +61,8 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_CLIENT_CONNECT_EVENT:
             message = std::make_unique<ClientConnectEvent>();
         break;
+        case MESSAGETYPE_READY_UPDATE:
+            message = std::make_unique<ReadyUpdate>();
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -105,6 +107,23 @@ void TestMessage::fromJson(const rapidjson::Value& obj) {
     y = obj["y"].GetInt();
     string = obj["string"].GetString();
 };
+
+
+ReadyUpdate::ReadyUpdate() {messageType = MESSAGETYPE_READY_UPDATE;}
+
+void ReadyUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    rapidjson::Value playersJson(rapidjson::kArrayType);
+    for(const auto p : players){
+        playersJson.PushBack(p, allocator);
+    }
+    content.AddMember("players", playersJson, allocator);
+}
+
+void ReadyUpdate::fromJson(const rapidjson::Value& obj) {
+    players.clear();
+    const rapidjson::Value& playersJson = obj["players"];
+    for(rapidjson::SizeType i = 0; i < playersJson.Size(); ++i) players.insert(playersJson[i].GetUint());
+}
 
 
 //CLIENT DISCONNECT (dummy message; only sent my networking therefore the content is empty)

@@ -23,5 +23,6 @@ namespace Viewport {
     void sizeUpdateNotify();
     void hoverEventNotify(float x, float y);
     void clickEventNotify(float x, float y);
-    void draw();
+    void createPopup(std::string text, uint seconds);
+    void draw(uint time_delta);
 };

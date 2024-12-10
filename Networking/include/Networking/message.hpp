@@ -14,7 +14,7 @@
 enum MessageType {
     MESSAGETYPE_TEST,
     // Server:* to Client:MasterNode
-    MESSAGETYPE_ILLEGAL_MOVE_NOTIFY, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
+    MESSAGETYPE_SEND_POPUP, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
     MESSAGETYPE_CARD_UPDATE, // Server:CardManager to Client:MasterNode, communicates the current status of the cards in play
     MESSAGETYPE_PLAYER_UPDATE, // Server:Game to Client:MasterNode, provides an update on the players in the game
     MESSAGETYPE_BATTLE_STATE_UPDATE, // Server:Battle to Client:MasterNode, contains info on player roles (attackers, defender, idle)
@@ -69,12 +69,12 @@ struct RemoteDisconnectEvent : public Message {
 };
 
 // send an error message to the player that the move was illegal
-struct IllegalMoveNotify : public Message {
-    IllegalMoveNotify();
+struct PopupNotify : public Message {
+    PopupNotify();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::string error;
+    std::string message;
 };
 
 // tcard updates to the server and from the server to the client

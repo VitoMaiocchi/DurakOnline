@@ -34,8 +34,8 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_REMOTE_DISCONNECT_EVENT:
             message = std::make_unique<RemoteDisconnectEvent>();
         break;
-        case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-            message = std::make_unique<IllegalMoveNotify>();
+        case MESSAGETYPE_SEND_POPUP:
+            message = std::make_unique<PopupNotify>();
         break;
         case MESSAGETYPE_CARD_UPDATE:
             message = std::make_unique<CardUpdate>();
@@ -133,14 +133,14 @@ void RemoteDisconnectEvent::fromJson(const rapidjson::Value& obj) {}
 
 
 //ILLEGAL MOVE NOTIFY
-IllegalMoveNotify::IllegalMoveNotify(){messageType = MESSAGETYPE_ILLEGAL_MOVE_NOTIFY;}
+PopupNotify::PopupNotify(){messageType = MESSAGETYPE_SEND_POPUP;}
 
-void IllegalMoveNotify::getContent(rapidjson::Value &content, Allocator &allocator) const{
-    content.AddMember("error", rapidjson::Value(error.c_str(), allocator), allocator);
+void PopupNotify::getContent(rapidjson::Value &content, Allocator &allocator) const{
+    content.AddMember("error", rapidjson::Value(message.c_str(), allocator), allocator);
 }
 
-void IllegalMoveNotify::fromJson(const rapidjson::Value& obj){
-    error = obj["error"].GetString();
+void PopupNotify::fromJson(const rapidjson::Value& obj){
+    message = obj["error"].GetString();
 }
 
 // CARD UPDATE

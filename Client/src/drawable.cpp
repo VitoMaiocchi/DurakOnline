@@ -130,7 +130,11 @@ void TextInputNode::draw() {
     //outline of the button
     OpenGL::drawRectangle(extends, glm::vec4(1.0f, 0.0f, 0.0f, 0.5f));
     //button
-    glm::vec4 backgroundColor = focused ? glm::vec4(0.8, 0.8, 0.8, 1.0) : glm::vec4(1.0, 1.0, 1.0, 1.0);
+    uint darken = 0;
+    if(hover) darken = 1;
+    if(focused) darken = 2;
+    float f = 1.0f - DEFAULT_TRANSPARANCY*darken;
+    glm::vec4 backgroundColor =  glm::vec4(f,f,f, 1.0);
     const float b = TEXTFIELD_BORDER * Viewport::global_scalefactor;
     Extends reduced_extends = {
         extends.x + b,
@@ -143,7 +147,7 @@ void TextInputNode::draw() {
     // Draw the text within the field
     glm::vec4 textColor = COLOR_BLACK;
     if(text == placeholder){
-        textColor = glm::vec4(0.5, 0.5, 0.5, 1);
+        textColor = glm::vec4(0,0,0, 0.5f);
     }
     OpenGL::drawText(text, extends, textColor, TEXTSIZE_LARGE);
 }

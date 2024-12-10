@@ -5,6 +5,7 @@
 #include "../Server/include/server.hpp"
 #include "../Server/include/game.hpp"
 #include <unordered_set>
+#include <set>
 #include <iostream>
 #include <unistd.h>
 
@@ -13,17 +14,9 @@
 
 namespace DurakServer{
     std::unordered_set<ClientID> clients;
-    std::unordered_set<ClientID> ready_clients;
+    std::set<ClientID> ready_clients;
     std::unique_ptr<Game> current_game = nullptr;
     std::map<ClientID, Player> players_map;
-}
-
-
-void cleanup(int signum) {
-    std::cout << "\nDisconnecting all clients before closing...\n";
-    for(ClientID id : DurakServer::clients) Network::sendMessage(std::make_unique<RemoteDisconnectEvent>(), id);
-    sleep(1); //give clients time to disconnect gracefully
-    exit(0);
 }
 
 //zb map<ClientID, player(username ka)> 
@@ -35,8 +28,6 @@ void broadcastMessage(std::unique_ptr<Message> message) {
 }
 
 int main() {
-
-    signal(SIGINT, cleanup);
 
     //start networking
     Network::openSocket(42069);

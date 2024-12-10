@@ -143,6 +143,7 @@ bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID cl
         if(current_battle_->battleIsDone()){
             player_roles_ = current_battle_->getPlayerRolesMap();
             current_battle_.reset();
+            updateFinishedPlayers();
         }
     }
 
@@ -163,6 +164,10 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
         CardSlot slot = return_pce->slot;
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
+        if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
+            //TODO: Message an client schicke wer durak isch
+            //TODO: Spiel beende
+        }
         return true;
     }
     else {
@@ -178,6 +183,10 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
             CardSlot slot = return_pce->slot;
 
             current_battle_->handleCardEvent(vector_of_cards, client, slot);
+            if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
+                //TODO: Message an client schicke wer durak isch
+                //TODO: Spiel beende
+            }
             return true;
         }
     return false;
@@ -187,6 +196,7 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
 // After a card has been played this function checks if a player has finished the game
 // If that is the case, the player is removed from the player_bs_ map and added to the finished_players set
 void Game::updateFinishedPlayers(){
+
     if (card_manager_.getNumberOfCardsOnDeck()){
         return;
     }
@@ -195,6 +205,9 @@ void Game::updateFinishedPlayers(){
             finished_players_.insert(it->first);
             it = player_roles_.erase(it);
             
+        }
+        else{
+            ++it;
         }
     }
 }

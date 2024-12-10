@@ -127,9 +127,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
                                 (pair.second.has_value() && pair.second->rank == targetrank);
                         });
                 if(it == field.end()){
-                    IllegalMoveNotify err_msg;
-                    err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
-                    Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                    PopupNotify err_msg;
+                    err_msg.message = "Illegal Move: 'the selected cards do not match in rank'";
+                    Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
                     return false;
                 }
             
@@ -146,9 +146,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
                             });
                     // BUG: break this if statement up
                     if(/*cards[i].rank != cards[i - 1].rank &&*/ it == field.end()){
-                        IllegalMoveNotify err_msg;
-                        err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
-                        Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                        PopupNotify err_msg;
+                        err_msg.message = "Illegal Move: 'the selected cards do not match in rank'";
+                        Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
                         return false;
                     }
                 }
@@ -156,9 +156,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
             else if(curr_attacks_ == 0){
                 for(size_t i = 1; i < cards.size(); ++i){
                     if(cards[i].rank != cards[i - 1].rank){
-                        IllegalMoveNotify err_msg;
-                        err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
-                        Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                        PopupNotify err_msg;
+                        err_msg.message = "Illegal Move: 'the selected cards do not match in rank'";
+                        Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
                         return false;
                     }
                 }
@@ -202,9 +202,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         //coattacker can only start attacking once the attacker placed at least one card
         //we just check the amount of current attacks 
         if(curr_attacks_ == 0) {
-            IllegalMoveNotify err_msg;
-            err_msg.error = "Illegal Move: 'You are only co-attacker and you cannot start the attack'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+            PopupNotify err_msg;
+            err_msg.message = "Illegal Move: 'You are only co-attacker and you cannot start the attack'";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
             return false;
         }
 
@@ -231,9 +231,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
                             (pair.second.has_value() && pair.second->rank == targetrank);
                     });
             if(it == field.end()){
-                IllegalMoveNotify err_msg;
-                err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
-                Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                PopupNotify err_msg;
+                err_msg.message = "Illegal Move: 'the selected cards do not match in rank'";
+                Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
                 return false;
             }
 
@@ -249,9 +249,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
                         });
 
                 if(it == field.end()){
-                    IllegalMoveNotify err_msg;
-                    err_msg.error = "Illegal Move: 'the selected cards do not match in rank'";
-                    Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+                    PopupNotify err_msg;
+                    err_msg.message = "Illegal Move: 'the selected cards do not match in rank'";
+                    Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
                     return false;
                 }
             }
@@ -302,9 +302,9 @@ bool Battle::handleCardEvent(std::vector<Card> cards, ClientID player_id, CardSl
         std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         if(!middle[slot % 6].first.has_value()){
             if(first_battle_) {
-                IllegalMoveNotify notify;
-                notify.error = "Illegal Move: 'Cannot pass the attack on in the first battle'.";
-                Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+                PopupNotify notify;
+                notify.message = "Illegal Move: 'Cannot pass the attack on in the first battle'.";
+                Network::sendMessage(std::make_unique<PopupNotify>(notify), player_id);
                 return false;
             }
             //now we know the slot is empty, now we need to call pass_on()
@@ -347,16 +347,16 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
     if(action == CLIENTACTION_PASS_ON && players_bs_[player_id] == DEFENDER){
         if(defense_started_){ //cannot pass the attack on if already started defending
             //send illegal action notification
-            IllegalMoveNotify notify;
-            notify.error = "Illegal move: 'Cannot pass the attack on if already started defending'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+            PopupNotify notify;
+            notify.message = "Illegal move: 'Cannot pass the attack on if already started defending'";
+            Network::sendMessage(std::make_unique<PopupNotify>(notify), player_id);
 
             return false;
         }
         if(first_battle_){
-            IllegalMoveNotify notify;
-            notify.error = "Illegal move: 'Cannot pass the attack on when it's the first battle'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(notify), player_id);
+            PopupNotify notify;
+            notify.message = "Illegal move: 'Cannot pass the attack on when it's the first battle'";
+            Network::sendMessage(std::make_unique<PopupNotify>(notify), player_id);
             return false;
         }
         //for every card in the middle i want to test the whole hand if there is a card that is trump
@@ -380,9 +380,9 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
             return true;
         }
         else{
-            IllegalMoveNotify err_msg;
-            err_msg.error = "Illegal move: 'Cannot pass on with your cards'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+            PopupNotify err_msg;
+            err_msg.message = "Illegal move: 'Cannot pass on with your cards'";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
         }
     }
 
@@ -409,9 +409,9 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         }
         if(successfulDefend()){
             //notify with illegal move (studid, why pick up when you defended everything lol)
-            IllegalMoveNotify err_msg;
-            err_msg.error = "Illegal move: 'All cards have been defended, cannot pick them up.'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_msg), player_id);
+            PopupNotify err_msg;
+            err_msg.message = "Illegal move: 'All cards have been defended, cannot pick them up.'";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
             return false;
         }
 
@@ -536,7 +536,7 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
 bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     std::cout << "isValidMove() was called" << std::endl;
     //initialize the error message which will be sent if an invalid move is found
-    IllegalMoveNotify err_message;
+    PopupNotify err_message;
 
     //if its an attacker
     //check if its the first card being played? if yes check if only one card is played
@@ -550,8 +550,8 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     //check if the card is in the players hand 
     const std::vector<Card>& player_hand = card_manager_ptr_->getPlayerHand(player_id);
     if(std::find(player_hand.begin(), player_hand.end(), card) == player_hand.end()){
-        err_message.error = "Illegal move: 'card was not found in your hand'";
-        Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+        err_message.message = "Illegal move: 'card was not found in your hand'";
+        Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
         std::cout << "the card was not found in the players hand" << std::endl;
 
         //for debugging purposes we will print the player hand and the card we try to access
@@ -584,8 +584,8 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             if(defense_started_){
                 std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
                 //notify the illegal move
-                err_message.error = "Illegal move: 'Cannot place a card on an empty slot when defending'";
-                Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+                err_message.message = "Illegal move: 'Cannot place a card on an empty slot when defending'";
+                Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
                 return false;
             }
             else{
@@ -610,15 +610,15 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         else {
             std::cout << "ERROR MESSAGE: Illegal move: compare cards is not correct" <<std::endl;
             //notify the illegal move
-            err_message.error = "Illegal move";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+            err_message.message = "Illegal move";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
             return false;
         } 
     }
     if(role == ATTACKER){
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
-            err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+            err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
             return false; //idk about this maybe should be > and if == true
         }
         if(curr_attacks_ == 0){
@@ -638,13 +638,13 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     //coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
-            err_message.error = "Illegal move: 'the maximum amount of attacks is already reached'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+            err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
             return false; //idk about this maybe should be > and if == true
         }
         if(curr_attacks_ == 0){
-            err_message.error = "Illegal move: 'First Attacker hasnt attacked yet'";
-            Network::sendMessage(std::make_unique<IllegalMoveNotify>(err_message), player_id);
+            err_message.message = "Illegal move: 'First Attacker hasnt attacked yet'";
+            Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
             return false;
         }
         //check if card rank is in middle
@@ -676,6 +676,11 @@ void Battle::attack(ClientID client, Card card){
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
+    
+    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
+        battle_done_=true;
+    }
+        
 
 }
 
@@ -687,6 +692,10 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
     sendAvailableActionUpdate(1, client); //ok false, pick up true, pass on false
+
+    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
+        battle_done_=true;
+    }
 }
 
 

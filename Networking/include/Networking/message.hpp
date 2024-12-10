@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <unordered_set>
+#include <set>
 #include <list>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
@@ -13,12 +14,13 @@
 enum MessageType {
     MESSAGETYPE_TEST,
     // Server:* to Client:MasterNode
-    MESSAGETYPE_ILLEGAL_MOVE_NOTIFY, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
+    MESSAGETYPE_SEND_POPUP, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
     MESSAGETYPE_CARD_UPDATE, // Server:CardManager to Client:MasterNode, communicates the current status of the cards in play
     MESSAGETYPE_PLAYER_UPDATE, // Server:Game to Client:MasterNode, provides an update on the players in the game
     MESSAGETYPE_BATTLE_STATE_UPDATE, // Server:Battle to Client:MasterNode, contains info on player roles (attackers, defender, idle)
     MESSAGETYPE_AVAILABLE_ACTION_UPDATE, // Server:Battle to Client:MasterNode, tells the client what actions are available
     MESSAGETYPE_GAME_STATE_UPDATE, // Server:* to Client:MasterNode, update game screen (lobby, game, spectator, game over, Durak screen)
+    MESSAGETYPE_READY_UPDATE,
     // Client:MasterNode to Server:*
     MESSAGETYPE_PLAYCARD_EVENT, // Client:MasterNode to Server:Server->Game->Battle, informs server that a player is trying to play a card
     MESSAGETYPE_CLIENT_ACTION_EVENT, // Client:MasterNode to Server:Server->Game->Battle, info about which client action was performed
@@ -29,6 +31,7 @@ enum MessageType {
 typedef rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> Allocator;
 
 struct Message {
+    virtual ~Message() = default; // i dont know if this is needed but like this i dont get errors on Mac
     MessageType messageType;
     std::string toJson() const;
     virtual void fromJson(const rapidjson::Value& obj) = 0;
@@ -51,6 +54,14 @@ struct TestMessage : public Message {
     std::string string;
 };
 
+struct ReadyUpdate : public Message {
+    ReadyUpdate();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+
+    std::set<ClientID> players;
+};
+
 struct RemoteDisconnectEvent : public Message {
     RemoteDisconnectEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
@@ -58,12 +69,12 @@ struct RemoteDisconnectEvent : public Message {
 };
 
 // send an error message to the player that the move was illegal
-struct IllegalMoveNotify : public Message {
-    IllegalMoveNotify();
+struct PopupNotify : public Message {
+    PopupNotify();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::string error;
+    std::string message;
 };
 
 // tcard updates to the server and from the server to the client

@@ -52,6 +52,10 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                 for(auto c : player_ids){
                     Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
                 }
+
+                ReadyUpdate rupdate;
+                rupdate.players = ready_clients;
+                Network::sendMessage(std::make_unique<ReadyUpdate>(rupdate), client);
             }
             else{
                 std::cerr << "Failed to connect the client"<<std::endl;
@@ -68,6 +72,9 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                 std::cout << "Client " << client << " is ready." << std::endl;
                 std::cout << std::endl;
             
+                ReadyUpdate update;
+                update.players = ready_clients;
+                for(ClientID c : clients) Network::sendMessage(std::make_unique<ReadyUpdate>(update), c);
 
                 // Check if enough and all players are ready to start the game
                 if (ready_clients.size() >= MIN_PLAYERS && ready_clients.size() == clients.size() && current_game == nullptr ) {

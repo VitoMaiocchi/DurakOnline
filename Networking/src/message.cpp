@@ -34,8 +34,8 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_REMOTE_DISCONNECT_EVENT:
             message = std::make_unique<RemoteDisconnectEvent>();
         break;
-        case MESSAGETYPE_ILLEGAL_MOVE_NOTIFY:
-            message = std::make_unique<IllegalMoveNotify>();
+        case MESSAGETYPE_SEND_POPUP:
+            message = std::make_unique<PopupNotify>();
         break;
         case MESSAGETYPE_CARD_UPDATE:
             message = std::make_unique<CardUpdate>();
@@ -61,6 +61,8 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         case MESSAGETYPE_CLIENT_CONNECT_EVENT:
             message = std::make_unique<ClientConnectEvent>();
         break;
+        case MESSAGETYPE_READY_UPDATE:
+            message = std::make_unique<ReadyUpdate>();
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
         break;
@@ -107,6 +109,23 @@ void TestMessage::fromJson(const rapidjson::Value& obj) {
 };
 
 
+ReadyUpdate::ReadyUpdate() {messageType = MESSAGETYPE_READY_UPDATE;}
+
+void ReadyUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const {
+    rapidjson::Value playersJson(rapidjson::kArrayType);
+    for(const auto p : players){
+        playersJson.PushBack(p, allocator);
+    }
+    content.AddMember("players", playersJson, allocator);
+}
+
+void ReadyUpdate::fromJson(const rapidjson::Value& obj) {
+    players.clear();
+    const rapidjson::Value& playersJson = obj["players"];
+    for(rapidjson::SizeType i = 0; i < playersJson.Size(); ++i) players.insert(playersJson[i].GetUint());
+}
+
+
 //CLIENT DISCONNECT (dummy message; only sent my networking therefore the content is empty)
 RemoteDisconnectEvent::RemoteDisconnectEvent() {messageType = MESSAGETYPE_REMOTE_DISCONNECT_EVENT;}
 void RemoteDisconnectEvent::getContent(rapidjson::Value &content, Allocator &allocator) const {}
@@ -114,14 +133,14 @@ void RemoteDisconnectEvent::fromJson(const rapidjson::Value& obj) {}
 
 
 //ILLEGAL MOVE NOTIFY
-IllegalMoveNotify::IllegalMoveNotify(){messageType = MESSAGETYPE_ILLEGAL_MOVE_NOTIFY;}
+PopupNotify::PopupNotify(){messageType = MESSAGETYPE_SEND_POPUP;}
 
-void IllegalMoveNotify::getContent(rapidjson::Value &content, Allocator &allocator) const{
-    content.AddMember("error", rapidjson::Value(error.c_str(), allocator), allocator);
+void PopupNotify::getContent(rapidjson::Value &content, Allocator &allocator) const{
+    content.AddMember("error", rapidjson::Value(message.c_str(), allocator), allocator);
 }
 
-void IllegalMoveNotify::fromJson(const rapidjson::Value& obj){
-    error = obj["error"].GetString();
+void PopupNotify::fromJson(const rapidjson::Value& obj){
+    message = obj["error"].GetString();
 }
 
 // CARD UPDATE

@@ -12,6 +12,7 @@
 #include <map>
 #include <exception>
 #include <ft2build.h>
+#include <chrono>
 #include FT_FREETYPE_H
 
 #define FONT_PATH "../Client/resources/fonts/OpenSans-Bold.ttf"
@@ -47,6 +48,8 @@ namespace OpenGL {
     unsigned int VAO; //Vertex Array
     int success;
 
+    std::chrono::system_clock::time_point time_stamp;
+
     bool setupWindow();
     void setupVertexArray();
     void generateCharacterTextures();
@@ -80,7 +83,11 @@ namespace OpenGL {
         */
         generateCharacterTextures();
 
+        /*
+        set initial time stamp and window size
+        */
         Viewport::sizeUpdateNotify();
+        time_stamp = std::chrono::system_clock::now();
         return true;
     }
     
@@ -88,7 +95,11 @@ namespace OpenGL {
         glClearColor(222.0f/255, 93.0f/255, 93.0f/255, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        Viewport::draw();
+        auto now = std::chrono::system_clock::now();
+        uint millis = std::chrono::duration_cast<std::chrono::milliseconds>(now - time_stamp).count();
+        if(millis > 50) millis = 50; //in case a frame takes very long, for exmaple establishing network connection
+        time_stamp = now;
+        Viewport::draw(millis);
 
         glfwSwapBuffers(window);
         glfwPollEvents();    
@@ -406,9 +417,9 @@ namespace OpenGL {
         }
     };
 
-    void renderText(std::string text, float x, float y, float scale, glm::vec3 color) {
+    void renderText(std::string text, float x, float y, float scale, glm::vec4 color) {
         glUseProgram(characterShader->shader_program);
-        glUniform3f(glGetUniformLocation(characterShader->shader_program, "textColor"), color.x, color.y, color.z);
+        glUniform4f(glGetUniformLocation(characterShader->shader_program, "textColor"), color.x, color.y, color.z, color.w);
         glActiveTexture(GL_TEXTURE0);
 
         glm::mat4 base_transform = glm::ortho(0.0f, static_cast<float>(Viewport::width), 0.0f, static_cast<float>(Viewport::height));
@@ -440,7 +451,7 @@ namespace OpenGL {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void drawText(std::string text, Extends ext, glm::vec3 color, TextSize size, TextAlignment align) {
+    void drawText(std::string text, Extends ext, glm::vec4 color, TextSize size, TextAlignment align) {
         float scale = Viewport::global_scalefactor * size / 240.0f;
 
         float width, height;
@@ -577,11 +588,11 @@ namespace OpenGL {
         "out vec4 color;\n"
 
         "uniform sampler2D text;\n"
-        "uniform vec3 textColor;\n"
+        "uniform vec4 textColor;\n"
 
         "void main() {"
             "vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);\n"
-            "color = vec4(textColor, 1.0) * sampled;\n"
+            "color = textColor * sampled;\n"
         "}";
 
     void compileShaders() {

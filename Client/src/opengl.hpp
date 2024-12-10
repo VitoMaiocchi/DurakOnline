@@ -28,6 +28,7 @@ and just update the transform.
 //different Template Text sizes to make Text Size consisten across components
 enum TextSize {
     TEXTSIZE_SMALL = 10,
+    TEXTSIZE_MEDIUMSMALL = 15,
     TEXTSIZE_MEDIUM = 25,
     TEXTSIZE_LARGE = 50,
     TEXTSIZE_XLARGE = 350
@@ -38,6 +39,9 @@ enum TextAlignment {
     TEXTALIGN_LEFT
 };
 
+#define COLOR_BLACK glm::vec4(0,0,0,1)
+#define COLOR_GREY glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)
+
 namespace OpenGL {
     bool setup(); //sets up the client window
     void drawFrame(); //draws the current frame including everything in the Viewport
@@ -47,7 +51,7 @@ namespace OpenGL {
     
     void drawImage(std::string path, Extends ext);
     void drawRectangle(Extends ext, glm::vec4 color);
-    void drawText(std::string, Extends ext, glm::vec3 color, TextSize size, TextAlignment align = TEXTALIGN_CENTER);
+    void drawText(std::string, Extends ext, glm::vec4 color, TextSize size, TextAlignment align = TEXTALIGN_CENTER);
 
     std::pair<uint, uint> getImageDimensions(std::string path);
     std::pair<float, float> getTextDimensions(std::string text, TextSize size);

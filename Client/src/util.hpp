@@ -30,12 +30,17 @@ struct PlayerGameData {
     int cards = -1;
 };
 
+struct PlayerLobbyData {
+    bool ready = false;
+};
+
 struct Player {
     ClientID id = 0;
     std::string name = "";
     bool durak = false;
     bool is_you = false;
     PlayerGameData* game;
+    PlayerLobbyData* lobby;
 
     bool operator<(const Player& other) const;
     bool operator==(const Player& other) const;
@@ -52,6 +57,24 @@ inline std::string getPlayerStateIcon(PlayerState state) {
             return CLIENT_RES_DIR + "icons/watch.png";
     }
     return "error";
+}
+
+inline Extends alignExtends(Extends ext, float x, float y, float width, float height) {
+    return {
+        ext.x + ext.width * x,
+        ext.y + ext.height * y,
+        ext.width * width,
+        ext.height * height
+    };
+}
+
+inline Extends applyBorder(Extends ext, float b) {
+    return {
+            ext.x + b,
+            ext.y + b,
+            ext.width - 2*b,
+            ext.height - 2*b
+    };
 }
 
 Extends computeCompactExtends(Extends ext, float height, float width);

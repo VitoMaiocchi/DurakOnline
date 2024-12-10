@@ -948,6 +948,3 @@ ClientID Battle::getCurrentDefender(){
     }
     return player_id;
 }
-// (\(\ 
-// ( -.-)
-// o_(")(")

@@ -56,6 +56,12 @@ void ButtonNode::draw() {
     OpenGL::drawText(text, extends, COLOR_BLACK, TEXTSIZE_LARGE);
 }
 
+void ButtonNode::sendClickEvent(float x, float y) {
+    if(!visible) return;
+    if(!extends.contains(x,y)) return;
+    clickEventCallback(x,y);
+};
+
 PlayerNode::PlayerNode(const Player* player, const bool game) : player(player), game(game) {}
 
 Extends PlayerNode::getCompactExtends(Extends ext) {

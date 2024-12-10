@@ -2,7 +2,7 @@
 #include "../include/battle.hpp"
 #include "../include/card_manager.hpp"
 
-Game::Game(std::vector<ClientID> player_ids) : card_manager_(player_ids) {
+Game::Game(std::set<ClientID> &players) : card_manager_(players) {
     // What does need to happen when a game of durak is created?
         // - Create a deck of 52 cards              //
         // - Shuffle the deck                       //
@@ -13,7 +13,7 @@ Game::Game(std::vector<ClientID> player_ids) : card_manager_(player_ids) {
         Card current_lowest_trump = Card(RANK_ACE, trump);
         // iterate through all players and find the one with the lowest trump card
         ClientID first_attacker = -1; // -1 means no one has a trump
-        for(auto i : player_ids){
+        for(auto i : players){
             std::vector<Card> hand = card_manager_.getPlayerHand(i);
             // iterate through hand
             for(unsigned j = 0; j < hand.size(); j++){
@@ -26,51 +26,29 @@ Game::Game(std::vector<ClientID> player_ids) : card_manager_(player_ids) {
         std::cout << "determined attacker: " << first_attacker << std::endl;
         if(first_attacker == -1){
             // no one has a trump, choose a random player as the first attacker
-            first_attacker = rand() % player_ids.size();
+            first_attacker = rand() % players.size();
 
             //debugging
             std::cout << "random determined first attacker" << std::endl;
         }
-        // ClientID first_defender = (first_attacker + 1) % player_ids.size();
-        // ClientID second_attacker = (first_attacker + 2) % player_ids.size();
+        // ClientID first_defender = (first_attacker + 1) % players.size();
+        // ClientID second_attacker = (first_attacker + 2) % players.size();
 
-        ClientID first_defender = -1; //no player determined
-        for(size_t i = 0; i < player_ids.size(); ++i){
-            if(player_ids[i] == first_attacker){
-                if( (i + 1) < player_ids.size()){
-                    first_defender = player_ids[i + 1]; 
-                    break;
-                }
-                else{
-                    first_defender = player_ids[0];
-                    break;
-                }
-                break;
-            }
-        }
-        // auto it = std::find(player_roles_.begin(), player_roles_.end(), )
+        auto it = players.find(first_attacker);
+        it++;
+        if(it == players.end()) it = players.begin();
+        ClientID first_defender = *it;
         std::cout << "determined defender: " << first_defender << std::endl;
 
-        ClientID second_attacker = -1; //no player determined
-
-        for(size_t i = 0; i < player_ids.size(); ++i){
-            if(player_ids[i] == first_defender){
-                if( (i + 1) < player_ids.size()){
-                    second_attacker = player_ids[i + 1];
-                    break;
-                }
-                else{
-                    second_attacker = player_ids[0];
-                    break;
-                }
-
-            }
-        }
+        it = players.find(first_defender);
+        it++;
+        if(it == players.end()) it = players.begin();
+        ClientID second_attacker = *it;
         std::cout << "determined second attacker: " << second_attacker << std::endl;
 
 
     // set private member player_roles_
-    for(auto i : player_ids){
+    for(auto i : players){
         if(i == first_attacker){
             player_roles_[i] = ATTACKER;
         }

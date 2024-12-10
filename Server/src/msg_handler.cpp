@@ -79,8 +79,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                 // Check if enough and all players are ready to start the game
                 if (ready_clients.size() >= MIN_PLAYERS && ready_clients.size() == clients.size() && current_game == nullptr ) {
                     std::cout << "Starting a new game..." << std::endl;
-                    std::vector<ClientID> player_ids(ready_clients.begin(), ready_clients.end());
-                    std::sort(player_ids.begin(), player_ids.end());
+                    std::set<ClientID> player_ids(ready_clients.begin(), ready_clients.end());
                     GameStateUpdate update;
                     update.state = GAMESTATE_GAME;
                     for(auto c : player_ids){

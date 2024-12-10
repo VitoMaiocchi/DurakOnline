@@ -21,7 +21,7 @@ struct Player{
 
 namespace DurakServer{
     // Track connected clients
-    extern std::unordered_set<ClientID> clients;
+    extern std::set<ClientID> clients;
 
     // Track ready clients
     extern std::set<ClientID> ready_clients;

@@ -30,7 +30,7 @@ class Game{
 
     public:
         // constructor taking in an array of player ids
-        Game(std::vector<ClientID> player_ids);
+        Game(std::set<ClientID> &players);
         // destructor, should nominate the durak
         ~Game();
 

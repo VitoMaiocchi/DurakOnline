@@ -42,6 +42,8 @@ std::string Card::getFileName() {
         case SUIT_SPADES:
         s = "spades";
         break;
+        default:
+        std::cout << "Invalid suit" << std::endl;
     } 
 
     switch (rank) {
@@ -84,6 +86,8 @@ std::string Card::getFileName() {
         case RANK_ACE:
         r = "ace";
         break;
+        default: 
+        std::cout << "Invalid rank" << std::endl;
     }
 
     return CLIENT_RES_DIR + "cards/" + r + "_of_" + s + ".png";

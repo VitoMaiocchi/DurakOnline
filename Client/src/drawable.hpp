@@ -13,6 +13,7 @@
 
 class Node {
     public:
+        virtual ~Node() = default; // without this line the client crashes when connecting on M1 Mac
         bool visible = false;
         virtual void draw() = 0;
         virtual void updateExtends(Extends ext) = 0;

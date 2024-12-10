@@ -69,7 +69,7 @@ class Battle {
 
         void attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
         void coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
-        void defenderCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
+        void defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot);
 
     public:
         

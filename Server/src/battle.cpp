@@ -82,6 +82,12 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
 //default dtor
 Battle::~Battle() = default;
 
+void sendPopup(std::string message, ClientID clientID) {
+    PopupNotify popup;
+    popup.message = message;
+    Network::sendMessage(std::make_unique<PopupNotify>(popup), clientID);
+}
+
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
     //if only 1 card with which is being attacked, check if valid move
     if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot) && !pickUp_){
@@ -89,7 +95,7 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
         attack(player_id, cards.at(0));
         // sendAvailableActionUpdate(0, player_id);
         // sendAvailableActionUpdate(0, getCurrentDefender());
-
+        phase = BATTLEPHASE_OPEN;
         return;
     }
     //else if more than one card is being played at the same time
@@ -146,11 +152,12 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
         //now place all attacks on the field
         for(size_t i = 0; i < cards.size(); ++i){
             attack(player_id, cards.at(i));
+            phase = BATTLEPHASE_OPEN;
         }
         return;
     }
     //to throw in cards after the defender has picked them up
-    else if(pickUp_ && !ok_msg_[ATTACKER]){
+    else if(phase == BATTLEPHASE_POST_PICKUP && !ok_msg_[ATTACKER]){
         if(cards.size() + curr_attacks_ <= max_attacks_){
             for(size_t i = 0; i < cards.size(); ++i){
                 Rank targetrank = cards[i].rank;
@@ -194,6 +201,7 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
         if(isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
             attack(player_id, cards.at(0));
+            phase = BATTLEPHASE_OPEN;
 
             return;
         }
@@ -239,10 +247,11 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
         //now place all attacks on the field
         for(size_t i = 0; i < cards.size(); ++i){
             attack(player_id, cards.at(i));
+            phase = BATTLEPHASE_OPEN;
         }
         return;
     }
-    else if(pickUp_ && !ok_msg_[CO_ATTACKER]){
+    else if(phase == BATTLEPHASE_POST_PICKUP && !ok_msg_[CO_ATTACKER]){
         if(cards.size() + curr_attacks_ <= max_attacks_){
             for(size_t i = 0; i < cards.size(); ++i){
                 Rank targetrank = cards[i].rank;
@@ -272,49 +281,74 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
     }
 }
 
-void Battle::defenderCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
-    if(cards.size() == 1){ //defending only 1 card at a time
-        //we need to check which slot the defender is placing the card
-        //if the slot is empty then it means defender is trying to pass the attack on
-        //this is only possble when:
-        /**
-         * defender hasn't defended any other cards yet
-         * defender has a valid card & places said valid card to pass on
-         * edge case: defender places two cards to pass_on
-         */
-        std::vector<std::pair<std::optional<Card>,std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
-        if(!middle[slot % 6].first.has_value()){
-            if(first_battle_) {
-                PopupNotify notify;
-                notify.message = "Illegal Move: 'Cannot pass the attack on in the first battle'.";
-                Network::sendMessage(std::make_unique<PopupNotify>(notify), player_id);
-                return;
-            }
-            //now we know the slot is empty, now we need to call pass_on()
-            passOn(cards.at(0), player_id, slot);
-            //check if the middle has been updated
-            middle = card_manager_ptr_->getMiddle(); //get it again
-            if(middle[slot % 6].first.has_value() && 
-               middle[slot % 6].first->rank == cards[0].rank && 
-               middle[slot % 6].first->suit == cards[0].suit){
-                return;
-            }
-            // return false;
-        } 
-        if(isValidMove(cards.at(0), player_id, slot)) {
-            defend(player_id, cards.at(0), slot); 
+bool checkIdenticalSuit(std::unordered_set<Card> &cards, ClientID clientID) {
+    const Suit suit = cards.begin()->suit;
+    for(Card c : cards) if(c.suit != suit) {
+        sendPopup("Can not play cards of different suits", clientID);
+        return true;
+    }
+    return false;
+}
+
+void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot) {
+    switch (phase) {
+        case BATTLEPHASE_FIRST_ATTACK:
+            sendPopup("Can not place card; Waiting for first attack.", clientID);
+            return;
+        case BATTLEPHASE_DONE:
+            return;
+        case BATTLEPHASE_POST_PICKUP:
+            sendPopup("You allready picked up. You can not place any more cards", clientID);
+            return;
+        case BATTLEPHASE_DEFENDED:
+            sendPopup("Everything is defended. Can not place any more cards", clientID);
+            return;
+        case BATTLEPHASE_OPEN:
+            break;
+    } //BATTLE STATE OPEN:
+
+    uint s = (uint) slot;
+    if(card_manager_ptr_->getMiddleSlot(s%6).has_value()) { //SLOT is not empty
+        if(cards.size() > 1) {
+            sendPopup("you can only defend with one card per slot", clientID);
+            return;
+        }
+        if(isValidMove(*cards.begin(), clientID, slot)) {
+            defend(clientID, *cards.begin(), slot);
+            phase = BATTLEPHASE_DEFENDED;
+            for(uint i = 0; i<6; i++)
+                if(card_manager_ptr_->getMiddleSlot(i).has_value() 
+                    && !card_manager_ptr_->getMiddleSlot(i+6).has_value())
+                        phase = BATTLEPHASE_OPEN;
+        }
+        else sendPopup("invalid defend", clientID);
+        return;
+    }
+
+    //Slot is empty: try to pass on
+    if(checkIdenticalSuit(cards, clientID)) return;
+
+    for(uint i = 6; i<12; i++) if(card_manager_ptr_->getMiddleSlot(i).has_value()) {
+        sendPopup("you allready defended a card. Pass on is not possilbe", clientID);
+        return;
+    }
+
+    Rank rank = cards.begin()->rank;
+    for(uint i = 0; i<6; i++) {
+        if(!card_manager_ptr_->getMiddleSlot(i).has_value()) continue;
+        if(card_manager_ptr_->getMiddleSlot(i).value().rank != rank) {
+            sendPopup("Can not pass on: Ranks don't match", clientID);
             return;
         }
     }
-    else if(defense_started_){
-        if(isValidMove(cards.at(0), player_id, slot)) {
-            defend(player_id, cards.at(0), slot); 
-            return;
-        }
-    }
+
+    //TODO: das gaht nur mit einere karte...
+    passOn(*cards.begin(), clientID, slot);
+    phase = BATTLEPHASE_OPEN;
 }
 
 bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot){
+    if(cards.size() == 0) return false;
 
     std::cout << "handleCardEvent was called" << std::endl;
 
@@ -335,10 +369,24 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
     //access the role with the key player_id
     role = players_bs_[player_id];
 
+    auto card_set = std::unordered_set<Card>(cards.begin(), cards.end());
+
     //attacker or coattacker
-    if(role == ATTACKER) attackerCardEvent(cards, player_id, slot);
-    else if(role == CO_ATTACKER) coAttackerCardEvent(cards, player_id, slot);
-    else if(role == DEFENDER) defenderCardEvent(cards, player_id, slot);
+    switch (role) {
+        case ATTACKER:
+            attackerCardEvent(cards, player_id, slot);
+            return true;
+        case CO_ATTACKER:
+            coAttackerCardEvent(cards, player_id, slot);
+            return true;
+        case DEFENDER:
+            defenderCardEvent(card_set, player_id, slot);
+            return true;
+        case IDLE:
+            PopupNotify popup;
+            popup.message = "You are idle and can not place cards";
+            Network::sendMessage(std::make_unique<PopupNotify>(popup), player_id);
+    }
 
     return false;
 }
@@ -413,6 +461,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
                 movePlayerRoles();
                 movePlayerRoles(); //loses right to attack when picking up
                 battle_done_ = true;
+                phase = BATTLEPHASE_POST_PICKUP;
             }
             return true;
         }

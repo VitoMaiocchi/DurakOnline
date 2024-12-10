@@ -200,13 +200,13 @@ LoginScreenNode::LoginScreenNode(Extends ext){
             connect();
             return;
         }
-        if(ip_input->isFocused()){
+        if(cast(TextInputNode, ip_input)->isFocused()){
             if (ip_input) {
                 cast(TextInputNode, ip_input)->handleCharacterInput(c);
                 ip = cast(TextInputNode, ip_input)->getText();
             }
         }
-        if(name_input->isFocused()){
+        if(cast(TextInputNode, name_input)->isFocused()){
             if (name_input) {
                 if(name.size() > 30 && c != '\b'){
                     Viewport::createPopup("Name to long", 3);

@@ -20,7 +20,6 @@ class Node {
 
         virtual void sendClickEvent(float x, float y);
         virtual void sendHoverEvent(float x, float y);
-        virtual bool isFocused() const {return false;}
         void setClickEventCallback(std::function<void(float, float)> callback);
     protected:
         virtual void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) = 0;

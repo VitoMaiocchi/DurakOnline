@@ -28,6 +28,7 @@ and just update the transform.
 //different Template Text sizes to make Text Size consisten across components
 enum TextSize {
     TEXTSIZE_SMALL = 10,
+    TEXTSIZE_MEDIUMSMALL = 15,
     TEXTSIZE_MEDIUM = 25,
     TEXTSIZE_LARGE = 50,
     TEXTSIZE_XLARGE = 350
@@ -39,6 +40,7 @@ enum TextAlignment {
 };
 
 #define COLOR_BLACK glm::vec4(0,0,0,1)
+#define COLOR_GREY glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)
 
 namespace OpenGL {
     bool setup(); //sets up the client window

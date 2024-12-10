@@ -17,6 +17,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
                                     first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
     
+    std::cout << "CREATE NEW BATTLE" << std::endl;
     phase = BATTLEPHASE_FIRST_ATTACK;
 
     // max_attacks_ = first_battle ? 5 : 6;
@@ -42,7 +43,6 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             bsu_msg.attackers.push_front(pl.first);
             attack_order_.push_front(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
     }
     // then we iterate through another time to ensure the co attacker is appended to the list and does not come in front of the attacker
@@ -51,17 +51,14 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
             bsu_msg.attackers.push_back(pl.first);
             attack_order_.push_back(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == IDLE){
             bsu_msg.idle.push_back(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         std::cout << "Debugging purposes: id: " << pl.first << ": role" << pl.second << std::endl;
     }
@@ -75,7 +72,7 @@ Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardMa
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
     }
 
-
+    updateAvailableAction();
 
 };
 
@@ -385,19 +382,21 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
     switch (role) {
         case ATTACKER:
             attackerCardEvent(cards, player_id, slot);
-            return true;
+            break;
         case CO_ATTACKER:
             coAttackerCardEvent(cards, player_id, slot);
-            return true;
+            break;
         case DEFENDER:
             defenderCardEvent(card_set, player_id, slot);
-            return true;
+            break;
         case IDLE:
             PopupNotify popup;
             popup.message = "You are idle and can not place cards";
             Network::sendMessage(std::make_unique<PopupNotify>(popup), player_id);
+            break;
     }
 
+    updateAvailableAction();
     return false;
 }
 
@@ -406,11 +405,9 @@ void Battle::doneEvent(ClientID clientID) {
     // -> clear middle
     if(players_bs_[clientID] == ATTACKER) {
         ok_msg_[ATTACKER] = true;
-        sendAvailableActionUpdate(1, clientID);
     }
     if(players_bs_[clientID] == CO_ATTACKER){
         ok_msg_[CO_ATTACKER] = true;
-        sendAvailableActionUpdate(1, clientID);
     }
     if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
                                     (pickUp_ == true || successfulDefend())){
@@ -424,27 +421,23 @@ void Battle::doneEvent(ClientID clientID) {
         }
 
         battle_done_ = true;
+        //TODO: das sött nöd so funktioniere
+        phase = BATTLEPHASE_FIRST_ATTACK;
     }
 }
 
 std::optional<Card> Battle::getReflectCard(ClientID clientID) {
-    std::cout << "1" << std::endl;
     if(players_bs_[clientID] != DEFENDER) return std::nullopt;
-    std::cout << "2" << std::endl;
     if(first_battle_) return std::nullopt;
-    std::cout << "3" << std::endl;
     if(!topSlotsClear()) return std::nullopt;
-    std::cout << "4" << std::endl;
     
     std::vector<Card> hand = card_manager_ptr_->getPlayerHand(clientID); 
     Suit trump = card_manager_ptr_->getTrump();
-
     for(Card card : hand) {
         if(card.suit != trump) continue;
         if(!passOnRankMatch(card.rank)) continue;
         return card;
     }
-    std::cout << "5" << std::endl;
 
     return std::nullopt;
 }
@@ -461,7 +454,6 @@ void Battle::pickupEvent(ClientID clientID) {
     pickUp_msg_ = true;
     if(!successfulDefend()){
         picked_up_cards_ = card_manager_ptr_->getMiddle();
-        sendAvailableActionUpdate(2, clientID);
         card_manager_ptr_->pickUp(clientID);
         pickUp_ = true;
 
@@ -493,28 +485,51 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
     switch(action) {
         case CLIENTACTION_PASS_ON:
             reflectEvent(player_id);
-            return true;
+            break;
         case CLIENTACTION_OK:
             doneEvent(player_id);
-            return true;
+            break;
         case CLIENTACTION_PICK_UP:
             pickupEvent(player_id);
+            break;
     }
+
+    updateAvailableAction();
     return true;
 }
 
 void Battle::updateAvailableAction() {
+    std::string s = "";
+    switch(phase) {
+        case BATTLEPHASE_FIRST_ATTACK:
+            s = "FIRST ATTACK";
+        break;
+        case BATTLEPHASE_POST_PICKUP:
+            s = "POST PICKUP";
+        break;
+        case BATTLEPHASE_OPEN:
+            s = "OPEN";
+        break;
+        case BATTLEPHASE_DEFENDED:
+            s = "DEFENDED";
+        break;
+    }
+
+    std::cout << "\n\nPHASE: " << s << "\n\n" << std::endl;
+
     for(auto bs : players_bs_) {
         const ClientID id = bs.first;
         const PlayerRole role = bs.second;
 
         AvailableActionUpdate update;
         update.ok = false;
-        if(role == ATTACKER || role == DEFENDER)
-            if(phase == BATTLEPHASE_POST_PICKUP || phase == BATTLEPHASE_DEFENDED) update.ok = true;
+        if(phase == BATTLEPHASE_POST_PICKUP || phase == BATTLEPHASE_DEFENDED) {
+            if(role == ATTACKER && !ok_msg_[ATTACKER]) update.ok = true;
+            if(role == CO_ATTACKER && !ok_msg_[CO_ATTACKER]) update.ok = true;
+        }
         
         update.pass_on = false;
-        if(role == DEFENDER) 
+        if(role == DEFENDER && phase == BATTLEPHASE_OPEN) 
             if(getReflectCard(id).has_value()) update.pass_on = true;
         
         update.pick_up = false;
@@ -752,9 +767,7 @@ void Battle::attack(ClientID client, Card card){
     std::cout << "attack() was called"<<std::endl;
     //calls attack
     card_manager_ptr_->attackCard(card, client);
-    if(defense_started_){
-        sendAvailableActionUpdate(1, getCurrentDefender());
-    }
+
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
@@ -773,7 +786,6 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     attacks_to_defend_--;
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-    sendAvailableActionUpdate(1, client); //ok false, pick up true, pass on false
 
     if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
         battle_done_=true;
@@ -811,22 +823,18 @@ void Battle::movePlayerRoles(){
         if(pl.second == ATTACKER){
             bsu_msg.attackers.push_back(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == DEFENDER){
             bsu_msg.defender = pl.first;
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == CO_ATTACKER){
             bsu_msg.attackers.push_back(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         else if(pl.second == IDLE){
             bsu_msg.idle.push_back(pl.first);
             //send the normal action update
-            sendAvailableActionUpdate(0, pl.first);
         }
         std::cout << "Debugging purposes: " << pl.first << ": " << pl.second << std::endl;
     }
@@ -836,82 +844,6 @@ void Battle::movePlayerRoles(){
     }
 
 
-
-}
-void Battle::sendAvailableActionUpdate(unsigned int setting, ClientID client){
-        // attacker 1 & 2                       //defender
-        //setting = 0 -> ok true                pick up true        pass on -> true
-        //setting = 1 -> ok false               pick up true        pass on -> false
-        //setting = 2  //////////               picl up false       pass on -> false
-
-        AvailableActionUpdate update;
-        if(players_bs_[client] == ATTACKER){
-            switch(setting){
-                case 0:
-                    update.ok = true;
-                    update.pass_on = false;
-                    update.pick_up = false;
-                    break;
-                case 1:
-                    update.ok = false;
-                    update.pass_on = false;
-                    update.pick_up = false;
-                    break;
-                default:
-                    std::cerr << "setting not found to send an available action update" <<std::endl;
-                    break;
-            }
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
-        }
-        if(players_bs_[client] == DEFENDER){
-            switch(setting){
-                case 0:
-                    update.ok = false;
-                    update.pass_on = true;
-                    update.pick_up = true;
-                    break;
-                case 1:
-                    update.ok = false;
-                    update.pass_on = false;
-                    update.pick_up = true;
-                    break;
-                case 2:
-                    update.ok = false;
-                    update.pass_on = false;
-                    update.pick_up = false;
-                    break;
-                default:
-                    std::cerr << "setting not found to send an available action update" <<std::endl;
-                    break;
-            }
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
-        }
-        if(players_bs_[client] == CO_ATTACKER){
-            switch(setting){
-                case 0:
-                    update.ok = true;
-                    update.pass_on = false;
-                    update.pick_up = false;
-                    break;
-                case 1:
-                    update.ok = false;
-                    update.pass_on = false;
-                    update.pick_up = false;
-                    break;
-                default:
-                    std::cerr << "setting not found to send an available action update" <<std::endl;
-                    break;
-            }
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
-        }
-
-
-        if(players_bs_[client] == IDLE){
-            update.ok = false;
-            update.pass_on = false;
-            update.pick_up = false;
-            Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), client);
-        }
 
 }
 

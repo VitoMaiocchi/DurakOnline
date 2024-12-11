@@ -20,11 +20,17 @@
 #include <Networking/network.hpp>
 
 enum BattlePhase {
-    BATTLEPHASE_FIRST_ATTACK, //waiting for first attack
-    BATTLEPHASE_OPEN,         //undefeneded waiting for pick up, more attacks, or defend
+    BATTLEPHASE_FIRST_ATTACK, //waiting for first attack (no cards in middle)
+    BATTLEPHASE_OPEN,         //undefended waiting for pick up, more attacks, or defend
     BATTLEPHASE_DEFENDED,     //defended waiting for ready or more attacks
     BATTLEPHASE_POST_PICKUP,  //waiting for ready or post pickup throw ins
-    BATTLEPHASE_DONE          //weiss nonig obs das brucht  
+    BATTLEPHASE_DONE          //battle is ready to be destroyed by game (no cards in middle)
+};
+
+enum BattleType { //passed on contruction to battle by game
+    BATTLETYPE_FIRST, //first battle of the game
+    BATTLETYPE_NORMAL, //normal battle
+    BATTLETYPE_ENDGAME //endgame battle (only two players left)
 };
 
 class Battle {
@@ -35,6 +41,7 @@ class Battle {
         std::set<ClientID> finished_players_; //they get the battle state update idle 
 
         BattlePhase phase;
+        BattleType type;
 
         bool defending_flag_ = false;
         int max_attacks_ = 6;

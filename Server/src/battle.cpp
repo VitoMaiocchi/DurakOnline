@@ -391,9 +391,7 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
             defenderCardEvent(card_set, player_id, slot);
             break;
         case IDLE:
-            PopupNotify popup;
-            popup.message = "You are idle and can not place cards";
-            Network::sendMessage(std::make_unique<PopupNotify>(popup), player_id);
+            sendPopup("You are idle and can not place cards", player_id);
             break;
     }
 

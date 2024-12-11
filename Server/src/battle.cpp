@@ -422,7 +422,7 @@ void Battle::doneEvent(ClientID clientID) {
     if(players_bs_[clientID] == ATTACKER)    ok_msg_[ATTACKER] = true;
     if(players_bs_[clientID] == CO_ATTACKER) ok_msg_[CO_ATTACKER] = true;
     
-    if(phase == BATTLEPHASE_DEFENDED) {
+    if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
         card_manager_ptr_->clearMiddle();
         card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
         movePlayerRoles();

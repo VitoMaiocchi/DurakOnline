@@ -278,6 +278,7 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
     }
 }
 
+//TODO: das sött rank si
 bool checkIdenticalSuit(std::unordered_set<Card> &cards, ClientID clientID) {
     const Suit suit = cards.begin()->suit;
     for(Card c : cards) if(c.suit != suit) {
@@ -400,30 +401,45 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
     return false;
 }
 
-void Battle::doneEvent(ClientID clientID) {
-    //the turn should finish after the two attackers clicked ok 
-    // -> clear middle
-    if(players_bs_[clientID] == ATTACKER) {
-        ok_msg_[ATTACKER] = true;
-    }
-    if(players_bs_[clientID] == CO_ATTACKER){
-        ok_msg_[CO_ATTACKER] = true;
-    }
-    if(ok_msg_[ATTACKER] == true && ok_msg_[CO_ATTACKER] == true && 
-                                    (pickUp_ == true || successfulDefend())){
+void Battle::tryPickUp() {
+    if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
+        card_manager_ptr_->pickUp(getCurrentDefender());
         card_manager_ptr_->clearMiddle();
-        //New cards from middle are distributed to players
-        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
-        //Find a way to handle players that are now finished
+        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
         movePlayerRoles();
-        if(pickUp_){ //need a better if statement
-            movePlayerRoles(); //defender loses the ability to attack
-        }
+        movePlayerRoles(); //loses right to attack when picking up
 
-        battle_done_ = true;
-        //TODO: das sött nöd so funktioniere
+        //das isch alles chli goofy
+        curr_attacks_ = 0;
+        ok_msg_[ATTACKER] = false;
+        ok_msg_[CO_ATTACKER] = false;
         phase = BATTLEPHASE_FIRST_ATTACK;
+        first_battle_ = false;
+        battle_done_ = true;
     }
+}
+
+void Battle::doneEvent(ClientID clientID) {
+
+    if(players_bs_[clientID] == ATTACKER)    ok_msg_[ATTACKER] = true;
+    if(players_bs_[clientID] == CO_ATTACKER) ok_msg_[CO_ATTACKER] = true;
+    
+    if(phase == BATTLEPHASE_DEFENDED) {
+        card_manager_ptr_->clearMiddle();
+        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+        movePlayerRoles();
+        
+        //das isch alles chli goofy
+        curr_attacks_ = 0;
+        ok_msg_[ATTACKER] = false;
+        ok_msg_[CO_ATTACKER] = false;
+        phase = BATTLEPHASE_FIRST_ATTACK;
+        first_battle_ = false;
+        battle_done_ = true;
+        return;
+    }
+
+    if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
 }
 
 std::optional<Card> Battle::getReflectCard(ClientID clientID) {
@@ -451,30 +467,9 @@ void Battle::reflectEvent(ClientID clientID) {
 }
 
 void Battle::pickupEvent(ClientID clientID) {
-    pickUp_msg_ = true;
-    if(!successfulDefend()){
-        picked_up_cards_ = card_manager_ptr_->getMiddle();
-        card_manager_ptr_->pickUp(clientID);
-        pickUp_ = true;
-
-        //if both attackers already pressed ok, and the defender only now presses pick up
-        if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
-            card_manager_ptr_->clearMiddle();
-            card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), successfulDefend());
-            movePlayerRoles();
-            movePlayerRoles(); //loses right to attack when picking up
-            battle_done_ = true;
-            phase = BATTLEPHASE_POST_PICKUP;
-        }
-        return;
-    }
-    if(successfulDefend()){
-        //notify with illegal move (studid, why pick up when you defended everything lol)
-        PopupNotify err_msg;
-        err_msg.message = "Illegal move: 'All cards have been defended, cannot pick them up.'";
-        Network::sendMessage(std::make_unique<PopupNotify>(err_msg), clientID);
-        return;
-    }
+    if(players_bs_[clientID] != DEFENDER || phase != BATTLEPHASE_OPEN) return;
+    phase = BATTLEPHASE_POST_PICKUP;
+    tryPickUp();
 }
 
 /**
@@ -499,6 +494,7 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
 }
 
 void Battle::updateAvailableAction() {
+    //DEBUG
     std::string s = "";
     switch(phase) {
         case BATTLEPHASE_FIRST_ATTACK:
@@ -516,6 +512,7 @@ void Battle::updateAvailableAction() {
     }
 
     std::cout << "\n\nPHASE: " << s << "\n\n" << std::endl;
+    //END DEBUG
 
     for(auto bs : players_bs_) {
         const ClientID id = bs.first;

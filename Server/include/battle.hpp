@@ -78,8 +78,8 @@ class Battle {
         std::optional<Card> getReflectCard(ClientID clientID);
         bool topSlotsClear();
         bool passOnRankMatch(Rank rank);
-
         void updateAvailableAction();
+        void tryPickUp();
 
     public:
         

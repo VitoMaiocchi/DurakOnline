@@ -95,7 +95,8 @@ enum PlayerRole {
     ATTACKER,
     DEFENDER,
     CO_ATTACKER,
-    IDLE // there can be multiple of those right?
+    IDLE,
+    FINISHED
 }; //max 6 players
 
 #define PRINT_DEBUG(msg) \

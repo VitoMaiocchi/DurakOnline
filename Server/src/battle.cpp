@@ -13,15 +13,15 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+Battle::Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
                                     first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
     
     std::cout << "CREATE NEW BATTLE" << std::endl;
     phase = BATTLEPHASE_FIRST_ATTACK;
 
-    // max_attacks_ = first_battle ? 5 : 6;
-    if(first_battle){
+    // max_attacks_ = first battle ? 5 : 6;
+    if(type == BATTLETYPE_FIRST){
         max_attacks_ = 5;
     }
     //if in the endgame, where players have less than 6 cards on hand

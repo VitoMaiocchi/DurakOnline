@@ -31,13 +31,11 @@ class Game{
     public:
         // constructor taking in an array of player ids
         Game(std::set<ClientID> &players);
-        // destructor, should nominate the durak
-        ~Game();
 
         //add friend class
         friend class DurakGameTest;
 
-        bool createBattle();
+        void createBattle();
         bool isStarted();
         bool endGame();
         bool resetGame();

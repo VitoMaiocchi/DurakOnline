@@ -63,36 +63,27 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
         }
     }
     // - Start the first battle
-    // only decomment this when constructor of battle uses map
-    current_battle_ = Battle(true, player_roles_, card_manager_, finished_players_);
-
     // the constructor of Battle will then communicate to the clients the roles of the players
+    current_battle_ = Battle(BATTLETYPE_FIRST, player_roles_, card_manager_, finished_players_);
+
 }
 
-// destructor
-Game::~Game(){
-    //de bruchts nöd es wird alles automatisch deallocated
-}
+// determines at what stage the game is (BattleType) and creates battles accordingly
+// if only two players remain it should create an endgame battle
+void Game::createBattle(){
+    if(card_manager_.getNumberActivePlayers() == 2){
+        current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
+        return;
+    }
 
-bool Game::createBattle(){
-    // What does need to happen when a new battle is created?
-        // - Check if the game is over
-        // - Check if the game is started
-        // - Check if the game is in the endgame
-        // - Check if the game is in the reset state
-        // - Check if the turn order needs to be updated
-        // - Check if a client action event needs to be handled
-        // - Check if a client card event needs to be handled
-        // - Create a new battle
-
-
-        current_battle_ = Battle(false, player_roles_, card_manager_, finished_players_);
-    return false;
+    current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
+    return;
 }
 
 bool Game::isStarted(){
     return false;
 }
+
 //check if game is ended
 bool Game::endGame(){
     //only one player has cards left in his hand

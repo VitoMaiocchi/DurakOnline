@@ -63,18 +63,13 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
         }
     }
     // - Start the first battle
-    // only decomment this when constructor of battle uses map
-    current_battle_ = Battle(true, player_roles_, card_manager_, finished_players_);
-
     // the constructor of Battle will then communicate to the clients the roles of the players
+    current_battle_ = Battle(BATTLETYPE_FIRST, player_roles_, card_manager_, finished_players_);
+
 }
 
-// destructor
-Game::~Game(){
-    //de bruchts nöd es wird alles automatisch deallocated
-}
 
-bool Game::createBattle(){
+void Game::createBattle(){
     // What does need to happen when a new battle is created?
         // - Check if the game is over
         // - Check if the game is started
@@ -85,20 +80,54 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
+        // determines at what stage the game is (BattleType) and creates battles accordingly
+        // if only two players remain it should create an endgame battle
+        // if(card_manager_.getNumberActivePlayers() == 2){
+        //     current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
+        //     return;
+        // } else {
+        //     current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
+        //     return;
+        // }
 
-        current_battle_ = Battle(false, player_roles_, card_manager_, finished_players_);
-    return false;
+        //check who has no cards, mark them as Finished in the player roles and 
+        updateTurnOrder();
+        unsigned count = 0;
+        for(auto i : player_roles_){
+            if(i.second == ATTACKER || i.second == DEFENDER || i.second == CO_ATTACKER){
+                count++;
+            }
+        }
+        if(count <= 2){
+            current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
+        }
+        else{
+            current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
+        }
+    return;
 }
 
 bool Game::isStarted(){
     return false;
 }
+
 //check if game is ended
 bool Game::endGame(){
     //only one player has cards left in his hand
-    if(card_manager_.getNumberActivePlayers() == 1){
+    // if(card_manager_.getNumberActivePlayers() == 1){
+    //     return true;
+    // }
+    unsigned count = 0;
+    for(auto c : player_roles_){
+        unsigned int player_hand = card_manager_.getPlayerHand(c.first).size();
+        if(player_hand == 0){
+            count++; //count how many players have 0 cards
+        }
+    }
+    if(card_manager_.getNumberOfCardsOnDeck() == 0 && count == player_roles_.size() - 1){
         return true;
     }
+
     return false;
 }
 
@@ -106,9 +135,80 @@ bool Game::resetGame(){
     return false;
 }
 
-bool Game::updateTurnOrder(){
-    return false;
+void Game::updateTurnOrder() {
+    // Exit early if there are still cards in the deck
+    if (card_manager_.getNumberOfCardsOnDeck()) {
+        return;
+    }
+
+    // Find and update roles
+    for (auto it = player_roles_.begin(); it != player_roles_.end(); ++it) {
+        // Skip players who are already finished
+        if (it->second == FINISHED) {
+            continue;
+        }
+
+        // If the current ATTACKER has no cards left
+        if (it->second == ATTACKER && !card_manager_.getNumberOfCardsInHand(it->first)) {
+            it->second = FINISHED; // Mark the current ATTACKER as finished
+
+            // Find the next valid player to assign as ATTACKER
+            auto next_it = std::next(it);
+            while (next_it != player_roles_.end() && next_it->second == FINISHED) {
+                ++next_it;
+            }
+
+            // Wrap around if necessary
+            if (next_it == player_roles_.end()) {
+                next_it = player_roles_.begin();
+                while (next_it->second == FINISHED) {
+                    ++next_it;
+                }
+            }
+
+            // Assign the next valid player as ATTACKER
+            if (next_it != player_roles_.end()) {
+                next_it->second = ATTACKER;
+
+                // Assign the DEFENDER and CO_ATTACKER roles based on the new ATTACKER
+                auto defender_it = std::next(next_it);
+                while (defender_it != player_roles_.end() && defender_it->second == FINISHED) {
+                    ++defender_it;
+                }
+                if (defender_it == player_roles_.end()) {
+                    defender_it = player_roles_.begin();
+                    while (defender_it->second == FINISHED) {
+                        ++defender_it;
+                    }
+                }
+                defender_it->second = DEFENDER;
+                unsigned count = 0;
+                for(auto i : player_roles_){
+                    if(i.second == ATTACKER || i.second == DEFENDER || i.second == CO_ATTACKER){
+                        count++;
+                    }
+                }
+                // if(count <= 2) return;
+
+                auto co_attacker_it = std::next(defender_it);
+                while (co_attacker_it != player_roles_.end() && co_attacker_it->second == FINISHED) {
+                    ++co_attacker_it;
+                }
+                if (co_attacker_it == player_roles_.end()) {
+                    co_attacker_it = player_roles_.begin();
+                    while (co_attacker_it->second == FINISHED) {
+                        ++co_attacker_it;
+                    }
+                }
+                co_attacker_it->second = CO_ATTACKER;
+
+                //TODO: need to loop over the rest and set to idle
+            }
+            return; // Exit after updating roles
+        }
+    }
 }
+
 
 bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID client){
     if(current_battle_.has_value()){
@@ -161,10 +261,6 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
             CardSlot slot = return_pce->slot;
 
             current_battle_->handleCardEvent(vector_of_cards, client, slot);
-            if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
-                //TODO: Message an client schicke wer durak isch
-                //TODO: Spiel beende
-            }
             return true;
         }
     return false;

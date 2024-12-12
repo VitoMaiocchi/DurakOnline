@@ -13,15 +13,41 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
-                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
+Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+                                    btype_(btype), players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
+    
+        //DEBUG
+    std::string s = "";
+    switch(btype_) {
+        case BATTLETYPE_FIRST:
+            s = "FIRST BATTLE";
+            first_battle_ = true;
+            break;
+        case BATTLETYPE_NORMAL:
+            s = "NORMAL BATTLE";
+            first_battle_ = false;
+            break;
+        case BATTLETYPE_ENDGAME:
+            s = "ENDGAME BATTLE";
+            first_battle_ = false;
+            // here it should set a flag so that if the second to last player plays his last card/s
+            // then the battle and game should end
+            move_could_end_game_ = true;
+            break;
+        default:
+            first_battle_ = false;
+            break;
+    }
+
+    std::cout << "\n\nBTYPE: " << s << "\n\n" << std::endl;
+    //END DEBUG
     
     std::cout << "CREATE NEW BATTLE" << std::endl;
     phase = BATTLEPHASE_FIRST_ATTACK;
 
-    // max_attacks_ = first_battle ? 5 : 6;
-    if(first_battle){
+    // max_attacks_ = first battle ? 5 : 6;
+    if(first_battle_){
         max_attacks_ = 5;
     }
     //if in the endgame, where players have less than 6 cards on hand
@@ -393,6 +419,9 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
         case IDLE:
             sendPopup("You are idle and can not place cards", player_id);
             break;
+        case FINISHED:
+            sendPopup("You are finished and can not place cards", player_id);
+            break;
     }
 
     updateAvailableAction();
@@ -421,23 +450,41 @@ void Battle::doneEvent(ClientID clientID) {
 
     if(players_bs_[clientID] == ATTACKER)    ok_msg_[ATTACKER] = true;
     if(players_bs_[clientID] == CO_ATTACKER) ok_msg_[CO_ATTACKER] = true;
+    // if(btype_ == BATTLETYPE_NORMAL){
+        if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
+            card_manager_ptr_->clearMiddle();
+            card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+            movePlayerRoles();
+            
+            //das isch alles chli goofy
+            curr_attacks_ = 0;
+            ok_msg_[ATTACKER] = false;
+            ok_msg_[CO_ATTACKER] = false;
+            phase = BATTLEPHASE_FIRST_ATTACK;
+            first_battle_ = false;
+            battle_done_ = true;
+            return;
+        }
+        if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
+    // }
+    // else if(btype_ == BATTLETYPE_ENDGAME){
+    //     if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER]) {
+    //         card_manager_ptr_->clearMiddle();
+    //         card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+    //         movePlayerRoles();
+    //         //das isch alles chli goofy
+    //         curr_attacks_ = 0;
+    //         ok_msg_[ATTACKER] = false;
+    //         phase = BATTLEPHASE_FIRST_ATTACK;
+    //         first_battle_ = false;
+    //         battle_done_ = true;
+    //         return;
+    //     }
+    //     if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
+    // }
     
-    if(phase == BATTLEPHASE_DEFENDED) {
-        card_manager_ptr_->clearMiddle();
-        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
-        movePlayerRoles();
-        
-        //das isch alles chli goofy
-        curr_attacks_ = 0;
-        ok_msg_[ATTACKER] = false;
-        ok_msg_[CO_ATTACKER] = false;
-        phase = BATTLEPHASE_FIRST_ATTACK;
-        first_battle_ = false;
-        battle_done_ = true;
-        return;
-    }
 
-    if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
+
 }
 
 std::optional<Card> Battle::getReflectCard(ClientID clientID) {
@@ -462,6 +509,7 @@ void Battle::reflectEvent(ClientID clientID) {
     if(!card.has_value()) return;
     std::cout << "reflect event succesfull" << std::endl;
     movePlayerRoles();
+    UpdatePickUpOrder();
 }
 
 void Battle::pickupEvent(ClientID clientID) {
@@ -472,9 +520,9 @@ void Battle::pickupEvent(ClientID clientID) {
 
 /**
  * PRE: takes the message (already broken down)
- * POST: calls the next functions, either pick_up or pass_on, returns true if this succeeded
+ * POST: calls the next functions, either pick_up or pass_on
  */
-bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
+void Battle::handleActionEvent(ClientID player_id, ClientAction action){
     switch(action) {
         case CLIENTACTION_PASS_ON:
             reflectEvent(player_id);
@@ -485,10 +533,13 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         case CLIENTACTION_PICK_UP:
             pickupEvent(player_id);
             break;
+        case CLIENTACTION_READY:
+            std::cerr << "ready message should not reach into battle" << std::endl;
+            break;
     }
 
     updateAvailableAction();
-    return true;
+    return;
 }
 
 void Battle::updateAvailableAction() {
@@ -507,6 +558,8 @@ void Battle::updateAvailableAction() {
         case BATTLEPHASE_DEFENDED:
             s = "DEFENDED";
         break;
+        case BATTLEPHASE_DONE:
+            s = "DONE";
     }
 
     std::cout << "\n\nPHASE: " << s << "\n\n" << std::endl;
@@ -587,7 +640,9 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     
     //check if valid move
     //this should happen before the player roles are moved
-    if(!isValidMove(card, player_id, slot)){
+    if(!isValidMove(card, player_id, slot) || curr_attacks_ == max_attacks_){
+        // PopupNotify popup;
+        // popup.message = "Illegal Move: "
         return false; //if the move is not valid
     }
     else {
@@ -708,6 +763,8 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         } 
     }
     if(role == ATTACKER){
+        //set max attacks to the amount of cards in defenders hand
+        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -729,6 +786,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     }
     //coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
+        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -762,15 +820,14 @@ void Battle::attack(ClientID client, Card card){
     std::cout << "attack() was called"<<std::endl;
     //calls attack
     card_manager_ptr_->attackCard(card, client);
+    // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
+    if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
+        // the game should end
+    }
 
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-    
-    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
-        battle_done_=true;
-    }
-        
 
 }
 
@@ -778,13 +835,13 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     std::cout << "defend was called" <<std::endl;
     //calls defendCard
     card_manager_ptr_->defendCard(card, client, slot);
+    // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
+    if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
+        // the game should end
+    }
     attacks_to_defend_--;
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-
-    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
-        battle_done_=true;
-    }
 }
 
 
@@ -813,7 +870,7 @@ void Battle::movePlayerRoles(){
         }
     }
     // Handle cases where there are fewer than 3 players left
-    if (/*BATTLETYPE_ENDGAME*/ active_players < 3) {
+    if (btype_ == BATTLETYPE_ENDGAME) {
         // Rotate roles between ATTACKER and DEFENDER only
         auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
                                         [](const auto& pair) { return pair.second == ATTACKER; });

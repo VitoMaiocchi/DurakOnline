@@ -113,15 +113,14 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
         case MESSAGETYPE_PLAYCARD_EVENT: {
             // Handle card play event if a game is active
             if (current_game) {
-                if(!current_game->endGame()){
-                    current_game->handleClientCardEvent(std::move(msg_r), client);
-                }
-            
-                else if(current_game->endGame()){
+                // handleClientCardEvent() returns 0 if the event was passed on successfully (game is not yet finished and there is no durak)
+                // and it returns the duraks id if the game is finished
+                ClientID durak = current_game->handleClientCardEvent(std::move(msg_r), client);
+                if(durak){
                     //clean up
                     //player update first
                     PlayerUpdate player_update;
-                    player_update.durak = 0; //getlastplayer
+                    player_update.durak = durak; //getlastplayer
                     player_update.player_count = players_map.size();
                     for(auto player : players_map){
                         player_update.player_names[player.first] = player.second.name;
@@ -138,8 +137,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                         ready_clients.erase(c); //unready the clients in the lobby so they restart the game
                     }
                 }
-            }
-            else {
+            } else {
                 std::cerr << "No active game to handle play card event!" << std::endl;
             }
             break;

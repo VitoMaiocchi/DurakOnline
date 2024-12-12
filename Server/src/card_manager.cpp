@@ -344,3 +344,8 @@ bool CardManager::playerFinished(ClientID playerID){
     return !getNumberOfCardsInHand(playerID);
 }
 
+std::optional<Card> CardManager::getMiddleSlot(uint slot) {
+    auto stack = middle_[slot%6];
+    if(slot/6) return stack.second; //top
+    else return stack.first;     //bottom
+}

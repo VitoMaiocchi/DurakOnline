@@ -64,7 +64,8 @@ namespace Network {
         std::cout << "client id ["<< client_id<<"]" << std::endl;
         if(!recive_connector.connect(sockpp::inet_address(ip, port))) return 0;
         recive_connector.send("recive " + std::to_string(client_id));
-        recive_connector.read_timeout(std::chrono::microseconds(1000));
+        recive_connector.read_timeout(std::chrono::microseconds(10000));
+        connected = true;
         recive_thread = std::thread([](){
             char buffer[BUFFER_SIZE];
             while(connected) {
@@ -88,7 +89,6 @@ namespace Network {
         });
         std::cout << "connection established" << std::endl;
 
-        connected = true;
         return client_id;
     }
 

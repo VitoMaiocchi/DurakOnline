@@ -28,6 +28,15 @@ void sortCards(std::vector<Card> &cards) {
         if(a.rank == b.rank) return a.suit > b.suit; 
         return a.rank > b.rank;
     });
+    /*
+    std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
+        return a.rank > b.rank;
+    });
+
+    std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b) {
+        if (a.suit == b.suit) return a.rank < b.rank;
+        return a.suit < b.suit;
+    });*/
 }
 
 

@@ -41,7 +41,7 @@ class Game{
         bool isStarted();
         bool endGame();
         bool resetGame();
-        bool updateTurnOrder();
+        void updateTurnOrder();
         bool handleClientActionEvent(std::unique_ptr<Message> message, ClientID client);
         bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
         void updateFinishedPlayers();

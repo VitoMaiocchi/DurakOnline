@@ -13,15 +13,33 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+Battle::Battle(BattleType btype, bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+                                    btype_(btype),
                                     first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
+    
+        //DEBUG
+    std::string s = "";
+    switch(btype_) {
+        case BATTLETYPE_FIRST:
+            s = "FIRST BATTLE";
+        break;
+        case BATTLETYPE_NORMAL:
+            s = "NORMAL BATTLE";
+        break;
+        case BATTLETYPE_ENDGAME:
+            s = "ENDGAME BATTLE";
+        break;
+    }
+
+    std::cout << "\n\nBTYPE: " << s << "\n\n" << std::endl;
+    //END DEBUG
     
     std::cout << "CREATE NEW BATTLE" << std::endl;
     phase = BATTLEPHASE_FIRST_ATTACK;
 
     // max_attacks_ = first_battle ? 5 : 6;
-    if(first_battle){
+    if(btype == BATTLETYPE_FIRST){
         max_attacks_ = 5;
     }
     //if in the endgame, where players have less than 6 cards on hand
@@ -421,23 +439,41 @@ void Battle::doneEvent(ClientID clientID) {
 
     if(players_bs_[clientID] == ATTACKER)    ok_msg_[ATTACKER] = true;
     if(players_bs_[clientID] == CO_ATTACKER) ok_msg_[CO_ATTACKER] = true;
+    // if(btype_ == BATTLETYPE_NORMAL){
+        if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
+            card_manager_ptr_->clearMiddle();
+            card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+            movePlayerRoles();
+            
+            //das isch alles chli goofy
+            curr_attacks_ = 0;
+            ok_msg_[ATTACKER] = false;
+            ok_msg_[CO_ATTACKER] = false;
+            phase = BATTLEPHASE_FIRST_ATTACK;
+            first_battle_ = false;
+            battle_done_ = true;
+            return;
+        }
+        if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
+    // }
+    // else if(btype_ == BATTLETYPE_ENDGAME){
+    //     if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER]) {
+    //         card_manager_ptr_->clearMiddle();
+    //         card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+    //         movePlayerRoles();
+    //         //das isch alles chli goofy
+    //         curr_attacks_ = 0;
+    //         ok_msg_[ATTACKER] = false;
+    //         phase = BATTLEPHASE_FIRST_ATTACK;
+    //         first_battle_ = false;
+    //         battle_done_ = true;
+    //         return;
+    //     }
+    //     if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
+    // }
     
-    if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
-        card_manager_ptr_->clearMiddle();
-        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
-        movePlayerRoles();
-        
-        //das isch alles chli goofy
-        curr_attacks_ = 0;
-        ok_msg_[ATTACKER] = false;
-        ok_msg_[CO_ATTACKER] = false;
-        phase = BATTLEPHASE_FIRST_ATTACK;
-        first_battle_ = false;
-        battle_done_ = true;
-        return;
-    }
 
-    if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
+
 }
 
 std::optional<Card> Battle::getReflectCard(ClientID clientID) {
@@ -813,7 +849,7 @@ void Battle::movePlayerRoles(){
         }
     }
     // Handle cases where there are fewer than 3 players left
-    if (/*BATTLETYPE_ENDGAME*/ active_players < 3) {
+    if (btype_ == BATTLETYPE_ENDGAME) {
         // Rotate roles between ATTACKER and DEFENDER only
         auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
                                         [](const auto& pair) { return pair.second == ATTACKER; });

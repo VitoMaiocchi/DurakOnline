@@ -41,7 +41,7 @@ class Battle {
         std::set<ClientID> finished_players_; //they get the battle state update idle 
 
         BattlePhase phase;
-        BattleType type;
+        BattleType btype_;
 
         bool defending_flag_ = false;
         int max_attacks_ = 6;
@@ -91,7 +91,7 @@ class Battle {
     public:
         
         Battle(); //default Constructor
-        Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
+        Battle(BattleType btype, bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
         ~Battle(); //default Destructor
         
         //add friend class

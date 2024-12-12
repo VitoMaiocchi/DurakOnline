@@ -76,8 +76,32 @@ void Game::createBattle(){
         return;
     }
 
-    current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
-    return;
+bool Game::createBattle(){
+    // What does need to happen when a new battle is created?
+        // - Check if the game is over
+        // - Check if the game is started
+        // - Check if the game is in the endgame
+        // - Check if the game is in the reset state
+        // - Check if the turn order needs to be updated
+        // - Check if a client action event needs to be handled
+        // - Check if a client card event needs to be handled
+        // - Create a new battle
+
+        //check who has no cards, mark them as Finished in the player roles and 
+        updateTurnOrder();
+        unsigned count = 0;
+        for(auto i : player_roles_){
+            if(i.second == ATTACKER || i.second == DEFENDER || i.second == CO_ATTACKER){
+                count++;
+            }
+        }
+        if(count <= 2){
+            current_battle_ = Battle(BATTLETYPE_ENDGAME,false, player_roles_, card_manager_, finished_players_);
+        }
+        else{
+            current_battle_ = Battle(BATTLETYPE_NORMAL, false, player_roles_, card_manager_, finished_players_);
+        }
+    return false;
 }
 
 bool Game::isStarted(){
@@ -97,9 +121,80 @@ bool Game::resetGame(){
     return false;
 }
 
-bool Game::updateTurnOrder(){
-    return false;
+void Game::updateTurnOrder() {
+    // Exit early if there are still cards in the deck
+    if (card_manager_.getNumberOfCardsOnDeck()) {
+        return;
+    }
+
+    // Find and update roles
+    for (auto it = player_roles_.begin(); it != player_roles_.end(); ++it) {
+        // Skip players who are already finished
+        if (it->second == FINISHED) {
+            continue;
+        }
+
+        // If the current ATTACKER has no cards left
+        if (it->second == ATTACKER && !card_manager_.getNumberOfCardsInHand(it->first)) {
+            it->second = FINISHED; // Mark the current ATTACKER as finished
+
+            // Find the next valid player to assign as ATTACKER
+            auto next_it = std::next(it);
+            while (next_it != player_roles_.end() && next_it->second == FINISHED) {
+                ++next_it;
+            }
+
+            // Wrap around if necessary
+            if (next_it == player_roles_.end()) {
+                next_it = player_roles_.begin();
+                while (next_it->second == FINISHED) {
+                    ++next_it;
+                }
+            }
+
+            // Assign the next valid player as ATTACKER
+            if (next_it != player_roles_.end()) {
+                next_it->second = ATTACKER;
+
+                // Assign the DEFENDER and CO_ATTACKER roles based on the new ATTACKER
+                auto defender_it = std::next(next_it);
+                while (defender_it != player_roles_.end() && defender_it->second == FINISHED) {
+                    ++defender_it;
+                }
+                if (defender_it == player_roles_.end()) {
+                    defender_it = player_roles_.begin();
+                    while (defender_it->second == FINISHED) {
+                        ++defender_it;
+                    }
+                }
+                defender_it->second = DEFENDER;
+                unsigned count = 0;
+                for(auto i : player_roles_){
+                    if(i.second == ATTACKER || i.second == DEFENDER || i.second == CO_ATTACKER){
+                        count++;
+                    }
+                }
+                // if(count <= 2) return;
+
+                auto co_attacker_it = std::next(defender_it);
+                while (co_attacker_it != player_roles_.end() && co_attacker_it->second == FINISHED) {
+                    ++co_attacker_it;
+                }
+                if (co_attacker_it == player_roles_.end()) {
+                    co_attacker_it = player_roles_.begin();
+                    while (co_attacker_it->second == FINISHED) {
+                        ++co_attacker_it;
+                    }
+                }
+                co_attacker_it->second = CO_ATTACKER;
+
+                //TODO: need to loop over the rest and set to idle
+            }
+            return; // Exit after updating roles
+        }
+    }
 }
+
 
 bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID client){
     if(current_battle_.has_value()){

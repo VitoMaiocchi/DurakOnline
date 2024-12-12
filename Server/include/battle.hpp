@@ -41,7 +41,7 @@ class Battle {
         std::set<ClientID> finished_players_; //they get the battle state update idle 
 
         BattlePhase phase;
-        BattleType type;
+        BattleType btype_;
 
         bool move_could_end_game_ = false;
         bool defending_flag_ = false;

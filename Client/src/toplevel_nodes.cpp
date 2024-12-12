@@ -46,6 +46,11 @@ class Settings_screen : public Node {
     bool disappear = false;
 public:
     std::unique_ptr<Node> back_button;
+    std::unique_ptr<Node> trump_button;
+    std::unique_ptr<Node> suit_button;
+    std::unique_ptr<Node> ascend_button;
+    Extends button_background;
+    int selected = 0;
 
     Settings_screen() {
         back_button = std::make_unique<ButtonNode>("BACK");
@@ -54,6 +59,22 @@ public:
             updateShow(false);
         });
         updateShow(false);
+
+        trump_button = std::make_unique<ButtonNode>("TRUMP");
+        trump_button->setClickEventCallback([this](float x, float y){
+            Settings::sortType = SORTTYPE_TRUMP;
+            selected = 0;
+        });
+        suit_button = std::make_unique<ButtonNode>("SUIT");
+        suit_button->setClickEventCallback([this](float x, float y){
+            Settings::sortType = SORTTYPE_SUIT;
+            selected = 1;
+        });
+        ascend_button = std::make_unique<ButtonNode>("ASCEND");
+        ascend_button->setClickEventCallback([this](float x, float y){
+            Settings::sortType = SORTTYPE_ASCEND;
+            selected = 2;
+        });
     }
 
     void updateShow(bool show) {
@@ -80,10 +101,38 @@ public:
 
         back_button->updateExtends({
             extends.x + extends.width * 0.25f,
-            extends.y + extends.height * 0.1f,
+            extends.y + extends.height * 0.125f,
             extends.width * 0.5f,
             extends.height * 0.1f,
         });
+
+        float button_width = ext.width * 0.15f;
+        float available_area = ext.width * 0.5f;
+        float total_button_width = button_width * 3;
+        float spacing = (available_area - total_button_width) / 4;
+        float start_x = ext.x + (ext.width - available_area) / 2.0f;
+        Extends trump_ext{
+            start_x + spacing,
+            ext.y + ext.height * 0.45f,
+            button_width,
+            ext.height * 0.1f,
+        };
+        trump_button->updateExtends(trump_ext);
+        Extends suit_ext{
+            start_x + spacing * 2 + button_width,
+            ext.y + ext.height * 0.45f,
+            button_width,
+            ext.height * 0.1f,
+        };
+        suit_button->updateExtends(suit_ext);
+        Extends ascend_ext{
+            start_x + spacing * 3 + button_width * 2,
+            ext.y + ext.height * 0.45f,
+            button_width,
+            ext.height * 0.1f,
+        };
+        ascend_button->updateExtends(ascend_ext);
+
     }
 
     void draw() override {
@@ -93,11 +142,40 @@ public:
         // Base rectangle extends
         Extends base_ext = {
             extends.x + extends.width * 0.2f,
-            extends.y + extends.height * 0.05f,
+            extends.y + extends.height * 0.075f,
             extends.width * 0.6f,
-            extends.height * 0.9f,
+            extends.height * 0.85f,
         };
         OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        Extends ext = extends;
+        float button_width = ext.width * 0.15f;
+        float available_area = ext.width * 0.5f;
+        float total_button_width = button_width * 3;
+        float spacing = (available_area - total_button_width) / 4;
+        float start_x = ext.x + (ext.width - available_area) / 2.0f;
+        Extends trump_ext{
+            start_x + spacing,
+            ext.y + ext.height * 0.45f,
+            button_width,
+            ext.height * 0.1f,
+        };
+        Extends suit_ext{
+            start_x + spacing * 2 + button_width,
+            ext.y + ext.height * 0.45f,
+            button_width,
+            ext.height * 0.1f,
+        };
+        Extends ascend_ext{
+            start_x + spacing * 3 + button_width * 2,
+            ext.y + ext.height * 0.45f,
+            button_width,
+            ext.height * 0.1f,
+        };
+        if(selected == 0) button_background = trump_ext;
+        if(selected == 1) button_background = suit_ext;
+        if(selected == 2) button_background = ascend_ext;
+        OpenGL::drawRectangle(button_background, COLOR_RED);
 
         // Title extends
         Extends title_ext = {
@@ -114,9 +192,12 @@ public:
             extends.width * 0.5f,
             extends.height * 0.3f,
         };
-        OpenGL::drawText("SORT BY", sort, COLOR_BLACK, TEXTSIZE_LARGE);
+        OpenGL::drawText("SORT BY:", sort, COLOR_BLACK, TEXTSIZE_LARGE);
 
         back_button->draw();
+        trump_button->draw();
+        suit_button->draw();
+        ascend_button->draw();
     }
 
     Extends getCompactExtends(Extends ext) override {
@@ -125,6 +206,9 @@ public:
 
     void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) override {
         function(back_button);
+        function(trump_button);
+        function(suit_button);
+        function(ascend_button);
     }
 
 };

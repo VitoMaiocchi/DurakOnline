@@ -425,6 +425,7 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
     }
 
     updateAvailableAction();
+    card_manager_ptr_->cardUpdate();
     return false;
 }
 
@@ -515,6 +516,8 @@ void Battle::reflectEvent(ClientID clientID) {
 void Battle::pickupEvent(ClientID clientID) {
     if(players_bs_[clientID] != DEFENDER || phase != BATTLEPHASE_OPEN) return;
     phase = BATTLEPHASE_POST_PICKUP;
+    //for(ClientID : Durask)
+    //sendPopup("The defender Picked up. You can now throw in.")
     tryPickUp();
 }
 
@@ -539,6 +542,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
     }
 
     updateAvailableAction();
+    card_manager_ptr_->cardUpdate();
     return;
 }
 

@@ -22,9 +22,7 @@ CardManager::CardManager(std::set<ClientID> players) : players(players){
 
     //Trumpf bestimme
     determineTrump();
-
     cardUpdate();
-    
     // at the end of the constructor card manager should communicate the current status of the cards in play
     // for this we use the message CARD_UPDATE
 }
@@ -147,8 +145,6 @@ bool CardManager::attackCard(Card card, ClientID PlayerID){
     ++number_cards_middle_;
     --player_number_of_cards_[PlayerID];
 
-    
-    cardUpdate();
     return 0;
 }
 
@@ -169,8 +165,6 @@ void CardManager::defendCard(Card card, ClientID PlayerID, unsigned int slot){
     ++number_cards_middle_;
     --player_number_of_cards_[PlayerID];
 
-    
-    cardUpdate();
 }
 
 //PRE:
@@ -193,9 +187,6 @@ bool CardManager::clearMiddle(){
             //clear the pair 
             slot = {std::nullopt, std::nullopt};
         }
-
-        
-        cardUpdate();
     }
     
     //Azahl charte i de mitti apasse
@@ -229,9 +220,6 @@ void CardManager::pickUp(ClientID playerID_def){
             slot = {std::nullopt, std::nullopt};
         }
     }
-
-
-    cardUpdate();
     
 }   
 
@@ -248,8 +236,6 @@ void CardManager::distributeNewCards(std::deque<ClientID> attack_order_, ClientI
     if (succesful_defend){
         drawFromMiddle(current_defender);
     }
-
-    cardUpdate();
 }
 
 //PRE: Valid PlayerID
@@ -304,8 +290,6 @@ void CardManager::addCardToPlayerHand(ClientID playerID, const Card& card) {
         player_hands_[playerID].push_back(card);
         player_number_of_cards_[playerID]++;
     }
-
-    cardUpdate();
 }
 
 //send a card update to each client

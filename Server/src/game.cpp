@@ -63,16 +63,18 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
         }
     }
     // - Start the first battle
-    // only decomment this when constructor of battle uses map
-    current_battle_ = Battle(BATTLETYPE_FIRST,true, player_roles_, card_manager_, finished_players_);
-
     // the constructor of Battle will then communicate to the clients the roles of the players
+    current_battle_ = Battle(BATTLETYPE_FIRST, player_roles_, card_manager_, finished_players_);
+
 }
 
-// destructor
-Game::~Game(){
-    //de bruchts nöd es wird alles automatisch deallocated
-}
+// determines at what stage the game is (BattleType) and creates battles accordingly
+// if only two players remain it should create an endgame battle
+void Game::createBattle(){
+    if(card_manager_.getNumberActivePlayers() == 2){
+        current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
+        return;
+    }
 
 bool Game::createBattle(){
     // What does need to happen when a new battle is created?
@@ -105,6 +107,7 @@ bool Game::createBattle(){
 bool Game::isStarted(){
     return false;
 }
+
 //check if game is ended
 bool Game::endGame(){
     //only one player has cards left in his hand
@@ -244,10 +247,6 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
             CardSlot slot = return_pce->slot;
 
             current_battle_->handleCardEvent(vector_of_cards, client, slot);
-            if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
-                //TODO: Message an client schicke wer durak isch
-                //TODO: Spiel beende
-            }
             return true;
         }
     return false;

@@ -33,7 +33,7 @@ namespace DurakServer{
     extern std::map<ClientID, Player> players_map;
 
     // Minimum number of players required to start a game
-    constexpr size_t MIN_PLAYERS = 3;
+    constexpr size_t MIN_PLAYERS = 2;
     //maximum number of players that can play the game
     constexpr size_t MAX_PLAYERS = 6;
 }

@@ -13,9 +13,8 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(BattleType btype, bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
-                                    btype_(btype),
-                                    first_battle_(first_battle), players_bs_(players), card_manager_ptr_(&card_manager),
+Battle::Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+                                    players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
     
         //DEBUG
@@ -38,8 +37,21 @@ Battle::Battle(BattleType btype, bool first_battle, std::map<ClientID, PlayerRol
     std::cout << "CREATE NEW BATTLE" << std::endl;
     phase = BATTLEPHASE_FIRST_ATTACK;
 
-    // max_attacks_ = first_battle ? 5 : 6;
-    if(btype == BATTLETYPE_FIRST){
+    switch(type){
+        case BATTLETYPE_FIRST:
+            first_battle_ = true;
+            break;
+        case BATTLETYPE_ENDGAME:
+            first_battle_ = false;
+            // here it should set a flag so that if the second to last player plays his last card/s
+            // then the battle and game should end
+            move_could_end_game_ = true;
+            break;
+        default:
+            first_battle_ = false;
+    }
+    // max_attacks_ = first battle ? 5 : 6;
+    if(first_battle_){
         max_attacks_ = 5;
     }
     //if in the endgame, where players have less than 6 cards on hand
@@ -508,9 +520,9 @@ void Battle::pickupEvent(ClientID clientID) {
 
 /**
  * PRE: takes the message (already broken down)
- * POST: calls the next functions, either pick_up or pass_on, returns true if this succeeded
+ * POST: calls the next functions, either pick_up or pass_on
  */
-bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
+void Battle::handleActionEvent(ClientID player_id, ClientAction action){
     switch(action) {
         case CLIENTACTION_PASS_ON:
             reflectEvent(player_id);
@@ -521,10 +533,13 @@ bool Battle::handleActionEvent(ClientID player_id, ClientAction action){
         case CLIENTACTION_PICK_UP:
             pickupEvent(player_id);
             break;
+        case CLIENTACTION_READY:
+            std::cerr << "ready message should not reach into battle" << std::endl;
+            break;
     }
 
     updateAvailableAction();
-    return true;
+    return;
 }
 
 void Battle::updateAvailableAction() {
@@ -543,6 +558,8 @@ void Battle::updateAvailableAction() {
         case BATTLEPHASE_DEFENDED:
             s = "DEFENDED";
         break;
+        case BATTLEPHASE_DONE:
+            s = "DONE";
     }
 
     std::cout << "\n\nPHASE: " << s << "\n\n" << std::endl;
@@ -798,15 +815,14 @@ void Battle::attack(ClientID client, Card card){
     std::cout << "attack() was called"<<std::endl;
     //calls attack
     card_manager_ptr_->attackCard(card, client);
+    // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
+    if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
+        game_done_ = true;
+    }
 
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-    
-    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
-        battle_done_=true;
-    }
-        
 
 }
 
@@ -814,13 +830,13 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     std::cout << "defend was called" <<std::endl;
     //calls defendCard
     card_manager_ptr_->defendCard(card, client, slot);
+    // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
+    if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
+        game_done_ = true;
+    }
     attacks_to_defend_--;
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
-
-    if (card_manager_ptr_->getNumberActivePlayers()==1 && card_manager_ptr_->getNumberOfCardsOnDeck()){ //Returns true if the game is over
-        battle_done_=true;
-    }
 }
 
 

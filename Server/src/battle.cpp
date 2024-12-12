@@ -112,6 +112,18 @@ void sendPopup(std::string message, ClientID clientID) {
     Network::sendMessage(std::make_unique<PopupNotify>(popup), clientID);
 }
 
+void broadcastPopup(std::string message) {
+    PopupNotify popup;
+    popup.message = message;
+    for(ClientID client : DurakServer::clients) {
+        Network::sendMessage(std::make_unique<PopupNotify>(popup), client);
+    }
+}
+
+std::string getClientName(ClientID clientID) {
+    return DurakServer::players_map[clientID].name;
+}
+
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
     //if only 1 card with which is being attacked, check if valid move
     if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot) && !pickUp_){
@@ -517,8 +529,6 @@ void Battle::reflectEvent(ClientID clientID) {
 void Battle::pickupEvent(ClientID clientID) {
     if(players_bs_[clientID] != DEFENDER || phase != BATTLEPHASE_OPEN) return;
     phase = BATTLEPHASE_POST_PICKUP;
-    for(ClientID id : DurakServer::clients) 
-        sendPopup("The defender Picked up. You can now throw in.", id);
     tryPickUp();
 }
 
@@ -527,18 +537,30 @@ void Battle::pickupEvent(ClientID clientID) {
  * POST: calls the next functions, either pick_up or pass_on
  */
 void Battle::handleActionEvent(ClientID player_id, ClientAction action){
-    switch(action) {
+    std::string message = "";
+    switch(action){
         case CLIENTACTION_PASS_ON:
             reflectEvent(player_id);
             break;
         case CLIENTACTION_OK:
             doneEvent(player_id);
+            message = getClientName(player_id) + " pressed done.";
+            broadcastPopup(message);
             break;
         case CLIENTACTION_PICK_UP:
             pickupEvent(player_id);
+            message = getClientName(player_id) + " picked up. You can now throw in or press done.";
+            for(auto it : players_bs_) {
+                if(it.second == ATTACKER || it.second == CO_ATTACKER) {
+                    sendPopup(message, it.first);    
+                }
+            }
             break;
         case CLIENTACTION_READY:
             std::cerr << "ready message should not reach into battle" << std::endl;
+            break;
+        default:
+            std::cerr << "unknown action" << std::endl;
             break;
     }
 

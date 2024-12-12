@@ -80,7 +80,9 @@ inline std::string getPlayerIconPath(const std::string &name) {
     if(name == "danil" || name == "Danil") path = "player.png";
     if(name == "thomas" || name == "Thomas") path = "clown.png";
     if(name == "vito" || name == "Vito") path = "chad.jpg";
-    if(name == "eric" || name == "Eric") path = "chad.jpg";
+    if(name == "eric" || name == "Eric") path = "zauberlehrling.png";
+    if(name == "kingthomas" || name == "KingThomas") path = "königthomas.jpg";
+    if(name == "noah" || name == "Noah") path = "hund.png";
     return CLIENT_RES_DIR + "skins/" + path;
 }
 

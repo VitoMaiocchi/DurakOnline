@@ -13,8 +13,8 @@
  */
 
 //constructor, passes if it is first battle or not and passes the players with their roles
-Battle::Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
-                                    players_bs_(players), card_manager_ptr_(&card_manager),
+Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
+                                    btype_(btype), players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
     
         //DEBUG
@@ -22,13 +22,22 @@ Battle::Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardMana
     switch(btype_) {
         case BATTLETYPE_FIRST:
             s = "FIRST BATTLE";
-        break;
+            first_battle_ = true;
+            break;
         case BATTLETYPE_NORMAL:
             s = "NORMAL BATTLE";
-        break;
+            first_battle_ = false;
+            break;
         case BATTLETYPE_ENDGAME:
             s = "ENDGAME BATTLE";
-        break;
+            first_battle_ = false;
+            // here it should set a flag so that if the second to last player plays his last card/s
+            // then the battle and game should end
+            move_could_end_game_ = true;
+            break;
+        default:
+            first_battle_ = false;
+            break;
     }
 
     std::cout << "\n\nBTYPE: " << s << "\n\n" << std::endl;
@@ -37,19 +46,6 @@ Battle::Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardMana
     std::cout << "CREATE NEW BATTLE" << std::endl;
     phase = BATTLEPHASE_FIRST_ATTACK;
 
-    switch(type){
-        case BATTLETYPE_FIRST:
-            first_battle_ = true;
-            break;
-        case BATTLETYPE_ENDGAME:
-            first_battle_ = false;
-            // here it should set a flag so that if the second to last player plays his last card/s
-            // then the battle and game should end
-            move_could_end_game_ = true;
-            break;
-        default:
-            first_battle_ = false;
-    }
     // max_attacks_ = first battle ? 5 : 6;
     if(first_battle_){
         max_attacks_ = 5;
@@ -422,6 +418,9 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
             break;
         case IDLE:
             sendPopup("You are idle and can not place cards", player_id);
+            break;
+        case FINISHED:
+            sendPopup("You are finished and can not place cards", player_id);
             break;
     }
 
@@ -817,7 +816,7 @@ void Battle::attack(ClientID client, Card card){
     card_manager_ptr_->attackCard(card, client);
     // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
     if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
-        game_done_ = true;
+        // the game should end
     }
 
     attacks_to_defend_++;
@@ -832,7 +831,7 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     card_manager_ptr_->defendCard(card, client, slot);
     // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
     if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
-        game_done_ = true;
+        // the game should end
     }
     attacks_to_defend_--;
     defense_started_ = true;

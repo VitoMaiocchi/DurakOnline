@@ -92,7 +92,7 @@ class Battle {
     public:
         
         Battle(); //default Constructor
-        Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
+        Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
         ~Battle(); //default Destructor
         
         //add friend class

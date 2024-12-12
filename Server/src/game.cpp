@@ -68,15 +68,8 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
 
 }
 
-// determines at what stage the game is (BattleType) and creates battles accordingly
-// if only two players remain it should create an endgame battle
-void Game::createBattle(){
-    if(card_manager_.getNumberActivePlayers() == 2){
-        current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
-        return;
-    }
 
-bool Game::createBattle(){
+void Game::createBattle(){
     // What does need to happen when a new battle is created?
         // - Check if the game is over
         // - Check if the game is started
@@ -87,6 +80,13 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
+        // determines at what stage the game is (BattleType) and creates battles accordingly
+        // if only two players remain it should create an endgame battle
+        // if(card_manager_.getNumberActivePlayers() == 2){
+        //     current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
+        //     return;
+        // }
+
         //check who has no cards, mark them as Finished in the player roles and 
         updateTurnOrder();
         unsigned count = 0;
@@ -96,12 +96,12 @@ bool Game::createBattle(){
             }
         }
         if(count <= 2){
-            current_battle_ = Battle(BATTLETYPE_ENDGAME,false, player_roles_, card_manager_, finished_players_);
+            current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
         }
         else{
-            current_battle_ = Battle(BATTLETYPE_NORMAL, false, player_roles_, card_manager_, finished_players_);
+            current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
         }
-    return false;
+    return;
 }
 
 bool Game::isStarted(){

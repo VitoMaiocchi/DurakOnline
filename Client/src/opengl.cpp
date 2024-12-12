@@ -338,7 +338,6 @@ namespace OpenGL {
     generateCharacterTextures();
     renderText(); (modified for use of the same vertex buffer)
     */
-    void renderText(std::string text, float x, float y, float scale, glm::vec3 color);
     void computeTextSize(std::string text, float scale, float &width, float &height);
 
     struct Character {

@@ -862,6 +862,11 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
+void Battle::removeFinishedPlayers(){
+    //finds players that have no cards
+    //move the player roles ones
+    //sets the player the player to finish
+}
 /**
  * POST: moves the player roles one to the next 
  */

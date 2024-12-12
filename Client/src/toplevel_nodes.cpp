@@ -46,18 +46,18 @@ class Settings_screen : public Node {
 public:
     std::unique_ptr<Node> back_button;
 
-    Settings_screen() : show(false) {
+    Settings_screen() {
         back_button = std::make_unique<ButtonNode>("BACK");
         back_button->setClickEventCallback([this](float x, float y){
             std::cout << "BACK (from Setting screen)" << std::endl;
             updateShow(false);
         });
-        cast(ButtonNode, back_button)->visible = this->show;
+        updateShow(false);
     }
 
     void updateShow(bool show) {
         this->show = show;
-        cast(ButtonNode, back_button)->visible = this->show;
+        cast(ButtonNode, back_button)->visible = show;
     }
 
     void updateExtends(Extends ext) override {
@@ -212,13 +212,13 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
 
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(lobby);
+    function(setting);
     function(back_button);
     function(ready_button);
     function(settings_button);
     for (auto &player_node : player_nodes) {
         function(player_node);
     }
-    function(setting);
 }
 
 void LobbyNode::playerUpdateNotify() {

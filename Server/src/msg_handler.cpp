@@ -122,7 +122,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                     //player update first
                     PlayerUpdate player_update;
                     player_update.durak = 0; //getlastplayer
-                    player_update.player_count = clients.size();
+                    player_update.player_count = players_map.size();
                     for(auto player : players_map){
                         player_update.player_names[player.first] = player.second.name;
                     }
@@ -133,7 +133,9 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                     for(auto c : clients){
                         Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
                         Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
-                        // ready_clients.erase(c);
+                    }
+                    for(auto c : clients){
+                        ready_clients.erase(c); //unready the clients in the lobby so they restart the game
                     }
                 }
             }
@@ -168,6 +170,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             }
             // Handle cleanup if a client disconnects mid-game
             if (current_game) {
+                // current_game->
                 // Implement logic to handle a player leaving
                 // e.g., burn their cards, adjust turn order, etc.
             }

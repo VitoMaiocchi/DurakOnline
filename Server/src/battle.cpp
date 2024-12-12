@@ -639,7 +639,9 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     
     //check if valid move
     //this should happen before the player roles are moved
-    if(!isValidMove(card, player_id, slot)){
+    if(!isValidMove(card, player_id, slot) || curr_attacks_ == max_attacks_){
+        // PopupNotify popup;
+        // popup.message = "Illegal Move: "
         return false; //if the move is not valid
     }
     else {
@@ -760,6 +762,8 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         } 
     }
     if(role == ATTACKER){
+        //set max attacks to the amount of cards in defenders hand
+        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -781,6 +785,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     }
     //coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
+        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);

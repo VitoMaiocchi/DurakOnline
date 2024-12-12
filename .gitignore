@@ -6,3 +6,4 @@ Client/build/
 Server/build/
 build/
 Server/docs
+.cache

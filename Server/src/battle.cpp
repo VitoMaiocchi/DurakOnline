@@ -1,5 +1,6 @@
 #include "../include/battle.hpp"
 #include "Networking/util.hpp"
+#include "../include/server.hpp"
 
 
 /**
@@ -516,8 +517,8 @@ void Battle::reflectEvent(ClientID clientID) {
 void Battle::pickupEvent(ClientID clientID) {
     if(players_bs_[clientID] != DEFENDER || phase != BATTLEPHASE_OPEN) return;
     phase = BATTLEPHASE_POST_PICKUP;
-    //for(ClientID : Durask)
-    //sendPopup("The defender Picked up. You can now throw in.")
+    for(ClientID id : DurakServer::clients) 
+        sendPopup("The defender Picked up. You can now throw in.", id);
     tryPickUp();
 }
 

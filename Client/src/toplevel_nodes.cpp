@@ -40,10 +40,99 @@ public:
     }
 };
 
+//Settings
+class Settings_screen : public Node {
+    bool show = false;
+    bool disappear = false;
+public:
+    std::unique_ptr<Node> back_button;
+
+    Settings_screen() {
+        back_button = std::make_unique<ButtonNode>("BACK");
+        back_button->setClickEventCallback([this](float x, float y){
+            std::cout << "BACK (from Setting screen)" << std::endl;
+            updateShow(false);
+        });
+        updateShow(false);
+    }
+
+    void updateShow(bool show) {
+        if(show) {
+            this->show = show;
+            cast(ButtonNode, back_button)->visible = show;
+            disappear = false;
+        } else disappear = true;
+    }
+
+    bool getShow() {
+        if(!show) return false;
+        if(disappear) {
+            show = false;
+            cast(ButtonNode, back_button)->visible = false;
+            disappear = false;
+            return true;
+        }
+        return true;
+    }
+
+    void updateExtends(Extends ext) override {
+        extends = ext;
+
+        back_button->updateExtends({
+            extends.x + extends.width * 0.25f,
+            extends.y + extends.height * 0.1f,
+            extends.width * 0.5f,
+            extends.height * 0.1f,
+        });
+    }
+
+    void draw() override {
+        if(!show) return;
+        //Background
+        OpenGL::drawRectangle(extends, glm::vec4(0, 0, 0, .7f));
+        // Base rectangle extends
+        Extends base_ext = {
+            extends.x + extends.width * 0.2f,
+            extends.y + extends.height * 0.05f,
+            extends.width * 0.6f,
+            extends.height * 0.9f,
+        };
+        OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        // Title extends
+        Extends title_ext = {
+                extends.x + extends.width * 0.25f,
+                extends.y + extends.height * 0.65f,
+                extends.width * 0.5f,
+                extends.height * 0.3f,
+        };
+        OpenGL::drawText("SETTINGS", title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
+
+        Extends sort = {
+            extends.x + extends.width * 0.25f,
+            extends.y + extends.height * 0.45f,
+            extends.width * 0.5f,
+            extends.height * 0.3f,
+        };
+        OpenGL::drawText("SORT BY", sort, COLOR_BLACK, TEXTSIZE_LARGE);
+
+        back_button->draw();
+    }
+
+    Extends getCompactExtends(Extends ext) override {
+        return ext;
+    }
+
+    void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) override {
+        function(back_button);
+    }
+
+};
 
 // LobbyNode Implementation
 LobbyNode::LobbyNode(Extends ext) {
     lobby = std::make_unique<Lobby>();
+    setting = std::make_unique<Settings_screen>();
 
     back_button = std::make_unique<ButtonNode>("BACK");
     back_button->setClickEventCallback([](float x, float y){
@@ -63,10 +152,12 @@ LobbyNode::LobbyNode(Extends ext) {
     cast(ButtonNode, ready_button)->visible = true;
 
     settings_button = std::make_unique<ButtonNode>("SETTINGS");
-    settings_button->setClickEventCallback([](float x, float y){
-        std::cout << "settings" << std::endl;
-    });
     cast(ButtonNode, settings_button)->visible = true;
+    settings_button->setClickEventCallback([this](float x, float y){
+        std::cout << "settings" << std::endl;
+
+        cast(Settings_screen, this->setting)->updateShow(true);
+    });
 
     playerUpdateNotify();
 
@@ -123,6 +214,8 @@ void LobbyNode::updateExtends(Extends ext) {
         node->updateExtends(current_player_ext); // Update the current player's extends
         ++i;
     }
+
+    setting->updateExtends(ext);
 }
 
 Extends LobbyNode::getCompactExtends(Extends ext) {
@@ -130,6 +223,8 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
 }
 
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
+    function(setting);
+    if(cast(Settings_screen, setting)->getShow()) return;
     function(lobby);
     function(back_button);
     function(ready_button);
@@ -163,6 +258,7 @@ void LobbyNode::draw() {
     for (auto &player_node : player_nodes) {
         player_node->draw();
     }
+    setting->draw();
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -363,3 +459,5 @@ void GameOverScreenNode::draw() {
     back_button->draw();
     rematch_button->draw();
 }
+
+

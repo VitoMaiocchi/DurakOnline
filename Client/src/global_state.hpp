@@ -25,4 +25,8 @@ namespace Viewport {
     void clickEventNotify(float x, float y);
     void createPopup(std::string text, uint seconds);
     void draw(uint time_delta);
-};
+}
+
+namespace Settings {
+    extern SortType sortType;
+}

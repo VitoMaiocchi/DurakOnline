@@ -89,6 +89,8 @@ class Battle {
         void updateAvailableAction();
         void tryPickUp();
 
+        void removeFinishedPlayers();
+
     public:
         
         Battle(); //default Constructor

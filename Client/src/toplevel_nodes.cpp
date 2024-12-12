@@ -89,7 +89,7 @@ public:
     void draw() override {
         if(!show) return;
         //Background
-        OpenGL::drawRectangle(extends, glm::vec4(.5f, .5f, .5f, 1.0f));
+        OpenGL::drawRectangle(extends, glm::vec4(0, 0, 0, .7f));
         // Base rectangle extends
         Extends base_ext = {
             extends.x + extends.width * 0.2f,
@@ -223,9 +223,9 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
 }
 
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
-    function(lobby);
     function(setting);
     if(cast(Settings_screen, setting)->getShow()) return;
+    function(lobby);
     function(back_button);
     function(ready_button);
     function(settings_button);
@@ -252,14 +252,13 @@ void LobbyNode::handleReadyUpdate(ReadyUpdate update) {
 
 void LobbyNode::draw() {
     lobby->draw();
-    setting->draw();
-    if(cast(Settings_screen, setting)->getShow()) return;
     back_button->draw();
     if(!GlobalState::players.find({GlobalState::clientID})->lobby->ready) ready_button->draw();
     settings_button->draw();
     for (auto &player_node : player_nodes) {
         player_node->draw();
     }
+    setting->draw();
 }
 
 //-----------------------------------------------------------------------------------------------------

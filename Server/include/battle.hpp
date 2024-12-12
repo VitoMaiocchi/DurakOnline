@@ -43,6 +43,7 @@ class Battle {
         BattlePhase phase;
         BattleType type;
 
+        bool move_could_end_game_ = false;
         bool defending_flag_ = false;
         int max_attacks_ = 6;
         int curr_attacks_ = 0;
@@ -91,7 +92,7 @@ class Battle {
     public:
         
         Battle(); //default Constructor
-        Battle(bool first_battle, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
+        Battle(BattleType type, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players);
         ~Battle(); //default Destructor
         
         //add friend class
@@ -99,7 +100,7 @@ class Battle {
         friend class DurakGameTest;
 
         bool handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot);
-        bool handleActionEvent(ClientID player_id, ClientAction action);
+        void handleActionEvent(ClientID player_id, ClientAction action);
         bool successfulDefend();
         bool passOn(Card card, ClientID player_id, CardSlot slot);
         bool isValidMove( const Card &card, ClientID player_id, CardSlot slot);

@@ -18,6 +18,64 @@
 
 ---
 
+High level Overview of the Code:
+
+DurakClient (text as found in Client/main.cpp):
+here is a rough overview over the high level functions in the DurakClient
+
+The DurakClient Code is made up of 3 main components.
+
+1. The Node Framework
+   (drawable.cpp)
+
+2. The Global Game State including any child Nodes
+   (gloabl_state.cpp, game_node.cpp toplevel_nodes.cpp) 
+
+3. OpenGl this includes the Window and any actuall rendering
+   (opengl.cpp)
+
+The Node Framework Provides a way to stucture anything displayed on screen
+in a hirachy of nodes. Any updates in the Window size propagte trough the node tree.
+The size of each Node in the tree is only calulated when the window size changes.
+This Extends of the Node is used to handle drawing and mouse events like hover/click.
+This makes everything scale dynamically
+(more detail in drawable.hpp)
+
+The Global Game State handels all parts that have something to do with Durak Game Logic.
+It handles and displays any updates from the server and provides thing like a login and
+game screen.
+(more detail in global_state.hpp)
+
+OpenGL is the graphics library used to render everything efficiently. To create a Window
+glfw is used. opengl.cpp provied a way to render prmitives like Text, Images and Rectangles
+to the screen each frame
+(more detail in opengl.hpp)
+
+
+Networking (text as found in Networking/include/Networking/network.hpp):
+HIGH LEVEL OVERVIEW OF NETWORKING:
+
+(network_client.cpp, network_server.cpp)
+the networking cpps are responsible for proving all network interactions
+each client opens 2 connections. For receving and sending. 
+The messages are recived on separate threads. Each recive thread adds 
+any messages to a massge queue. The newest message in the message queue
+can be fetched by calling recive message.
+The server version of recive Message blocks until a new message arrives.
+The client version returns null if nothing is recived to not block
+rendering frames wich happens on the same thread.
+
+(message.cpp)
+All message that are sent are of the abstact class Message
+The message class is responsible for serializing and deserializing any messages
+The different Message types are derived from Message and have to implment
+a to and from json function
+more detail about the message types in message.hpp, message.cpp
+
+
+Server
+TODO: high level overview over server
+
 
 # Git
 <details> <summary>Click to expand Git section</summary>

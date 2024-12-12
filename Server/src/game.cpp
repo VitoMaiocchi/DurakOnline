@@ -85,6 +85,9 @@ void Game::createBattle(){
         // if(card_manager_.getNumberActivePlayers() == 2){
         //     current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
         //     return;
+        // } else {
+        //     current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
+        //     return;
         // }
 
         //check who has no cards, mark them as Finished in the player roles and 

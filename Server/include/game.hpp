@@ -41,8 +41,9 @@ class Game{
         bool resetGame();
         void updateTurnOrder();
         bool handleClientActionEvent(std::unique_ptr<Message> message, ClientID client);
-        bool handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
+        ClientID handleClientCardEvent(std::unique_ptr<Message> message, ClientID client);
         void updateFinishedPlayers();
+        ClientID findlastplayer();
 
         //getter function for testing purposes
         Battle* getCurrentBattle(){ return &current_battle_.value();}

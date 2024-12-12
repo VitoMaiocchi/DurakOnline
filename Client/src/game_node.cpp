@@ -19,24 +19,35 @@
 #define BUTTON_BUFFER 10
 #define DECK_BUFFER 10
 
+SortType Settings::sortType = SORTTYPE_TRUMP;
+
 Suit GlobalState::trump_suit = SUIT_HEARTS;
 
 void sortCards(std::vector<Card> &cards) {
-    std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
-        if(a.suit == GlobalState::trump_suit && b.suit != GlobalState::trump_suit) return false;
-        if(a.suit != GlobalState::trump_suit && b.suit == GlobalState::trump_suit) return true;
-        if(a.rank == b.rank) return a.suit > b.suit; 
-        return a.rank > b.rank;
-    });
-    /*
-    std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
-        return a.rank > b.rank;
-    });
-
-    std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b) {
-        if (a.suit == b.suit) return a.rank < b.rank;
-        return a.suit < b.suit;
-    });*/
+    switch (Settings::sortType){
+        case SORTTYPE_TRUMP:{
+            std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
+                if(a.suit == GlobalState::trump_suit && b.suit != GlobalState::trump_suit) return false;
+                if(a.suit != GlobalState::trump_suit && b.suit == GlobalState::trump_suit) return true;
+                if(a.rank == b.rank) return a.suit > b.suit; 
+                return a.rank > b.rank;
+            });
+            break;
+        }
+        case SORTTYPE_ASCEND:{
+            std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
+                return a.rank > b.rank;
+            });
+            break;
+        }
+        case SORTTYPE_SUIT:{
+            std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b) {
+                if (a.suit == b.suit) return a.rank < b.rank;
+                return a.suit < b.suit;
+            });
+            break;
+        }
+    }
 }
 
 

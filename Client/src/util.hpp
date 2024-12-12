@@ -46,6 +46,11 @@ struct Player {
     bool operator==(const Player& other) const;
 };
 
+enum SortType{
+    SORTTYPE_SUIT,
+    SORTTYPE_ASCEND,
+    SORTTYPE_TRUMP
+};
 
 inline std::string getPlayerStateIcon(PlayerState state) {
     switch (state) {

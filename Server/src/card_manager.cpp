@@ -96,9 +96,16 @@ std::vector<std::pair<std::optional<Card>,std::optional<Card>> > CardManager::ge
 //PRE:
 //POST: Returns number of active players (players that haven't finished yet)
 unsigned int CardManager::getNumberActivePlayers(){
-    unsigned int activePlayers = std::count_if(player_hands_.begin(), player_hands_.end(), [](const std::pair<const ClientID, std::vector<Card>>& pair) {
-        return !pair.second.empty();
-    });
+    unsigned int activePlayers = 0;
+    if(getNumberOfCardsOnDeck()){
+        activePlayers = player_hands_.size();
+    }
+    else{
+        activePlayers = std::count_if(player_hands_.begin(), player_hands_.end(), [](const std::pair<const ClientID, std::vector<Card>>& pair) {
+            return !pair.second.empty();
+        });
+    }
+
     return activePlayers;
 }
 
@@ -343,7 +350,7 @@ bool CardManager::gameIsOver(){
 //PRE: If middle is not empty, this function should only be called  after cards have been distributed
 //POST: returns true if a player has finished the game (no cards left)
 bool CardManager::playerFinished(ClientID playerID){
-    return !getNumberOfCardsInHand(playerID);
+    return (!getNumberOfCardsInHand(playerID) && !getNumberOfCardsOnDeck());
 }
 
 std::optional<Card> CardManager::getMiddleSlot(uint slot) {

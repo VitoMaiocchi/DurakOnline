@@ -43,6 +43,7 @@ public:
 //Settings
 class Settings_screen : public Node {
     bool show = false;
+    bool disappear = false;
 public:
     std::unique_ptr<Node> back_button;
 
@@ -56,8 +57,22 @@ public:
     }
 
     void updateShow(bool show) {
-        this->show = show;
-        cast(ButtonNode, back_button)->visible = show;
+        if(show) {
+            this->show = show;
+            cast(ButtonNode, back_button)->visible = show;
+            disappear = false;
+        } else disappear = true;
+    }
+
+    bool getShow() {
+        if(!show) return false;
+        if(disappear) {
+            show = false;
+            cast(ButtonNode, back_button)->visible = false;
+            disappear = false;
+            return true;
+        }
+        return true;
     }
 
     void updateExtends(Extends ext) override {
@@ -142,9 +157,6 @@ LobbyNode::LobbyNode(Extends ext) {
         std::cout << "settings" << std::endl;
 
         cast(Settings_screen, this->setting)->updateShow(true);
-        cast(ButtonNode, back_button)->visible = false;
-        cast(ButtonNode, ready_button)->visible = false;
-        cast(ButtonNode, settings_button)->visible = false;
     });
 
     playerUpdateNotify();
@@ -213,6 +225,7 @@ Extends LobbyNode::getCompactExtends(Extends ext) {
 void LobbyNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function) {
     function(lobby);
     function(setting);
+    if(cast(Settings_screen, setting)->getShow()) return;
     function(back_button);
     function(ready_button);
     function(settings_button);
@@ -239,13 +252,14 @@ void LobbyNode::handleReadyUpdate(ReadyUpdate update) {
 
 void LobbyNode::draw() {
     lobby->draw();
+    setting->draw();
+    if(cast(Settings_screen, setting)->getShow()) return;
     back_button->draw();
     if(!GlobalState::players.find({GlobalState::clientID})->lobby->ready) ready_button->draw();
     settings_button->draw();
     for (auto &player_node : player_nodes) {
         player_node->draw();
     }
-    setting->draw();
 }
 
 //-----------------------------------------------------------------------------------------------------

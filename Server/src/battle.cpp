@@ -832,6 +832,9 @@ void Battle::attack(ClientID client, Card card){
     attacks_to_defend_++;
     curr_attacks_++;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
+    if(ok_msg_[ATTACKER]) ok_msg_[ATTACKER] = false;
+    if(ok_msg_[CO_ATTACKER]) ok_msg_[CO_ATTACKER] = false;
+    updateAvailableAction();
 
 }
 

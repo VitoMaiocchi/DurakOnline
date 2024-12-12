@@ -41,6 +41,7 @@ enum TextAlignment {
 
 #define COLOR_BLACK glm::vec4(0,0,0,1)
 #define COLOR_GREY glm::vec4(0.5f, 0.5f, 0.5f, 1.0f)
+#define COLOR_RED glm::vec4(222.0f/255, 93.0f/255, 93.0f/255, 1.0f)
 
 namespace OpenGL {
     bool setup(); //sets up the client window

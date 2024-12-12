@@ -63,18 +63,13 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
         }
     }
     // - Start the first battle
-    // only decomment this when constructor of battle uses map
-    current_battle_ = Battle(BATTLETYPE_FIRST,true, player_roles_, card_manager_, finished_players_);
-
     // the constructor of Battle will then communicate to the clients the roles of the players
+    current_battle_ = Battle(BATTLETYPE_FIRST, player_roles_, card_manager_, finished_players_);
+
 }
 
-// destructor
-Game::~Game(){
-    //de bruchts nöd es wird alles automatisch deallocated
-}
 
-bool Game::createBattle(){
+void Game::createBattle(){
     // What does need to happen when a new battle is created?
         // - Check if the game is over
         // - Check if the game is started
@@ -85,6 +80,16 @@ bool Game::createBattle(){
         // - Check if a client card event needs to be handled
         // - Create a new battle
 
+        // determines at what stage the game is (BattleType) and creates battles accordingly
+        // if only two players remain it should create an endgame battle
+        // if(card_manager_.getNumberActivePlayers() == 2){
+        //     current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
+        //     return;
+        // } else {
+        //     current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
+        //     return;
+        // }
+
         //check who has no cards, mark them as Finished in the player roles and 
         updateTurnOrder();
         unsigned count = 0;
@@ -94,25 +99,38 @@ bool Game::createBattle(){
             }
         }
         if(count <= 2){
-            current_battle_ = Battle(BATTLETYPE_ENDGAME,false, player_roles_, card_manager_, finished_players_);
+            current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_);
         }
         else{
-            current_battle_ = Battle(BATTLETYPE_NORMAL, false, player_roles_, card_manager_, finished_players_);
+            current_battle_ = Battle(BATTLETYPE_NORMAL, player_roles_, card_manager_, finished_players_);
         }
-    return false;
+    return;
 }
 
 bool Game::isStarted(){
     return false;
 }
+
+// i dont think we need this since handlePlayerCardEvent will tell when the game is over (/the durak is found)
 //check if game is ended
-bool Game::endGame(){
-    //only one player has cards left in his hand
-    if(card_manager_.getNumberActivePlayers() == 1){
-        return true;
-    }
-    return false;
-}
+// bool Game::endGame(){
+//     //only one player has cards left in his hand
+//     // if(card_manager_.getNumberActivePlayers() == 1){
+//     //     return true;
+//     // }
+//     unsigned count = 0;
+//     for(auto c : player_roles_){
+//         unsigned int player_hand = card_manager_.getPlayerHand(c.first).size();
+//         if(player_hand == 0){
+//             count++; //count how many players have 0 cards
+//         }
+//     }
+//     if(card_manager_.getNumberOfCardsOnDeck() == 0 && count == player_roles_.size() - 1){
+//         return true;
+//     }
+
+//     return false;
+// }
 
 bool Game::resetGame(){
     return false;
@@ -211,7 +229,26 @@ bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID cl
     return false;
 }
 
-bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID client){
+// Finds the PlayerID of the last Player
+// If there are multiple players left, the function will fail
+ClientID Game::findlastplayer(){
+    ClientID lastplayer = -1;
+    unsigned count = 0;
+    for(auto i : player_roles_){
+        if(i.second != FINISHED){
+            lastplayer = i.first;
+            ++count;
+        }
+    }
+    assert(count == 1 && "There should only be one player left");
+    assert(lastplayer != -1 && "No player found");
+    return lastplayer;
+}
+
+// Handles the card event from the client
+// Returns 0 if it successfully passed on the event
+// If only last player is remaining, the function returns the ClientID of the last player
+ClientID Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID client){
     if(current_battle_.has_value()){
         // there is a battle and we need to handle the card event
         // current_battle_->handleCardEvent(message, client);
@@ -225,32 +262,28 @@ bool Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID clie
         CardSlot slot = return_pce->slot;
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
-        if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
+
+        if(!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
             //TODO: Message an client schicke wer durak isch
+            ClientID durak = findlastplayer();
+            return durak;
             //TODO: Spiel beende
         }
-        return true;
-    }
-    else {
+    } else {
 
         createBattle();
         PlayCardEvent* return_pce = dynamic_cast<PlayCardEvent*>(message.get());
 
-            //calls game function handleClientCardEvent();
-            std::vector<Card> vector_of_cards;
-            for(auto card : return_pce->cards){
-                vector_of_cards.push_back(card);
-            }
-            CardSlot slot = return_pce->slot;
-
-            current_battle_->handleCardEvent(vector_of_cards, client, slot);
-            if (!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
-                //TODO: Message an client schicke wer durak isch
-                //TODO: Spiel beende
-            }
-            return true;
+        //calls game function handleClientCardEvent();
+        std::vector<Card> vector_of_cards;
+        for(auto card : return_pce->cards){
+            vector_of_cards.push_back(card);
         }
-    return false;
+        CardSlot slot = return_pce->slot;
+
+        current_battle_->handleCardEvent(vector_of_cards, client, slot);
+    }
+return 0;
 }
 
 

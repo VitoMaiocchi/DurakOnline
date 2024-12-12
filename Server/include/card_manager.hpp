@@ -41,7 +41,6 @@ private:
     
     unsigned int number_cards_middle_ = 0; //Number of cards in the middle
 
-    void cardUpdate();    
 
 //TODO: Change bool functions to void functions with assert
 public:
@@ -49,6 +48,8 @@ public:
     //Constructor where the number of players is passed
     CardManager(std::set<ClientID> players);
     ~CardManager();
+    
+    void cardUpdate();    
 
     //At the beginning of the game
     void shuffleCards();

@@ -509,6 +509,7 @@ void Battle::reflectEvent(ClientID clientID) {
     if(!card.has_value()) return;
     std::cout << "reflect event succesfull" << std::endl;
     movePlayerRoles();
+    UpdatePickUpOrder();
 }
 
 void Battle::pickupEvent(ClientID clientID) {

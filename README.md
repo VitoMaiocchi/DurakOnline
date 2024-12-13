@@ -1,6 +1,10 @@
 ## Table of Contents
 
-1. [Git](#git)
+1. [High Level Overview of the Code] (#high level overview of the code)
+   - Client
+   - Server
+
+2. [Git](#git)
    - Cloning the Repository
    - Before Starting Work: Pull Latest Changes
    - Creating a Branch for Your Work
@@ -9,7 +13,7 @@
    - Creating a Merge Request
    - Handling Merge Conflicts
    - Final Steps After Merging
-2. [Durak](#durak)
+3. [Durak](#durak)
    - Description
    - Rules
    - SRS Durak project first deadline
@@ -18,9 +22,10 @@
 
 ---
 
-## High level Overview of the Code:
+# High level Overview of the Code
+<details> <summary>Click to expand Code section</summary>
 
-### DurakClient (text as found in Client/main.cpp):
+## DurakClient (text as found in Client/main.cpp):
 here is a rough overview over the high level functions in the DurakClient
 
 The DurakClient Code is made up of 3 main components.
@@ -73,25 +78,27 @@ a to and from json function
 more detail about the message types in message.hpp, message.cpp
 
 
-### Server 
+## Server 
 The Server is divided into four main Classes:
 1. Server (Server/src/server.cpp) & MessageHandler (Server/src/msg_handler.cpp)
 2. Game (Server/src/game.cpp)
 3. Battle (Server/src/battle.cpp)
 4. Card Manager (Server/src/card_manager.cpp)
 
-#### Server Class
+### Server Class
 The Server class is kept rather simple. It consists of a main loop to receive all incoming messages from the clients.
 To simplify things we created a seperate function to handle all messages. So the server simply receives an incoming message and calls handleMessage(). Inside the message handler most of the high level server logic is implemented. It's basically just a big switch statement, that differentiates between the messages coming from the client and either passes them on accordingly to Game or directly handles them (connect events, name setting etc).
 
-#### Game Class
+### Game Class
 The Game class is constructed when all clients are ready and a new game is created. Inside the constructor of Game, the first Battle is set up and called (assigning first attacker, defining trump etc). Between individual Battles, Game will store information like Player Roles (Attacker, Defender, Co-Attacker, Idle, Finished) and will create new Battles after the last one has started. The functions probably used the most are handlePlayerCardEvent() and handlePlayerActionEvent(), which deconstruct and pass on card moves and button presses respectively, coming from the Client -> Server -> MessageHandler to Battle. It also checks if the game is over and will then return to Server.
 
-#### Battle Class
+### Battle Class
 This class handles the bulk of the game logic. All messages that have to do with playing a card or pressing a button are evaluated here. To simplify stuff we have different BattlePhases and BattleTypes. BattlePhases aim to further divide a battle to provide modular code sections. For example if the defender has a card left to beat, the current BattlePhase is OPEN. We also need to differentiate between BattleTypes; First, Normal and Endgame where Endgame is when only two players remain and a move could end the game. The most general functions aim to differentiate what kind of Action or Move has to be handled and then call the according functions to make the move/action.
 
-#### Card Manager
+### Card Manager
 This class handles all stuff related to cards. This includes Player Hands, the middle of the playing field (Battlefield), drawing cards and sending out card updates to the clients. It is a member of Game as we need only one deck per game.
+
+</details>
 
 # Git
 <details> <summary>Click to expand Git section</summary>

@@ -1,7 +1,8 @@
 ## Table of Contents
 
-1. [High Level Overview of the Code] (#high level overview of the code)
+1. High Level Overview of the Code
    - Client
+   - Networking
    - Server
 
 2. [Git](#git)
@@ -25,8 +26,10 @@
 # High level Overview of the Code
 <details> <summary>Click to expand Code section</summary>
 
-## DurakClient (text as found in Client/main.cpp):
-here is a rough overview over the high level functions in the DurakClient
+## Client
+<details> <summary>Click to expand Client section</summary>
+Text as found in Client/main.cpp.
+Here is a rough overview over the high level functions in the DurakClient.
 
 The DurakClient Code is made up of 3 main components.
 
@@ -36,17 +39,17 @@ The DurakClient Code is made up of 3 main components.
 2. The Global Game State including any child Nodes
    (gloabl_state.cpp, game_node.cpp toplevel_nodes.cpp) 
 
-3. OpenGl this includes the Window and any actuall rendering
+3. OpenGl this includes the Window and any actual rendering
    (opengl.cpp)
 
 The Node Framework Provides a way to stucture anything displayed on screen
-in a hirachy of nodes. Any updates in the Window size propagte trough the node tree.
-The size of each Node in the tree is only calulated when the window size changes.
+in a hierachy of nodes. Any updates in the Window size propagate trough the node tree.
+The size of each Node in the tree is only calculated when the window size changes.
 This Extends of the Node is used to handle drawing and mouse events like hover/click.
-This makes everything scale dynamically
+This makes everything scale dynamically.
 (more detail in drawable.hpp)
 
-The Global Game State handels all parts that have something to do with Durak Game Logic.
+The Global Game State handles all parts that have something to do with Durak Game Logic.
 It handles and displays any updates from the server and provides things like a login and
 game screen.
 (more detail in global_state.hpp)
@@ -56,26 +59,31 @@ glfw is used. opengl.cpp provided a way to render primitive things like Text, Im
 to the screen each frame
 (more detail in opengl.hpp)
 
+</details>
 
-Networking (text as found in Networking/include/Networking/network.hpp):
-HIGH LEVEL OVERVIEW OF NETWORKING:
 
-(network_client.cpp, network_server.cpp)
-the networking cpps are responsible for providing all network interactions.
-each client opens 2 connections. For receiving and sending. 
+## Networking
+<details> <summary>Click to expand Networking section</summary>
+Text as found in Networking/include/Networking/network.hpp.
+
+### network_client.cpp, network_server.cpp
+The networking cpps are responsible for providing all network interactions.
+Each client opens 2 connections, one for receiving and one for sending. 
 The messages are received on separate threads. Each receive thread adds 
-any messages to a massage queue. The newest message in the message queue
+any messages to a message queue. The newest message in the message queue
 can be fetched by calling receive message.
 The server version of receive Message blocks until a new message arrives.
 The client version returns null if nothing is received to not block
-rendering frames wich happens on the same thread.
+rendering frames which happens on the same thread.
 
-(message.cpp)
-All message that are sent are of the abstact class Message
+### message.cpp
+All messages that are sent are of the abstact class Message.
 The message class is responsible for serializing and deserializing any messages
 The different Message types are derived from Message and have to implement
-a to and from json function
-more detail about the message types in message.hpp, message.cpp
+a "to"- and "from json" function
+More details about the message types are in message.hpp, message.cpp.
+
+</details>
 
 
 ## Server 

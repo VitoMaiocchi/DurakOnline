@@ -42,11 +42,10 @@ class GameOverScreenNode : public Node {
         GameOverScreenNode(Extends ext, bool durak=1);
         void updateExtends(Extends ext);
         Extends getCompactExtends(Extends ext);
+        const bool durak;
 
     private:
-    
         void callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function);
-        const bool durak;
-        std::unique_ptr<Node> back_button;
-        std::unique_ptr<Node> rematch_button;
+        std::unique_ptr<Node> lobby_button;
+        std::unique_ptr<Node> quit_button;
 };

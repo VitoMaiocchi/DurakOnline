@@ -115,6 +115,7 @@ class Battle {
         void movePlayerRoles();
         void UpdatePickUpOrder();
         ClientID nextInOrder(ClientID current);
+        std::map<ClientID, PlayerRole>::iterator nextInOrderIt (std::map<ClientID, PlayerRole>::iterator);
         ClientID findRole(PlayerRole role);
 
         bool battleIsDone();

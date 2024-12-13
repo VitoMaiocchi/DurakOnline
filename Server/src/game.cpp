@@ -65,7 +65,6 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
     // - Start the first battle
     // the constructor of Battle will then communicate to the clients the roles of the players
     current_battle_ = Battle(BATTLETYPE_FIRST, player_roles_, card_manager_, finished_players_);
-
 }
 
 

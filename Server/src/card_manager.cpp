@@ -22,6 +22,7 @@ CardManager::CardManager(std::set<ClientID> players) : players(players){
 
     //Trumpf bestimme
     determineTrump();
+    deck_.clear(); //TODO: DAS NUR FüR DEBUG NACHER WEG MACHE
     cardUpdate();
     // at the end of the constructor card manager should communicate the current status of the cards in play
     // for this we use the message CARD_UPDATE

@@ -1,6 +1,6 @@
 ## Table of Contents
 
-1. [High Level Overview of the Code](#high level overview of the code)
+1. [High Level Overview of the Code](#high-level-overview-of-the-code)
    - Client
    - Networking
    - Server

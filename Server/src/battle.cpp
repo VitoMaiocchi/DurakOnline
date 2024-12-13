@@ -801,7 +801,10 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             }
 
         }
-
+        else if(middle[slot % 6].second.has_value()){
+            sendPopup("The card has already been defended", player_id);
+            return false;
+        }
         //check if the card is higher with card_compare
         else if(card_manager_ptr_->compareCards(*first, card)){
             return true;

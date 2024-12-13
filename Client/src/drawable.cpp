@@ -84,6 +84,7 @@ inline std::string getPlayerIconPath(const std::string &name) {
     if(name == "kingthomas" || name == "KingThomas") path = "königthomas.jpg";
     if(name == "noah" || name == "Noah") path = "hund.png";
     if(name == "lennard" || name == "Lennard") path = "lennardjones.jpeg";
+    if(name == "clemens" || name == "Clemens") path = "clemo.jpeg";
     return CLIENT_RES_DIR + "skins/" + path;
 }
 

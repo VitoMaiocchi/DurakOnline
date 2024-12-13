@@ -884,16 +884,52 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
-void Battle::removeFinishedPlayers(){
-    //finds players that have no cards
-    //move the player roles ones
-    //sets the player the player to finish
+bool Battle::removeFinishedPlayers(){
+    //Find the player to be removed, return if all players still have cards
+    auto no_cards = [this](const auto& pair) {
+            return card_manager_ptr_->getPlayerHand(pair.first).empty();};
+    auto current = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
+    if (current == players_bs_.end()){
+        return 0;
+    }
+
+    //Save the role of the Player who finshed
+    const PlayerRole initial_finished = current->second;
+
+    PlayerRole current_role = current->second;  //Save the role of the player that just finished
+    current->second = FINISHED;                 //Mark the player as finished
+    //Loop over map until we arrive at attacker & moveplayer roles
+    while (players_bs_[nextInOrder(current->first)] != ATTACKER){
+        //Save role of next player
+        ClientID nextID = nextInOrder(current->first);
+        PlayerRole next_role = players_bs_[nextID];
+
+        //Assign current role to next player
+        current = nextInOrderIt(current);
+        current->second = current_role;
+
+        current_role = next_role;
+    }
+
+    // If the player who finished was an attacker we can return
+    if (initial_finished == ATTACKER){
+        return true;
+    }
+    return false;
+    
+    //Loop over map again until we arrive at attacker & move player roles
+    
+
 }
 /**
  * POST: moves the player roles one to the next 
  */
 void Battle::movePlayerRoles(){
      std::cout << "Moving player roles" << std::endl;
+    
+    if (removeFinishedPlayers()){
+        return;
+    }
 
     BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
 
@@ -1044,15 +1080,22 @@ ClientID Battle::nextInOrder(ClientID current_player){
     auto it = players_bs_.find(current_player);
 
     //Handle the case where a wrong ClientID was entered
-    if(it == players_bs_.end()){
-        throw std::invalid_argument("PlayerID not found in the map.");
-    }
+    assert (it != players_bs_.end() && "Invalid PlayerID");
+    
 
     ++it;
     //Check for case where the ClientID was at the end of the map
     if(it == players_bs_.end()){
-        return players_bs_.begin()->first;
+        it = players_bs_.begin();
     }
+
+    while (it->second == FINISHED){
+        ++it;
+        if(it == players_bs_.end()){
+            it = players_bs_.begin();
+        }
+    }
+
     // Otherwise return next element
     return it->first;
 }
@@ -1084,4 +1127,25 @@ ClientID Battle::getCurrentDefender(){
         }
     }
     return player_id;
+}
+
+//Returns an iterator to the next active player in order
+std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientID, PlayerRole>::iterator it){
+    // Increment the iterator
+    ++it;
+
+    // If the iterator reaches the end, wrap around to the beginning
+    if (it == players_bs_.end()) {
+        it = players_bs_.begin();
+    }
+
+    while (it->second == FINISHED){
+        ++it;
+        if (it == players_bs_.end()){
+            it = players_bs_.begin();
+        }
+    }
+    
+
+    return it;
 }

@@ -30,13 +30,13 @@ void sortCards(std::vector<Card> &cards) {
                 if(a.suit == GlobalState::trump_suit && b.suit != GlobalState::trump_suit) return false;
                 if(a.suit != GlobalState::trump_suit && b.suit == GlobalState::trump_suit) return true;
                 if(a.rank == b.rank) return a.suit > b.suit; 
-                return a.rank > b.rank;
+                return a.rank < b.rank;
             });
             break;
         }
         case SORTTYPE_ASCEND:{
             std::sort(cards.begin(), cards.end(), [](const Card &a, const Card &b){
-                return a.rank > b.rank;
+                return a.rank < b.rank;
             });
             break;
         }

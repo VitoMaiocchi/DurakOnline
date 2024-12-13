@@ -109,6 +109,8 @@ This class handles all stuff related to cards. This includes Player Hands, the m
 
 </details>
 
+</details>
+
 # Git
 <details> <summary>Click to expand Git section</summary>
 

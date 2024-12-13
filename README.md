@@ -18,9 +18,9 @@
 
 ---
 
-High level Overview of the Code:
+## High level Overview of the Code:
 
-DurakClient (text as found in Client/main.cpp):
+### DurakClient (text as found in Client/main.cpp):
 here is a rough overview over the high level functions in the DurakClient
 
 The DurakClient Code is made up of 3 main components.
@@ -42,12 +42,12 @@ This makes everything scale dynamically
 (more detail in drawable.hpp)
 
 The Global Game State handels all parts that have something to do with Durak Game Logic.
-It handles and displays any updates from the server and provides thing like a login and
+It handles and displays any updates from the server and provides things like a login and
 game screen.
 (more detail in global_state.hpp)
 
 OpenGL is the graphics library used to render everything efficiently. To create a Window
-glfw is used. opengl.cpp provied a way to render prmitives like Text, Images and Rectangles
+glfw is used. opengl.cpp provided a way to render primitive things like Text, Images and Rectangles
 to the screen each frame
 (more detail in opengl.hpp)
 
@@ -56,26 +56,42 @@ Networking (text as found in Networking/include/Networking/network.hpp):
 HIGH LEVEL OVERVIEW OF NETWORKING:
 
 (network_client.cpp, network_server.cpp)
-the networking cpps are responsible for proving all network interactions
-each client opens 2 connections. For receving and sending. 
-The messages are recived on separate threads. Each recive thread adds 
-any messages to a massge queue. The newest message in the message queue
-can be fetched by calling recive message.
-The server version of recive Message blocks until a new message arrives.
-The client version returns null if nothing is recived to not block
+the networking cpps are responsible for providing all network interactions.
+each client opens 2 connections. For receiving and sending. 
+The messages are received on separate threads. Each receive thread adds 
+any messages to a massage queue. The newest message in the message queue
+can be fetched by calling receive message.
+The server version of receive Message blocks until a new message arrives.
+The client version returns null if nothing is received to not block
 rendering frames wich happens on the same thread.
 
 (message.cpp)
 All message that are sent are of the abstact class Message
 The message class is responsible for serializing and deserializing any messages
-The different Message types are derived from Message and have to implment
+The different Message types are derived from Message and have to implement
 a to and from json function
 more detail about the message types in message.hpp, message.cpp
 
 
-Server
-TODO: high level overview over server
+### Server 
+The Server is divided into four main Classes:
+1. Server
+2. Game
+3. Battle
+4. Card Manager
 
+#### Server Class
+The Server class is kept rather simple. It consists of a main loop to receive all incoming messages from the clients.
+To simplify things we created a seperate function to handle all messages. So the server simply receives an incoming message and calls handleMessage(). Inside the message handler most of the high level server logic is implemented. It's basically just a big switch statement, that differentiates between the messages coming from the client and either passes them on accordingly to Game, Battle or Card Manager or directly handles them (connect events, name setting etc).
+
+#### Game Class
+The Game class is constructed when all clients are ready and a new game is created. Inside the constructor of Game, the first Battle is set up and called (assigning first attacker, defining trump etc). Between individual Battles, Game will store information like Player Roles (Attacker, Defender, Co-Attacker, Idle, Finished) and will create new Battles after the last one has started. For this to work it also needs to correctly handle when players finish. The functions probably used the most are handlePlayerCardEvent() and handlePlayerActionEvent(), which deconstruct and pass on card moves and button presses respectively, coming from the Client -> Server -> MessageHandler to Battle. It also checks if the game is over and will then return to Server.
+
+#### Battle Class
+This class handles the bulk of the game logic. All messages that have to do with playing a card or pressing a button are evaluated here. To simplify stuff we have different BattlePhases and BattleTypes. BattlePhases aim to further divide a battle to provide modular code sections. For example if the defender has any card left to beat the current BattlePhase is OPEN. We also need to differentiate between BattleTypes; First, Normal and Endgame where Endgame is when only two players remain and a move could end the game. The most general functions aim to differentiate what kind of Action or Move has to be handled and then call the according functions to make the move/action.
+
+#### Card Manager
+This class handles all stuff related to cards. This includes Player Hands, the middle of the playing field (Battlefield), drawing cards and sending out card updates to the clients. It is a member of Game as we need only one deck per game.
 
 # Git
 <details> <summary>Click to expand Git section</summary>

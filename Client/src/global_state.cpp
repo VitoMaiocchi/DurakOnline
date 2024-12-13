@@ -110,7 +110,7 @@ namespace Viewport {
                 //todo
                 break;
             case GAMESTATE_DURAK_SCREEN:
-                //todo
+                master_node = std::make_unique<GameOverScreenNode>(extends,0);
                 break;
         }
 

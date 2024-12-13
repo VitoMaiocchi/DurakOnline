@@ -21,7 +21,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
         case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
             // Client connected, add name to a datastructure maybe a map
             PlayerUpdate player_update;
-            if (clients.find(client) == clients.end() && clients.size() < MAX_PLAYERS) {
+            if (clients.find(client) == clients.end() && clients.size() <= MAX_PLAYERS) {
                 clients.insert(client);
                 std::cout << "New client connected: " << client << std::endl;
 

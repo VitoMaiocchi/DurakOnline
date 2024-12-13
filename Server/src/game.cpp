@@ -263,7 +263,7 @@ ClientID Game::handleClientCardEvent(std::unique_ptr<Message> message, ClientID 
 
         current_battle_->handleCardEvent(vector_of_cards, client, slot);
 
-        if(!card_manager_.getNumberOfCardsOnDeck() && card_manager_.getNumberActivePlayers()==1){
+        if(card_manager_.getNumberActivePlayers()==1){
             //TODO: Message an client schicke wer durak isch
             ClientID durak = findlastplayer();
             return durak;

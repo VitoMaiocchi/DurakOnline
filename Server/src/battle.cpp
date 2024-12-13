@@ -900,6 +900,7 @@ void Battle::removeFinishedPlayers(){
 
     //Find the player to be removed, return if all players still have cards
     auto no_cards = [this](const auto& pair) {
+            if(pair.second == FINISHED) return false;
             return card_manager_ptr_->getPlayerHand(pair.first).empty();};
     auto finished = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
     if (finished == players_bs_.end()) return;

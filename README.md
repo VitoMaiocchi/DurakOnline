@@ -75,8 +75,7 @@ more detail about the message types in message.hpp, message.cpp
 
 ### Server 
 The Server is divided into four main Classes:
-1. Server (Server/src/server.cpp)
-1.1 MessageHandler (Server/src/msg_handler.cpp)
+1. Server (Server/src/server.cpp) & MessageHandler (Server/src/msg_handler.cpp)
 2. Game (Server/src/game.cpp)
 3. Battle (Server/src/battle.cpp)
 4. Card Manager (Server/src/card_manager.cpp)

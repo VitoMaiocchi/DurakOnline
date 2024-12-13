@@ -89,7 +89,7 @@ class Battle {
         void updateAvailableAction();
         void tryPickUp();
 
-        bool removeFinishedPlayers();
+        void removeFinishedPlayers();
 
     public:
         

@@ -884,42 +884,46 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
-bool Battle::removeFinishedPlayers(){
+std::map<ClientID, PlayerRole>::iterator next(std::map<ClientID, PlayerRole> map, std::map<ClientID, PlayerRole>::iterator it) {
+    auto next = std::next(it);
+    if(next == map.end()) return map.begin();
+    return next;
+}
+
+std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole> map, std::map<ClientID, PlayerRole>::iterator it) {
+    if(it == map.begin()) return std::prev(map.end());
+    return std::prev(it);
+}
+
+void Battle::removeFinishedPlayers(){
+    //TODO: da no checke obs nur no öpper het wo nöd fertig isch oder so ka
+
     //Find the player to be removed, return if all players still have cards
     auto no_cards = [this](const auto& pair) {
             return card_manager_ptr_->getPlayerHand(pair.first).empty();};
-    auto current = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
-    if (current == players_bs_.end()){
-        return 0;
+    auto finished = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
+    if (finished == players_bs_.end()) return;
+    
+    if(finished->second == ATTACKER) {
+        previous(players_bs_, finished)->second = ATTACKER;
+        finished->second = FINISHED;
+        removeFinishedPlayers();
+        return;
     }
 
-    //Save the role of the Player who finshed
-    const PlayerRole initial_finished = current->second;
+    auto current = finished;
+    PlayerRole next_role = next(players_bs_, current)->second;
 
-    PlayerRole current_role = current->second;  //Save the role of the player that just finished
-    current->second = FINISHED;                 //Mark the player as finished
+    //PlayerRole current_role = current->second;  //Save the role of the player that just finished
+    //current->second = FINISHED;                 //Mark the player as finished
     //Loop over map until we arrive at attacker & moveplayer roles
-    while (players_bs_[nextInOrder(current->first)] != ATTACKER){
-        //Save role of next player
-        ClientID nextID = nextInOrder(current->first);
-        PlayerRole next_role = players_bs_[nextID];
-
-        //Assign current role to next player
-        current = nextInOrderIt(current);
-        current->second = current_role;
-
-        current_role = next_role;
+    while (next_role != ATTACKER){
+        next(players_bs_, current)->second = current->second;
+        current = next(players_bs_, current);
+        next_role = next(players_bs_, current)->second;
     }
-
-    // If the player who finished was an attacker we can return
-    if (initial_finished == ATTACKER){
-        return true;
-    }
-    return false;
-    
-    //Loop over map again until we arrive at attacker & move player roles
-    
-
+    finished->second = FINISHED;
+    removeFinishedPlayers();
 }
 /**
  * POST: moves the player roles one to the next 
@@ -927,9 +931,7 @@ bool Battle::removeFinishedPlayers(){
 void Battle::movePlayerRoles(){
      std::cout << "Moving player roles" << std::endl;
     
-    if (removeFinishedPlayers()){
-        return;
-    }
+    removeFinishedPlayers();
 
     BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
 

@@ -326,6 +326,15 @@ bool checkIdenticalSuit(std::unordered_set<Card> &cards, ClientID clientID) {
     }
     return false;
 }
+bool checkIdenticalRank(std::unordered_set<Card> &cards, ClientID clientID){
+    const Rank rank = cards.begin()->rank;
+    for(Card c : cards)if(c.rank != rank){
+        sendPopup("Can not play cards of different rank", clientID);
+        return true;
+    }
+    return false;
+
+}
 
 bool Battle::topSlotsClear() {
     for(uint i = 6; i<12; i++) if(card_manager_ptr_->getMiddleSlot(i).has_value()) return false;
@@ -372,7 +381,7 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     }
 
     //Slot is empty: try to pass on
-    if(checkIdenticalSuit(cards, clientID)) return;
+    if(checkIdenticalRank(cards, clientID)) return;
 
     if(!topSlotsClear()) {
         sendPopup("you allready defended a card. Pass on is not possilbe", clientID);
@@ -388,9 +397,9 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
         sendPopup("Can not pass on: First battle", clientID);
         return;
     }
-
+    
     //TODO: das gaht nur mit einere karte...
-    passOn(*cards.begin(), clientID, slot);
+    passOn(cards, clientID, slot);
     phase = BATTLEPHASE_OPEN;
 }
 
@@ -642,7 +651,7 @@ bool Battle::successfulDefend(){
     *PRE: the defender clicks his card/cards and then an empty slot on the battlefield
     *POST: it shifts the player battle states and sends message to client and returns true
  */
-bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
+bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlot slot){
     //check if isValidMove() -> there cannot be anything defended
     //                       -> the defender has to lay down the card on a free card slot
     //                       -> card has to be valid (i.e same number)
@@ -667,12 +676,26 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
     
     //check if valid move
     //this should happen before the player roles are moved
-    if(!isValidMove(card, player_id, slot) || curr_attacks_ == max_attacks_){
+    if(!isValidMove(*cards.begin(), player_id, slot) || curr_attacks_ == max_attacks_){
         // PopupNotify popup;
         // popup.message = "Illegal Move: "
         return false; //if the move is not valid
     }
-    else {
+    if(cards.size() == 1){
+        if(!isValidMove(*cards.begin(), player_id, slot) || curr_attacks_ == max_attacks_){
+            // PopupNotify popup;
+            // popup.message = "Illegal Move: "
+            return false; //if the move is not valid
+        }
+    }
+    if(cards.size() > 1){
+        for(auto c : cards){
+            if(!isValidMove(c, player_id, slot) || curr_attacks_ == max_attacks_){
+                return false;
+            }
+        }
+    }
+
         //moves player roles one up/next
         movePlayerRoles();
         //This function should only be calles when there are 3 or more active players
@@ -681,15 +704,18 @@ bool Battle::passOn(Card card, ClientID player_id, CardSlot slot){
         }
 
         //player_bs_[player_id] is now attacker
-        attack(player_id, card);
+        for(auto& c : cards){
+            attack(player_id, c);
+        }
+
         //check if everything worked
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         for(auto slotM : middle){
-            if(slotM.first == card && players_bs_[player_id] == ATTACKER){
+            if(slotM.first == *cards.begin() && players_bs_[player_id] == ATTACKER){
                 return true;
             }
         }
-    } 
+     
 
 
 

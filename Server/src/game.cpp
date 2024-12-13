@@ -66,9 +66,9 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
     // the constructor of Battle will then communicate to the clients the roles of the players
     if(players.size() == 2){
         current_battle_ = Battle(BATTLETYPE_ENDGAME, player_roles_, card_manager_, finished_players_); // this is only for testing endgame, for this to work we also need to set MIN_PLAYERS = 2 in server.hpp
-        card_manager_.eraseDeck(); // this is only for testing endgame
+        // card_manager_.eraseDeck(); // this is only for testing endgame
         // send card update to all clients
-        card_manager_.cardUpdate();
+        // card_manager_.cardUpdate();
     } else {
         current_battle_ = Battle(BATTLETYPE_FIRST, player_roles_, card_manager_, finished_players_);
     }

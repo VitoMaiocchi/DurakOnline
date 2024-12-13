@@ -104,13 +104,13 @@ namespace Viewport {
                 //das bruchts nur wenn mer server disconnect handled
                 break;
             case GAMESTATE_GAME_OVER:
-                master_node = std::make_unique<GameOverScreenNode>(extends);
+                master_node = std::make_unique<GameOverScreenNode>(extends, 0);
                 break;
             case GAMESTATE_SPECTATOR:
                 //todo
                 break;
             case GAMESTATE_DURAK_SCREEN:
-                master_node = std::make_unique<GameOverScreenNode>(extends,0);
+                master_node = std::make_unique<GameOverScreenNode>(extends, 1);
                 break;
         }
 

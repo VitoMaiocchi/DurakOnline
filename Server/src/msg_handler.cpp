@@ -126,17 +126,26 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                         player_update.player_names[player.first] = player.second.name;
                     }
                     
-                    GameStateUpdate game_update;
-                    game_update.state = GAMESTATE_GAME_OVER;
+                    GameStateUpdate normal_update;
+                    normal_update.state = GAMESTATE_GAME_OVER;
+
+                    GameStateUpdate durak_update;
+                    durak_update.state = GAMESTATE_DURAK_SCREEN;
+
 
                     for(auto c : clients){
-                        Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
-                        Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
+                        if(c == durak){
+                            Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                            Network::sendMessage(std::make_unique<GameStateUpdate>(durak_update), c);
+                        } else {
+                            Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                            Network::sendMessage(std::make_unique<GameStateUpdate>(normal_update), c);
+                        }
                     }
                     for(auto c : clients){
                         ready_clients.erase(c); //unready the clients in the lobby so they restart the game
                     }
-                    std::cout << "Game ended, durak found" << std::endl;
+                    std::cout << "Game ended, durak found" << durak << std::endl;
                     // delete current game
                     current_game.reset();
                     

@@ -682,7 +682,10 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
         }
 
         //player_bs_[player_id] is now attacker
-        attack(player_id, *cards.begin());
+        for(auto& c : cards){
+            attack(player_id, c);
+        }
+
         //check if everything worked
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         for(auto slotM : middle){

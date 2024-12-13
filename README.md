@@ -87,6 +87,7 @@ More details about the message types are in message.hpp, message.cpp.
 
 
 ## Server 
+<details> <summary>Click to expand Server section</summary>
 The Server is divided into four main Classes:
 1. Server (Server/src/server.cpp) & MessageHandler (Server/src/msg_handler.cpp)
 2. Game (Server/src/game.cpp)

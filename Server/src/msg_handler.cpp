@@ -127,7 +127,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                     }
                     
                     GameStateUpdate game_update;
-                    game_update.state = GAMESTATE_DURAK_SCREEN;
+                    game_update.state = GAMESTATE_GAME_OVER;
 
                     for(auto c : clients){
                         Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
@@ -137,6 +137,10 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                         ready_clients.erase(c); //unready the clients in the lobby so they restart the game
                     }
                     std::cout << "Game ended, durak found" << std::endl;
+                    // delete current game
+                    current_game.reset();
+                    
+                    
                 }
             } else {
                 std::cerr << "No active game to handle play card event!" << std::endl;

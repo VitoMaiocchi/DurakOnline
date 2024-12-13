@@ -340,3 +340,7 @@ std::optional<Card> CardManager::getMiddleSlot(uint slot) {
     if(slot/6) return stack.second; //top
     else return stack.first;     //bottom
 }
+
+void CardManager::eraseDeck() {
+    deck_.clear();
+}

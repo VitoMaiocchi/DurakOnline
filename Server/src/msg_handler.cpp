@@ -136,6 +136,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                     for(auto c : clients){
                         ready_clients.erase(c); //unready the clients in the lobby so they restart the game
                     }
+                    std::cout << "Game ended, durak found" << std::endl;
                 }
             } else {
                 std::cerr << "No active game to handle play card event!" << std::endl;

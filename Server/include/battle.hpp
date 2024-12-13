@@ -40,10 +40,11 @@ class Battle {
         std::map<ClientID, PlayerRole> players_bs_; //attacking, defending, spectating
         std::set<ClientID> finished_players_; //they get the battle state update idle 
 
-        BattlePhase phase;
+        BattlePhase phase_;
         BattleType btype_;
 
         bool move_could_end_game_ = false;
+        bool gameover_ = false;
         bool defending_flag_ = false;
         int max_attacks_ = 6;
         int curr_attacks_ = 0;
@@ -128,6 +129,7 @@ class Battle {
 
         void setMaxAttacks(int max) { max_attacks_ = max; }
         int getMaxAttacks() const { return max_attacks_; }
+        bool isgameover() { return gameover_; }
 
         //getter function for testing purposes
         PlayerRole getPlayerRole(ClientID client) { return players_bs_[client];}

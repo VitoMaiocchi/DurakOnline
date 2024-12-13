@@ -82,7 +82,7 @@ namespace Network {
                     return;
                 }
                 message_queue_mut.lock();
-                std::cout << "(network debug) RECIVEING: " << std::string(buffer,n) << std::endl;
+                // std::cout << "(network debug) RECIVEING: " << std::string(buffer,n) << std::endl;
                 message_queue.push(std::string(buffer,n));
                 message_queue_mut.unlock();
             }

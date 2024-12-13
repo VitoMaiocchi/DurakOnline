@@ -45,7 +45,7 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
     //END DEBUG
     
     std::cout << "CREATE NEW BATTLE" << std::endl;
-    phase = BATTLEPHASE_FIRST_ATTACK;
+    phase_ = BATTLEPHASE_FIRST_ATTACK;
 
     // max_attacks_ = first battle ? 5 : 6;
     if(first_battle_){
@@ -131,7 +131,7 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
         attack(player_id, cards.at(0));
         // sendAvailableActionUpdate(0, player_id);
         // sendAvailableActionUpdate(0, getCurrentDefender());
-        phase = BATTLEPHASE_OPEN;
+        phase_ = BATTLEPHASE_OPEN;
         return;
     }
     //else if more than one card is being played at the same time
@@ -188,12 +188,12 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
         //now place all attacks on the field
         for(size_t i = 0; i < cards.size(); ++i){
             attack(player_id, cards.at(i));
-            phase = BATTLEPHASE_OPEN;
+            phase_ = BATTLEPHASE_OPEN;
         }
         return;
     }
     //to throw in cards after the defender has picked them up
-    else if(phase == BATTLEPHASE_POST_PICKUP && !ok_msg_[ATTACKER]){
+    else if(phase_ == BATTLEPHASE_POST_PICKUP && !ok_msg_[ATTACKER]){
         if(cards.size() + curr_attacks_ <= max_attacks_){
             for(size_t i = 0; i < cards.size(); ++i){
                 Rank targetrank = cards[i].rank;
@@ -237,7 +237,7 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
         if(isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
             attack(player_id, cards.at(0));
-            phase = BATTLEPHASE_OPEN;
+            phase_ = BATTLEPHASE_OPEN;
 
             return;
         }
@@ -283,11 +283,11 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
         //now place all attacks on the field
         for(size_t i = 0; i < cards.size(); ++i){
             attack(player_id, cards.at(i));
-            phase = BATTLEPHASE_OPEN;
+            phase_ = BATTLEPHASE_OPEN;
         }
         return;
     }
-    else if(phase == BATTLEPHASE_POST_PICKUP && !ok_msg_[CO_ATTACKER]){
+    else if(phase_ == BATTLEPHASE_POST_PICKUP && !ok_msg_[CO_ATTACKER]){
         if(cards.size() + curr_attacks_ <= max_attacks_){
             for(size_t i = 0; i < cards.size(); ++i){
                 Rank targetrank = cards[i].rank;
@@ -341,7 +341,7 @@ bool Battle::passOnRankMatch(Rank rank) {
 }
 
 void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot) {
-    switch (phase) {
+    switch (phase_) {
         case BATTLEPHASE_FIRST_ATTACK:
             sendPopup("Can not place card; Waiting for first attack.", clientID);
             return;
@@ -365,7 +365,7 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
         }
         if(isValidMove(*cards.begin(), clientID, slot)) {
             defend(clientID, *cards.begin(), slot);
-            if(successfulDefend()) phase = BATTLEPHASE_DEFENDED;
+            if(successfulDefend()) phase_ = BATTLEPHASE_DEFENDED;
         }
         else sendPopup("invalid defend", clientID);
         return;
@@ -391,7 +391,7 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
 
     //TODO: das gaht nur mit einere karte...
     passOn(*cards.begin(), clientID, slot);
-    phase = BATTLEPHASE_OPEN;
+    phase_ = BATTLEPHASE_OPEN;
 }
 
 bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot){
@@ -443,20 +443,41 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
 }
 
 void Battle::tryPickUp() {
-    if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
-        card_manager_ptr_->pickUp(getCurrentDefender());
-        card_manager_ptr_->clearMiddle();
-        card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
-        movePlayerRoles();
-        movePlayerRoles(); //loses right to attack when picking up
+    switch(btype_){
+        case BATTLETYPE_NORMAL:
+            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
+                card_manager_ptr_->pickUp(getCurrentDefender());
+                card_manager_ptr_->clearMiddle();
+                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
+                movePlayerRoles();
+                movePlayerRoles(); //loses right to attack when picking up
 
-        //das isch alles chli goofy
-        curr_attacks_ = 0;
-        ok_msg_[ATTACKER] = false;
-        ok_msg_[CO_ATTACKER] = false;
-        phase = BATTLEPHASE_FIRST_ATTACK;
-        first_battle_ = false;
-        battle_done_ = true;
+                //das isch alles chli goofy
+                curr_attacks_ = 0;
+                ok_msg_[ATTACKER] = false;
+                ok_msg_[CO_ATTACKER] = false;
+                phase_ = BATTLEPHASE_FIRST_ATTACK;
+                first_battle_ = false;
+                battle_done_ = true;
+            }
+            return;
+        case BATTLETYPE_ENDGAME:
+            if(ok_msg_[ATTACKER]){
+                card_manager_ptr_->pickUp(getCurrentDefender());
+                card_manager_ptr_->clearMiddle();
+                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
+                movePlayerRoles(); //loses right to attack when picking up
+
+                //das isch alles chli goofy
+                curr_attacks_ = 0;
+                ok_msg_[ATTACKER] = false;
+                phase_ = BATTLEPHASE_FIRST_ATTACK;
+                first_battle_ = false;
+                battle_done_ = true;
+            }
+        default:
+            std::cout << "tryPickUp called in wrong phase" << std::endl;
+            return;
     }
 }
 
@@ -464,8 +485,8 @@ void Battle::doneEvent(ClientID clientID) {
 
     if(players_bs_[clientID] == ATTACKER)    ok_msg_[ATTACKER] = true;
     if(players_bs_[clientID] == CO_ATTACKER) ok_msg_[CO_ATTACKER] = true;
-    // if(btype_ == BATTLETYPE_NORMAL){
-        if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
+    if(btype_ == BATTLETYPE_NORMAL || btype_ == BATTLETYPE_FIRST) {
+        if(phase_ == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
             card_manager_ptr_->clearMiddle();
             card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
             movePlayerRoles();
@@ -474,31 +495,48 @@ void Battle::doneEvent(ClientID clientID) {
             curr_attacks_ = 0;
             ok_msg_[ATTACKER] = false;
             ok_msg_[CO_ATTACKER] = false;
-            phase = BATTLEPHASE_FIRST_ATTACK;
-            first_battle_ = false;
+            phase_ = BATTLEPHASE_FIRST_ATTACK;
+            if(BATTLETYPE_NORMAL) first_battle_ = false;
+            else if(BATTLETYPE_FIRST) first_battle_ = true;
             battle_done_ = true;
             return;
         }
-        if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
-    // }
-    // else if(btype_ == BATTLETYPE_ENDGAME){
-    //     if(phase == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER]) {
-    //         card_manager_ptr_->clearMiddle();
-    //         card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
-    //         movePlayerRoles();
-    //         //das isch alles chli goofy
-    //         curr_attacks_ = 0;
-    //         ok_msg_[ATTACKER] = false;
-    //         phase = BATTLEPHASE_FIRST_ATTACK;
-    //         first_battle_ = false;
-    //         battle_done_ = true;
-    //         return;
-    //     }
-    //     if(phase == BATTLEPHASE_POST_PICKUP) tryPickUp();
-    // }
-    
-
-
+        if(phase_ == BATTLEPHASE_POST_PICKUP) tryPickUp();
+    } else if(btype_ == BATTLETYPE_ENDGAME){
+        std::cout << "doneEvent of endgame" << std::endl;
+        switch(phase_){
+            case BATTLEPHASE_DEFENDED:
+                if(ok_msg_[ATTACKER]){
+                    card_manager_ptr_->clearMiddle();
+                    card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+                    movePlayerRoles();
+                    //das isch alles chli goofy
+                    curr_attacks_ = 0;
+                    ok_msg_[ATTACKER] = false;
+                    phase_ = BATTLEPHASE_FIRST_ATTACK;
+                    first_battle_ = false;
+                    battle_done_ = true;
+                    return;
+                } else {
+                    sendPopup("Co-Attacker cannot press Done in 1v1", clientID);
+                }
+            case BATTLEPHASE_POST_PICKUP:
+                tryPickUp();
+                card_manager_ptr_->clearMiddle();
+                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+                movePlayerRoles();
+                //das isch alles chli goofy
+                curr_attacks_ = 0;
+                ok_msg_[ATTACKER] = false;
+                phase_ = BATTLEPHASE_FIRST_ATTACK;
+                first_battle_ = false;
+                battle_done_ = true;
+                return;
+            default:
+                sendPopup("some done event functionality missing", clientID);
+                return;
+        }
+    }
 }
 
 std::optional<Card> Battle::getReflectCard(ClientID clientID) {
@@ -527,8 +565,8 @@ void Battle::reflectEvent(ClientID clientID) {
 }
 
 void Battle::pickupEvent(ClientID clientID) {
-    if(players_bs_[clientID] != DEFENDER || phase != BATTLEPHASE_OPEN) return;
-    phase = BATTLEPHASE_POST_PICKUP;
+    if(players_bs_[clientID] != DEFENDER || phase_ != BATTLEPHASE_OPEN) return;
+    phase_ = BATTLEPHASE_POST_PICKUP;
     tryPickUp();
 }
 
@@ -543,6 +581,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
             reflectEvent(player_id);
             break;
         case CLIENTACTION_OK:
+            std::cout << "clientaction ok in handleactionevent" << std::endl;
             doneEvent(player_id);
             message = getClientName(player_id) + " pressed done.";
             broadcastPopup(message);
@@ -572,7 +611,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
 void Battle::updateAvailableAction() {
     //DEBUG
     std::string s = "";
-    switch(phase) {
+    switch(phase_) {
         case BATTLEPHASE_FIRST_ATTACK:
             s = "FIRST ATTACK";
         break;
@@ -598,17 +637,17 @@ void Battle::updateAvailableAction() {
 
         AvailableActionUpdate update;
         update.ok = false;
-        if(phase == BATTLEPHASE_POST_PICKUP || phase == BATTLEPHASE_DEFENDED) {
+        if(phase_ == BATTLEPHASE_POST_PICKUP || phase_ == BATTLEPHASE_DEFENDED) {
             if(role == ATTACKER && !ok_msg_[ATTACKER]) update.ok = true;
             if(role == CO_ATTACKER && !ok_msg_[CO_ATTACKER]) update.ok = true;
         }
         
         update.pass_on = false;
-        if(role == DEFENDER && phase == BATTLEPHASE_OPEN) 
+        if(role == DEFENDER && phase_ == BATTLEPHASE_OPEN) 
             if(getReflectCard(id).has_value()) update.pass_on = true;
         
         update.pick_up = false;
-        if(role == DEFENDER && phase == BATTLEPHASE_OPEN)
+        if(role == DEFENDER && phase_ == BATTLEPHASE_OPEN)
             update.pick_up = true;
         
         Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), id);
@@ -849,7 +888,9 @@ void Battle::attack(ClientID client, Card card){
     card_manager_ptr_->attackCard(card, client);
     // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
     if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
-        // the game should end
+        std::cout << "game should end by attacking" << std::endl;
+        players_bs_[client] = FINISHED;
+        gameover_ = true;
     }
 
     attacks_to_defend_++;
@@ -868,6 +909,9 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
     if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
         // the game should end
+        std::cout << "game should end by defending" << std::endl;
+        players_bs_[client] = FINISHED;
+        gameover_ = true;
     }
     attacks_to_defend_--;
     defense_started_ = true;
@@ -998,7 +1042,9 @@ void Battle::UpdatePickUpOrder(){
     //IDs correspond to Player Roles after they have been moved
     ClientID current_attacker = findRole(ATTACKER);
     ClientID current_defender = findRole(DEFENDER);
-    ClientID current_coattacker = findRole(CO_ATTACKER);
+    ClientID current_coattacker;
+    if(btype_ == BATTLETYPE_ENDGAME) current_coattacker = current_attacker;
+    else current_coattacker = findRole(CO_ATTACKER);
     ClientID first_attacker = getFirstAttackerPtr()->first; //First player to attack during this battle
     
     //1a Case: New Defender already was first attacker during this battle

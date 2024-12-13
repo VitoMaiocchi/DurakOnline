@@ -86,6 +86,8 @@ public:
     Card getLastCard(){ return *last_card_;}
 
     std::optional<Card> getMiddleSlot(uint slot);
+    // setter functions
+    void eraseDeck();
 };
 
 

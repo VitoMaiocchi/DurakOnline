@@ -486,17 +486,18 @@ void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node
 //--------------------------------------------------------------------------------------------------
 
 GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
-    back_button = std::make_unique<ButtonNode>("BACK");
-    back_button->setClickEventCallback([](float x, float y){
-        std::cout << "back" << std::endl;
+    quit_button = std::make_unique<ButtonNode>("QUIT");
+    quit_button->setClickEventCallback([](float x, float y){
+        std::cout << "quit" << std::endl;
+        Network::closeConnection();
     });
-    cast(ButtonNode, back_button)->visible = true;
+    cast(ButtonNode, quit_button)->visible = true;
 
-    rematch_button = std::make_unique<ButtonNode>("REMATCH");
-    rematch_button->setClickEventCallback([](float x, float y){
-        std::cout << "rematch" << std::endl;
+    lobby_button = std::make_unique<ButtonNode>("LOBBY");
+    lobby_button->setClickEventCallback([](float x, float y){
+        std::cout << "lobby" << std::endl;
     });
-    cast(ButtonNode, rematch_button)->visible = true;
+    cast(ButtonNode, lobby_button)->visible = true;
     updateExtends(ext);
 }
 
@@ -508,13 +509,13 @@ void GameOverScreenNode::updateExtends(Extends ext){
     float total_button_width = button_width * 2;
     float spacing = (available_area - total_button_width) / 3;
     float start_x = ext.x + (ext.width - available_area) / 2.0f;
-    back_button->updateExtends({
+    quit_button->updateExtends({
         start_x + spacing,
         ext.y + ext.height * 0.1f,
         button_width,
         ext.height * 0.1f,
     });
-    rematch_button->updateExtends({
+    lobby_button->updateExtends({
         start_x + spacing * 2 + button_width,
         ext.y + ext.height * 0.1f,
         button_width,
@@ -528,8 +529,8 @@ Extends GameOverScreenNode::getCompactExtends(Extends ext){
 
 void GameOverScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function){
     //Base
-    function(back_button);
-    function(rematch_button);
+    function(quit_button);
+    function(lobby_button);
 }
 
 void GameOverScreenNode::draw() {
@@ -540,8 +541,23 @@ void GameOverScreenNode::draw() {
         extends.height * 0.9f,
     };
     OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    back_button->draw();
-    rematch_button->draw();
+    quit_button->draw();
+    lobby_button->draw();
+    
+    std::string title;
+    if(durak){
+        title = "YOU ARE THE DURAK";
+    }else{
+        title = "YOU ARE NOT THE DURAK"; 
+    }
+    Extends title_ext = {
+        extends.x + extends.width * 0.175f,
+        extends.y + extends.height * 0.7f,
+        extends.width * 0.65f,
+        extends.height * 0.2f,
+    };
+    OpenGL::drawText(title, title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
+    
 }
 
 

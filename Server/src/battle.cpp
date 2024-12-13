@@ -957,90 +957,142 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
-void Battle::removeFinishedPlayers(){
-    //finds players that have no cards
-    //move the player roles ones
-    //sets the player the player to finish
+std::map<ClientID, PlayerRole>::iterator next(std::map<ClientID, PlayerRole> map, std::map<ClientID, PlayerRole>::iterator it) {
+    auto next = std::next(it);
+    if(next == map.end()) return map.begin();
+    return next;
 }
+
+std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole> map, std::map<ClientID, PlayerRole>::iterator it) {
+    if(it == map.begin()) return std::prev(map.end());
+    return std::prev(it);
+}
+
+void Battle::removeFinishedPlayers(){
+    //TODO: da no checke obs nur no öpper het wo nöd fertig isch oder so ka
+
+    //Find the player to be removed, return if all players still have cards
+    auto no_cards = [this](const auto& pair) {
+            return card_manager_ptr_->getPlayerHand(pair.first).empty();};
+    auto finished = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
+    if (finished == players_bs_.end()) return;
+    
+    if(finished->second == ATTACKER) {
+        previous(players_bs_, finished)->second = ATTACKER;
+        players_bs_.erase(finished);
+        removeFinishedPlayers();
+        return;
+    }
+
+    auto current = finished;
+    PlayerRole next_role = next(players_bs_, current)->second;
+
+    while (next_role != ATTACKER){
+        next(players_bs_, current)->second = current->second;
+        current = next(players_bs_, current);
+        next_role = next(players_bs_, current)->second;
+    }
+    players_bs_.erase(finished);
+    removeFinishedPlayers();
+}
+
+// std::map<ClientID, PlayerRole>::reverse_iterator &non_finished_next(std::map<ClientID, PlayerRole>::reverse_iterator &it) {
+//     it++;
+//     while(it->second == FINISHED) it++;
+//     return it;
+// }
 /**
  * POST: moves the player roles one to the next 
  */
 void Battle::movePlayerRoles(){
      std::cout << "Moving player roles" << std::endl;
+    
+    removeFinishedPlayers();
 
-    BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
-
-    // Check the number of active players
-    size_t active_players = 0;
-    for(auto player : players_bs_){
-        if(player.second == ATTACKER || player.second == DEFENDER || player.second == CO_ATTACKER){
-            active_players++;
-        }
+    PlayerRole end_role = std::prev(players_bs_.end())->second;
+    for(auto it = players_bs_.rbegin(); it != std::prev(players_bs_.rend()); it++) {
+        it->second = std::next(it)->second;        
     }
-    // Handle cases where there are fewer than 3 players left
-    if (btype_ == BATTLETYPE_ENDGAME) {
-        // Rotate roles between ATTACKER and DEFENDER only
-        auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
-                                        [](const auto& pair) { return pair.second == ATTACKER; });
-        auto defender_it = std::find_if(players_bs_.begin(), players_bs_.end(),
-                                        [](const auto& pair) { return pair.second == DEFENDER; });
+    players_bs_.begin()->second = end_role;
 
-        if (attacker_it != players_bs_.end() && defender_it != players_bs_.end()) {
-            // Swap their roles
-            attacker_it->second = DEFENDER;
-            defender_it->second = ATTACKER;
-        } else {
-            std::cerr << "Error: Missing ATTACKER or DEFENDER role in player roles." << std::endl;
-        }
-        for(auto player : players_bs_){
-            if(player.second != ATTACKER && player.second != DEFENDER){
-                player.second = IDLE;
-            }
-        }
+    // BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
 
-        // Prepare BattleStateUpdate message
-        for (const auto& [player_id, role] : players_bs_) {
-            if (role == ATTACKER) {
-                bsu_msg.attackers.push_back(player_id);
-            } else if (role == DEFENDER) {
-                bsu_msg.defender = player_id;
-            }
-            else{
-                bsu_msg.idle.push_back(player_id);
-            }
-        }
-    }
-    // Handle the case where there are 3 or more players
-    else {
-        // Rotate roles in a circular fashion: ATTACKER -> CO_ATTACKER -> DEFENDER -> IDLE
-        PlayerRole last_role = players_bs_.rbegin()->second; // Save the last player's role
-        for (auto it = players_bs_.rbegin(); it != players_bs_.rend(); ++it) {
-            if (std::next(it) != players_bs_.rend()) {
-                if(std::next(it)->second == FINISHED) continue;
-                it->second = std::next(it)->second;
-            }
-        }
-        if(last_role != FINISHED){
-            players_bs_.begin()->second = last_role; // Assign the last role to the first player
-        }
+    // // Check the number of active players
+    // size_t active_players = 0;
+    // for(auto player : players_bs_){
+    // if(player.second == ATTACKER || player.second == DEFENDER || player.second == CO_ATTACKER){
+    //     active_players++;
+    // }
+    // }
 
-        // Prepare BattleStateUpdate message
-        for (const auto& [player_id, role] : players_bs_) {
-            if (role == ATTACKER) {
-                bsu_msg.attackers.push_back(player_id);
-            } else if (role == CO_ATTACKER) {
-                bsu_msg.attackers.push_back(player_id);
-            } else if (role == DEFENDER) {
-                bsu_msg.defender = player_id;
-            } else if (role == IDLE || role == FINISHED) {
-                bsu_msg.idle.push_back(player_id);
-            }
+    // // Handle cases where there are fewer than 3 players left
+    // if (btype_ == BATTLETYPE_ENDGAME) {
+    //     // Rotate roles between ATTACKER and DEFENDER only
+    //     auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
+    //                                     [](const auto& pair) { return pair.second == ATTACKER; });
+    //     auto defender_it = std::find_if(players_bs_.begin(), players_bs_.end(),
+    //                                     [](const auto& pair) { return pair.second == DEFENDER; });
+
+    //     if (attacker_it != players_bs_.end() && defender_it != players_bs_.end()) {
+    //         // Swap their roles
+    //         attacker_it->second = DEFENDER;
+    //         defender_it->second = ATTACKER;
+    //     } else {
+    //         std::cerr << "Error: Missing ATTACKER or DEFENDER role in player roles." << std::endl;
+    //     }
+    //     for(auto player : players_bs_){
+    //         if(player.second != ATTACKER && player.second != DEFENDER){
+    //             player.second = IDLE;
+    //         }
+    //     }
+
+    //     // Prepare BattleStateUpdate message
+    //     for (const auto& [player_id, role] : players_bs_) {
+    //         if (role == ATTACKER) {
+    //             bsu_msg.attackers.push_back(player_id);
+    //         } else if (role == DEFENDER) {
+    //             bsu_msg.defender = player_id;
+    //         }
+    //         else{
+    //             bsu_msg.idle.push_back(player_id);
+    //         }
+    //     }
+    // }
+    // // Handle the case where there are 3 or more players
+    // else {
+    //     // Rotate roles in a circular fashion: ATTACKER -> CO_ATTACKER -> DEFENDER -> IDLE
+    //     PlayerRole last_role = players_bs_.rbegin()->second; // Save the last player's role
+    //     for (auto it = players_bs_.rbegin(); it != players_bs_.rend(); ++it) {
+    //         if (std::next(it) != players_bs_.rend()) {
+    //             if(std::next(it)->second == FINISHED) continue;
+    //             it->second = std::next(it)->second;
+    //         }
+    //     }
+    //     if(last_role != FINISHED){
+    //         players_bs_.begin()->second = last_role; // Assign the last role to the first player
+    //     }
+
+    //     // Prepare BattleStateUpdate message
+
+    // }
+
+    BattleStateUpdate bsu_msg; 
+
+    for (const auto& [player_id, role] : players_bs_) {
+        if (role == ATTACKER) {
+            bsu_msg.attackers.push_back(player_id);
+        } else if (role == CO_ATTACKER) {
+            bsu_msg.attackers.push_back(player_id);
+        } else if (role == DEFENDER) {
+            bsu_msg.defender = player_id;
+        } else if (role == IDLE || role == FINISHED) {
+            bsu_msg.idle.push_back(player_id);
         }
     }
 
     // Update clients with new roles
-    for (const auto& [player_id, role] : players_bs_) {
-        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), player_id);
+    for (ClientID client : DurakServer::clients) {
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), client);
     }
 
     // Adapt max_attacks to the new defender's card count (min 6 or their card count)
@@ -1119,15 +1171,22 @@ ClientID Battle::nextInOrder(ClientID current_player){
     auto it = players_bs_.find(current_player);
 
     //Handle the case where a wrong ClientID was entered
-    if(it == players_bs_.end()){
-        throw std::invalid_argument("PlayerID not found in the map.");
-    }
+    assert (it != players_bs_.end() && "Invalid PlayerID");
+    
 
     ++it;
     //Check for case where the ClientID was at the end of the map
     if(it == players_bs_.end()){
-        return players_bs_.begin()->first;
+        it = players_bs_.begin();
     }
+
+    while (it->second == FINISHED){
+        ++it;
+        if(it == players_bs_.end()){
+            it = players_bs_.begin();
+        }
+    }
+
     // Otherwise return next element
     return it->first;
 }
@@ -1159,4 +1218,25 @@ ClientID Battle::getCurrentDefender(){
         }
     }
     return player_id;
+}
+
+//Returns an iterator to the next active player in order
+std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientID, PlayerRole>::iterator it){
+    // Increment the iterator
+    ++it;
+
+    // If the iterator reaches the end, wrap around to the beginning
+    if (it == players_bs_.end()) {
+        it = players_bs_.begin();
+    }
+
+    while (it->second == FINISHED){
+        ++it;
+        if (it == players_bs_.end()){
+            it = players_bs_.begin();
+        }
+    }
+    
+
+    return it;
 }

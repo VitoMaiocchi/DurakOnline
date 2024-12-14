@@ -121,7 +121,7 @@ namespace Network {
         last_message = std::chrono::system_clock::now();
 
         auto res = send_sockets[id].send(message->toJson());
-        // std::cout << "(network debug) SENDING: " << message->toJson() << std::endl;
+        std::cout << "(network debug) SENDING: " << message->toJson() << std::endl;
         if(res.is_error() || res.value() == -1) {
             closeConnection(id);
             return false;

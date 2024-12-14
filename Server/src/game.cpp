@@ -224,7 +224,7 @@ bool Game::handleClientActionEvent(std::unique_ptr<Message> message, ClientID cl
         if(current_battle_->battleIsDone()){
             player_roles_ = current_battle_->getPlayerRolesMap();
             current_battle_.reset();
-            updateFinishedPlayers();
+            // updateFinishedPlayers();---------------
         }
     }
 

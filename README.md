@@ -23,7 +23,7 @@
    - ToDo
 
 ---
-#HOW TO USE
+# HOW TO USE
 do `git clone https://gitlab.ethz.ch/durak/durak.git`
 or with ssh idk
 then in **bash** run `source setup.sh`

@@ -36,6 +36,9 @@ namespace DurakServer{
     constexpr size_t MIN_PLAYERS = 2; // changed this to test two player games
     //maximum number of players that can play the game
     constexpr size_t MAX_PLAYERS = 6;
+
+    // Get the name of a client
+    std::string getClientName(ClientID clientID);
 }
 void cleanup(int signum);
 

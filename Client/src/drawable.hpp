@@ -11,10 +11,20 @@
 #define DEFAULT_TRANSPARANCY 0.1f
 #define TEXTFIELD_BORDER 5.0f
 
+/*
+The Node Framework Provides a way to stucture anything displayed on screen
+in a hirachy of nodes. Any updates in the Window size propagte trough the node tree.
+The size of each Node in the tree is only calulated when the window size changes.
+This Extends of the Node is used to handle drawing and mouse events like hover/click.
+This makes everything scale dynamically
+
+drawable contains any components that can be reused across the atual game nodes.
+
+*/
+
 class Node {
     public:
-        virtual ~Node() = default; // without this line the client crashes when connecting on M1 Mac
-        bool visible = false;
+        virtual ~Node() = default;
         virtual void draw() = 0;
         virtual void updateExtends(Extends ext) = 0;
         virtual Extends getCompactExtends(Extends ext) = 0;

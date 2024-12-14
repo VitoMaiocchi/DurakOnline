@@ -373,9 +373,9 @@ void LoginScreenNode::connect() {
 LoginScreenNode::LoginScreenNode(Extends ext){
     //Text input field for name and for Ip
     name_input = std::make_unique<TextInputNode>("Enter your name");
-    name_input->visible = true;
+    cast(TextInputNode, name_input)->visible = true;
     ip_input = std::make_unique<TextInputNode>("localhost");
-    ip_input->visible = true;
+    cast(TextInputNode,ip_input)->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
         if(c == '\n') {
             connect();
@@ -405,9 +405,9 @@ LoginScreenNode::LoginScreenNode(Extends ext){
         connect();
     });
 
-    connect_button->visible = true;
-    name_input->visible = true;
-    ip_input->visible = true;
+    cast(ButtonNode,connect_button)->visible = true;
+    cast(TextInputNode,name_input)->visible = true;
+    cast(TextInputNode,ip_input)->visible = true;
 
     updateExtends(ext);
 }

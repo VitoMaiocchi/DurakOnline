@@ -29,20 +29,20 @@ It provides specialized features for handling player readiness and updating the 
   - `handleReadyUpdate(ReadyUpdate update)`: Handles updates to the readiness state of players.
   - `callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function)`: Iterates over all child nodes to apply a given function.
 
----
+-----------------------------------------------------------------------------------------------------------------------------------------
 
-### LoginScreenNode ###
-The `LoginScreenNode` class represents the login screen interface where players can input their name and IP address to connect to a server. 
-It extends the base `Node` class and includes input handling and connection functionality.
+LoginScreenNode
+The LoginScreenNode class represents the login screen interface where players can input their name and IP address to connect to a server. 
+It extends the base Node class and includes input handling and connection functionality.
 
-- **Functionality**:
+- Functionality:
   - Displays input fields for the player's name and server IP.
   - Provides a button to attempt connection to the server.
 
-- **Specialized Child Nodes**:
-  - `connect_button`: Button to connect to the server.
-  - `name_input`: Input field for the player's name.
-  - `ip_input`: Input field for the server's IP address.
+- Specialized Child Nodes:
+  - connect_button: Button to connect to the server.
+  - name_input: Input field for the player's name.
+  - ip_input: Input field for the server's IP address.
 
 - **Methods**:
   - `draw()`: Draws the login screen and all input elements.
@@ -51,7 +51,7 @@ It extends the base `Node` class and includes input handling and connection func
   - `connect()`: Attempts to connect to the server using the provided name and IP.
   - `callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function)`: Iterates over all child nodes to apply a given function.
 
----
+--------------------------------------------------------------------------------------------------------------------------------------
 
 GameOverScreenNode
 The GameOverScreenNode class represents the game over screen, where players can either return to the lobby or quit. 

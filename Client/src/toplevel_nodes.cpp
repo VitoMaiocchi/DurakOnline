@@ -489,11 +489,6 @@ GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     quit_button = std::make_unique<ButtonNode>("QUIT");
     quit_button->setClickEventCallback([](float x, float y){
         std::cout << "quit" << std::endl;
-
-        ClientActionEvent event;
-        event.action = CLIENTACTION_LOBBY;
-        Network::sendMessage(std::make_unique<ClientActionEvent>(event));
-
         Network::closeConnection();
     });
     cast(ButtonNode, quit_button)->visible = true;

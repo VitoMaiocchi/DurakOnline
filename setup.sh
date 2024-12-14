@@ -1,53 +1,66 @@
 #!/bin/bash
 
-Networking="$(pwd)/Networking"  # Or provide the absolute path
+echo $'Setting up your environment for the Durak game...\n'
 
-echo "Setting up your environment for the Durak game..."
+cd "$Networking"
 
-# Create the Networking directory if it doesn't exist
-if [ ! -d "$Networking" ]; then
-    echo "Networking directory not found. Creating it..."
-    mkdir -p "$Networking"
-fi
+echo $'\nCloning git repos: sockpp & rapidjson\n'
 
 # Navigate to the Networking directory
-cd "$Networking" || { echo "Failed to navigate to $Networking"; exit 1; }
+cd "$Networking" || { echo "Failed to navigate to Networking"; exit 1; }
 
 # Clone the sockpp repository if not already cloned
 if [ ! -d "sockpp" ]; then
-    echo "Getting the sockpp repo..."
     git clone https://github.com/fpagliughi/sockpp || { echo "Failed to clone sockpp"; exit 1; }
 else
-    echo "sockpp repo already exists. Skipping cloning."
+    echo "sockpp repo already exists. Skipping cloning. Updating..."
+    cd "$sockpp" || { echo "Failed to navigate to sockpp"; exit 1;}
+    git pull || { echo "Failed to pull from git sockpp"; exit 1;}
+    cd .. #back to networking
 fi
 
 # Clone the rapidjson repository if not already cloned
 if [ ! -d "rapidjson" ]; then
-    echo "Getting the rapidjson repo..."
     git clone https://github.com/Tencent/rapidjson || { echo "Failed to clone rapidjson"; exit 1; }
 else
-    echo "rapidjson repo already exists. Skipping cloning."
+    echo "rapidjson repo already exists. Skipping cloning. Updating..."
+    cd "$rapidjson" || { echo "Failed to navigate to rapidjson"; exit 1;}
+    git pull || { echo "Failed to pull from git rapidjson"; exit 1;}
+    cd .. #back to networking
 fi
 
-# Navigate to Client/libs directory
-ClientLibs="$(pwd)/../Client/libs"
-if [ ! -d "$ClientLibs" ]; then
-    echo "Client/libs directory not found. Creating it..."
-    mkdir -p "$ClientLibs"
-fi
+cd .. #back to durak main parent dir
 
-cd "$ClientLibs" || { echo "Failed to navigate to $ClientLibs"; exit 1; }
+echo $'\nCloning git repo: glfw...\n' 
+
+cd "$Client" || { echo "Failed to navigate to Client"; exit 1; }
+cd "$libs" || { echo "Failed to navigate to libs"; exit 1; }
 
 # Clone the GLFW repository with submodules if not already cloned
 if [ ! -d "glfw" ]; then
-    echo "Getting the glfw repo..."
     git clone --recurse-submodules https://github.com/glfw/glfw.git || { echo "Failed to clone glfw"; exit 1; }
 else
     echo "glfw repo already exists. Skipping cloning."
-    # Ensure submodules are initialized
-    cd glfw
-    git submodule update --init --recursive || { echo "Failed to update glfw submodules"; exit 1; }
-    cd ..
 fi
 
-echo "Environment setup complete."
+cd .. #back to Client dir
+cd .. #back to durak dir
+
+mkdir -p build
+cd "$build"
+
+cmake ..
+make clean
+make
+
+echo $'\nSetting up your environment complete\n'
+
+echo $'\nALWAYS RUN EVERYTHING IN THE "build" DIRECTORY\n'
+
+echo $'\nTO RUN THE SERVER: \n\n ./Server/DurakServer\n\n'
+
+echo $'\nTO RUN THE CLIENT: \n\n ./Client/DurakClient\n\n'
+
+echo $'\nIF SERVER HOSTET LOCALLY, JUST PRESS CONNECT\n'
+
+echo $'\nTO FIND OUT THE IP: ask chat gpt lol\n'

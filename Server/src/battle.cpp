@@ -133,6 +133,33 @@ void sendPopup(std::string message, ClientID clientID) {
     Network::sendMessage(std::make_unique<PopupNotify>(popup), clientID);
 }
 
+void Battle::sendBattleStateUpdate(){
+    BattleStateUpdate bsu_msg;
+    //set the first attacker pointer to the one that attacks first
+    //while iterating prepare the message BattleStateUpdate to send to the client
+    // we first iterate through to set the first attacker
+    for(ClientID c : DurakServer::clients){
+        if(players_bs_.find(c) != players_bs_.end()){
+            if(players_bs_[c] == ATTACKER){
+                bsu_msg.attackers.push_front(c);
+            }else if(players_bs_[c] == DEFENDER){
+                bsu_msg.defender = c;
+            }else if(players_bs_[c] == CO_ATTACKER){
+                bsu_msg.attackers.push_back(c);
+            }else if(players_bs_[c] == IDLE || players_bs_[c] == FINISHED){
+                bsu_msg.idle.push_back(c);
+            }
+        } else{
+            bsu_msg.idle.push_back(c);
+        }
+    }
+
+    for(ClientID c : DurakServer::clients){
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), c); //maybe make function to broadcast to all
+    }
+}
+
+
 void broadcastPopup(std::string message) {
     PopupNotify popup;
     popup.message = message;
@@ -144,6 +171,7 @@ void broadcastPopup(std::string message) {
 std::string getClientName(ClientID clientID) {
     return DurakServer::players_map[clientID].name;
 }
+
 
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
     //if only 1 card with which is being attacked, check if valid move
@@ -466,7 +494,7 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
             sendPopup("You are finished and can not place cards", player_id);
             break;
     }
-
+    sendBattleStateUpdate();
     updateAvailableAction();
     card_manager_ptr_->cardUpdate();
     return false;
@@ -520,7 +548,7 @@ void Battle::doneEvent(ClientID clientID) {
         if(phase_ == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
             card_manager_ptr_->clearMiddle();
             card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
-            movePlayerRoles();
+            movePlayerRoles(); 
             
             //das isch alles chli goofy
             curr_attacks_ = 0;
@@ -530,6 +558,7 @@ void Battle::doneEvent(ClientID clientID) {
             if(BATTLETYPE_NORMAL) first_battle_ = false;
             else if(BATTLETYPE_FIRST) first_battle_ = true;
             battle_done_ = true;
+
             return;
         }
         if(phase_ == BATTLEPHASE_POST_PICKUP) tryPickUp();
@@ -541,6 +570,7 @@ void Battle::doneEvent(ClientID clientID) {
                     card_manager_ptr_->clearMiddle();
                     card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
                     movePlayerRoles();
+                    sendBattleStateUpdate(); // inform all clients of their new roles
                     //das isch alles chli goofy
                     curr_attacks_ = 0;
                     ok_msg_[ATTACKER] = false;
@@ -633,7 +663,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
             std::cerr << "unknown action" << std::endl;
             break;
     }
-
+    sendBattleStateUpdate();
     updateAvailableAction();
     card_manager_ptr_->cardUpdate();
     return;

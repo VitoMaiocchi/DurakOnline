@@ -143,6 +143,9 @@ class Battle {
         //returns a pointer to the person who laid down the card the first
         const std::pair<const ClientID, PlayerRole>* getFirstAttackerPtr();
 
+        // message functions
+        void sendBattleStateUpdate();
+
 };
 
 #endif

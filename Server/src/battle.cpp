@@ -1017,9 +1017,14 @@ void Battle::removeFinishedPlayers(){
         if (players_bs_.size() == 3) {
             std::cout << "handling 3 players case in removeFinishedPLayers"<<std::endl;
             auto it = std::find_if(players_bs_.begin(), players_bs_.end(), [](const std::pair<ClientID, PlayerRole>& pair){return pair.second == ATTACKER;});
-            nextInOrderIt(it)->second = DEFENDER;
+            if(it == players_bs_.end()){
+                std::cout << "Error, missing attacker role for 3 player case" << std::endl;
+            }
+            it->second = ATTACKER;
             it = nextInOrderIt(it);
-            nextInOrderIt(it)->second = CO_ATTACKER; // Third player becomes CO-ATTACKER
+            it->second = DEFENDER;
+            it = nextInOrderIt(it);
+            it->second = CO_ATTACKER; // Third player becomes CO-ATTACKER
 
             std::cout << "\nthe 3 players when in removeFinishedPLayers roles: \n";
             for(auto c : players_bs_){
@@ -1030,6 +1035,10 @@ void Battle::removeFinishedPlayers(){
         if(players_bs_.size() == 2){
             std::cout << "handling 2 players case in removeFinishedPLayers"<<std::endl;
             auto it = std::find_if(players_bs_.begin(), players_bs_.end(), [](const std::pair<ClientID, PlayerRole>& pair){return pair.second == ATTACKER;});
+            if(it == players_bs_.end()){
+                std::cout << "error attacker not ffound in two player case"<<std::endl;
+            }
+            it->second = ATTACKER;
             nextInOrderIt(it)->second = DEFENDER;
 
             std::cout << "\nthe 2 players when in removeFinishedPLayers roles: \n";

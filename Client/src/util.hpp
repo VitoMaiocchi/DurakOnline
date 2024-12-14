@@ -91,6 +91,10 @@ inline void printExt(std::string name, Extends ext) {
                 << "; width: " << ext.width << "; height: " << ext.height << std::endl;
 }
 
-#define throwServerError(m) throw std::runtime_error(std::string("\nSERVER SIDE ERROR: ")+std::string(m)+std::string("\nat: ")+std::string(__FILE__)+std::string(" line: ")+std::to_string(__LINE__))
+//not used anymore (debug purposes)
 #define throwGenericError(m) throw std::runtime_error(std::string("\nGENERIC RUNTIME ERROR: ")+std::string(m)+std::string("\nat: ")+std::string(__FILE__)+std::string(" line: ")+std::to_string(__LINE__))
+
+//replaced error with warning to avoid potential crashes in the final version
+#define throwServerError(m) std::cout << std::string("\nWARNING server side error: ")+std::string(m)+std::string("\nat: ")+std::string(__FILE__)+std::string(" line: ")+std::to_string(__LINE__) << std::endl;
+//#define throwServerError(m) throw std::runtime_error(std::string("\nSERVER SIDE ERROR: ")+std::string(m)+std::string("\nat: ")+std::string(__FILE__)+std::string(" line: ")+std::to_string(__LINE__))
 #define throwServerErrorIF(m, c) if(c) throwServerError(m)

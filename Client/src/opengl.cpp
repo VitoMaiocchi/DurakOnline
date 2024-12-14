@@ -15,6 +15,7 @@
 #include <chrono>
 #include FT_FREETYPE_H
 
+//running the client in the wrong dir is the most common cause of errors.
 #define FONT_PATH "../Client/resources/fonts/OpenSans-Bold.ttf"
 #define WD_WARN "\n \033[31m    Note: this error is allmost allways caused because you are running Client in the wrong working directory. \n     Plase make sure you are running the Client from build (Client/DurakClient) not build/Client (./DurakClient) \033[0m"
 

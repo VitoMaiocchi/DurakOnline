@@ -20,6 +20,10 @@ The DurakClient Code is made up of 3 main components.
 3. OpenGl this includes the Window and any actuall rendering
    (opengl.cpp)
 
+Note: If you want to understand the client code I recomend looking at these files in
+      exactly in the listed order. For readablity most of the comments are located 
+      in the header files. 
+
 The Node Framework Provides a way to stucture anything displayed on screen
 in a hirachy of nodes. Any updates in the Window size propagte trough the node tree.
 The size of each Node in the tree is only calulated when the window size changes.

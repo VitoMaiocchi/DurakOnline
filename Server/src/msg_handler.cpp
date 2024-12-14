@@ -121,6 +121,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                     //player update first
                     PlayerUpdate player_update;
                     player_update.durak = durak; //getlastplayer
+                    players_map[durak].durak = true;
                     player_update.player_count = players_map.size();
                     for(auto player : players_map){
                         player_update.player_names[player.first] = player.second.name;

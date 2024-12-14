@@ -53,26 +53,27 @@ It extends the base `Node` class and includes input handling and connection func
 
 ---
 
-### GameOverScreenNode ###
-The `GameOverScreenNode` class represents the game over screen, where players can either return to the lobby or quit the game. 
-It extends the base `Node` class and includes functionality for post-game options.
+GameOverScreenNode
+The GameOverScreenNode class represents the game over screen, where players can either return to the lobby or quit. 
+It extends the base Node class and includes functionality for post-game options. 
 
-- **Functionality**:
-  - Displays game over options, including buttons to return to the lobby or quit.
-  - Optionally highlights whether the player was the "durak" (loser in the game).
+- Functionality: 
+    - Displays game over options, including buttons to return to the lobby or quit. 
+    - Shows a different screen and text, depeding if you are the durak or not. 
+    
+- Specialized Child Nodes: 
+    - lobby_button: Button to return to the lobby. 
+    - quit_button: Button to quit 
 
-- **Specialized Child Nodes**:
-  - `lobby_button`: Button to return to the lobby.
-  - `quit_button`: Button to quit the game.
+- Methods: 
+    - draw(): Draws the game over screen and all child nodes. 
+    - updateExtends(Extends ext): Updates the layout and size of the node. 
+    - getCompactExtends(Extends ext): Calculates and returns the minimum bounds required for the node. 
+    - callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function): Iterates over all child nodes to apply a given function. 
 
-- **Methods**:
-  - `draw()`: Draws the game over screen and all child nodes.
-  - `updateExtends(Extends ext)`: Updates the layout and size of the node.
-  - `getCompactExtends(Extends ext)`: Calculates and returns the minimum bounds required for the node.
-  - `callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function)`: Iterates over all child nodes to apply a given function.
+- Special Attributes: 
+    - durak: Boolean indicating whether the player was the "durak". 
 
-- **Special Attributes**:
-  - `durak`: Boolean indicating whether the player was the "durak" (default is `true`).
 */
 
 class LobbyNode : public TreeNode {

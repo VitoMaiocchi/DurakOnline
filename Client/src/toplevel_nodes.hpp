@@ -44,12 +44,12 @@ It extends the base Node class and includes input handling and connection functi
   - name_input: Input field for the player's name.
   - ip_input: Input field for the server's IP address.
 
-- **Methods**:
-  - `draw()`: Draws the login screen and all input elements.
-  - `updateExtends(Extends ext)`: Updates the layout and size of the node.
-  - `getCompactExtends(Extends ext)`: Calculates and returns the minimum bounds required for the node.
-  - `connect()`: Attempts to connect to the server using the provided name and IP.
-  - `callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function)`: Iterates over all child nodes to apply a given function.
+- Methods:
+  - draw(): Draws the login screen and all input elements.
+  - updateExtends(Extends ext): Updates the layout and size of the node.
+  - getCompactExtends(Extends ext): Calculates and returns the minimum bounds required for the node.
+  - connect(): Attempts to connect to the server using the provided name and IP.
+  - callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function): Iterates over all child nodes to apply a given function.
 
 --------------------------------------------------------------------------------------------------------------------------------------
 

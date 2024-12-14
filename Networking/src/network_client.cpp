@@ -52,7 +52,8 @@ namespace Network {
         recive_connector = sockpp::tcp_connector();
 
         try {
-            if(!send_connector.connect(sockpp::inet_address(ip, port))) return 0;
+            //3 seconds connect timeout
+            if(!send_connector.connect(ip, port, std::chrono::milliseconds(3000))) return 0;
         } catch (...) {
             return 0;
         }
@@ -82,7 +83,7 @@ namespace Network {
                     return;
                 }
                 message_queue_mut.lock();
-                // std::cout << "(network debug) RECIVEING: " << std::string(buffer,n) << std::endl;
+                std::cout << "(network debug) RECIVEING: " << std::string(buffer,n) << std::endl;
                 message_queue.push(std::string(buffer,n));
                 message_queue_mut.unlock();
             }

@@ -23,6 +23,7 @@ SortType Settings::sortType = SORTTYPE_TRUMP;
 
 Suit GlobalState::trump_suit = SUIT_HEARTS;
 
+//this sorts the cards acoring to your preference defined in the settings
 void sortCards(std::vector<Card> &cards) {
     switch (Settings::sortType){
         case SORTTYPE_TRUMP:{
@@ -50,12 +51,12 @@ void sortCards(std::vector<Card> &cards) {
     }
 }
 
-
+//Node that dispalys the player hand
 class HandNode : public LeafNode {
     private:
         std::vector<Card> cards;
-        std::unordered_set<Card> selected;
-        std::optional<Card> hover;
+        std::unordered_set<Card> selected;  //set of selected cards
+        std::optional<Card> hover;          //card that is currently being hovered by the mouse
 
         bool computeDelta(float &delta, float &card_width, uint &N) {
             N = cards.size();
@@ -64,8 +65,10 @@ class HandNode : public LeafNode {
             card_width = extends.height / CARD_TEXTURE_HEIGHT * CARD_TEXTURE_WIDTH;
 
             if(extends.width < card_width) {
-                //degenerate case 
-                //weiss nonig genau wi mer das vernünftig handled
+                //degenerate case (if the window is to slim)
+                //this does not happen with any reasonable window height/width ratio
+                //and is therefore not of great concern
+                //no cards get rendered 
                 return false;
             }
 
@@ -74,6 +77,7 @@ class HandNode : public LeafNode {
             return true;
         }
 
+        //get the card at some position
         std::optional<Card> getCard(float x, float y) {
             float card_width, delta;
             uint N;
@@ -104,6 +108,7 @@ class HandNode : public LeafNode {
     public:
         Extends getCompactExtends(Extends ext) override {return ext;}
 
+        //draws the cards
         void draw() override {
             float card_width, delta;
             uint N;
@@ -116,6 +121,10 @@ class HandNode : public LeafNode {
                 extends.height
             };
 
+            /*
+            This iterates over all the cards. the ones that are hovered
+            or selected get drawn slightly ofset / with outline.
+            */
             for(Card card : cards) {
                 if(card == hover) image_ext.y += HOVER_OFFSET_FACTOR*extends.height;
                 OpenGL::drawImage(card.getFileName(), image_ext);
@@ -130,6 +139,7 @@ class HandNode : public LeafNode {
             hover = getCard(x,y);
         }
 
+        //select hovered card
         void sendClickEvent(float x, float y) override {
             auto card = getCard(x,y);
             if(card.has_value()) {
@@ -151,6 +161,10 @@ class HandNode : public LeafNode {
 
 };
 
+//Node used to display a single stack of cards in the middle
+//can have 0, 1 or 2 cards.
+//if there are two cards they are rendered slightly offset 
+//so one can see both
 class CardStackNode : public LeafNode {
     private:
         std::optional<Card> bottom_card;
@@ -218,8 +232,9 @@ class CardStackNode : public LeafNode {
         }
 };
 
-#define MAX_FLOAT 10E10 //todo
+#define MAX_FLOAT 10E10 //some very big float (not actually max)
 
+//assembles the card stacks to a grid of of all the 6 card slots
 class MiddleNode : public TreeNode {
     private:
         std::unique_ptr<Node> cardStacks[6];
@@ -276,6 +291,7 @@ class MiddleNode : public TreeNode {
         }
 };
 
+//provies a way to horizonaly align a bunch of player nodes
 class PlayerBarNode : public TreeNode {
     std::list<std::unique_ptr<Node>> playerNodes;
 
@@ -284,6 +300,9 @@ class PlayerBarNode : public TreeNode {
     }
 
     public:
+    //makes sure only the enemy players are displayed
+    //sorted counterclockwise by client id 
+    //and offest around the player to resemble what it would look like at a table
     void playerUpdateNotify() {
         playerNodes.clear();
         if(GlobalState::players.size() == 0) return;
@@ -338,6 +357,7 @@ class PlayerBarNode : public TreeNode {
     }
 };
 
+//this displays the 3 actions buttons and hides them according to server action avaiablity
 class PlayerActionNode : public TreeNode {
 
     // {ok,pickup,passon}
@@ -402,6 +422,7 @@ class PlayerActionNode : public TreeNode {
     }
 };
 
+//displays the trump card and cards left in deck
 class DeckNode : public LeafNode {
     
     Card trump_card = Card();
@@ -439,6 +460,10 @@ class DeckNode : public LeafNode {
             return;
         }
 
+        //in the real durak the trump card is at the bottom of the deck
+        //and picked up last
+        //therefore we can not dispaly it once the deck is used up
+        //insted we display a custom card with only the suit
         std::string image = CLIENT_RES_DIR + "cards/trump_of_";
         switch(trump_suit) {
             case SUIT_CLUBS:
@@ -467,6 +492,7 @@ class DeckNode : public LeafNode {
     }
 };
 
+//displays the current player state like idle attack and defend
 class PlayerStateNode : public LeafNode {
 
     public:
@@ -523,14 +549,21 @@ class PlayerStateNode : public LeafNode {
 
 };
 
+/*
+herer in the game node all these components are actaully asembeled 
+and placed at their corrent place on the screen.
+*/
+
 GameNode::GameNode(Extends ext) {
     handNode = std::make_unique<HandNode>();
     playerBarNode = std::make_unique<PlayerBarNode>();
     playerActionNode = std::make_unique<PlayerActionNode>();
     deckNode = std::make_unique<DeckNode>();
     playerStateNode = std::make_unique<PlayerStateNode>();
-
     middleNode = std::make_unique<MiddleNode>();
+
+    //this sets the click callbacks for the middle node 
+    //to send PlayCardEvents to the sever
     Node* hand_ptr = handNode.get(); //only for lambda (unique pointer exception)
     for(uint s = CARDSLOT_1; s != CARDSLOT_1_TOP; s++) {
         const CardSlot slot = (CardSlot) s;
@@ -550,6 +583,7 @@ GameNode::GameNode(Extends ext) {
 void GameNode::updateExtends(Extends ext) {
     extends = ext;
 
+    //set the location of the components on the screen
     handNode->updateExtends(alignExtends(extends, 0.25f, -0.2f*CARD_OFFSET_FACTOR, 0.5f, 0.2f));
     playerBarNode->updateExtends(alignExtends(extends, 0, 0.775f, 1, 0.2f));
     middleNode->updateExtends(alignExtends(extends, 0.1f, 0.25f, 0.8f, 0.5f));
@@ -585,6 +619,7 @@ void GameNode::handleCardUpdate(CardUpdate update) {
     }
 }
 
+//assigns the right state to all players in the player set. the default is none -> for finished players
 void GameNode::handleBattleStateUpdate(BattleStateUpdate update) {
     for(auto &player : GlobalState::players) player.game->state = PLAYERSTATE_NONE;
 

@@ -1,6 +1,8 @@
 #include "drawable.hpp"
 #include <Networking/message.hpp>
 
+//TODO: write comments (eric)
+
 class LobbyNode : public TreeNode {
     public:
         void draw();

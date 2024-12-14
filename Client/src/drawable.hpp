@@ -20,6 +20,24 @@ This makes everything scale dynamically
 
 drawable contains any components that can be reused across the atual game nodes.
 
+the abstract Base class Node provides the following functionality:
+click events that propagate trough the node tree and call a click callback
+a hover bool that is dynamically updated when ever the mouse leaves or enters
+the Node
+
+TreeNode is a template for any Nodes that do not draw anything themselves but
+only contain other nodes. it implements a draw function that draws all children.
+
+LeafNode is a template for any Node that does not have any children. It implements 
+extend updates and the callForAllChildren helper (here it does nothing)
+
+ButtonNode: obvious functionality
+
+PlayerNode: draws a player icon with the correct name
+The Lobby version displays if the player is ready
+and the game version some information about his game state.
+
+TextInputNode: displays text input including a default text.
 */
 
 class Node {

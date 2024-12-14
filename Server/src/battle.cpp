@@ -19,6 +19,7 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
                                     finished_players_(finished_players), curr_attacks_(0){
     
         //DEBUG
+    std::cout <<"\nnumber of players in player_bs at start of battle = " << players_bs_.size() << "\n" << std::endl; 
     std::string s = "";
     switch(btype_) {
         case BATTLETYPE_FIRST:
@@ -64,39 +65,59 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
     //set the first attacker pointer to the one that attacks first
     //while iterating prepare the message BattleStateUpdate to send to the client
     // we first iterate through to set the first attacker
-    for(auto& pl : players_bs_){
-        if(pl.second == ATTACKER){
-            first_attacker_ = &pl;
-            bsu_msg.attackers.push_front(pl.first);
-            attack_order_.push_front(pl.first);
-            //send the normal action update
+    for(ClientID c : DurakServer::clients){
+        if(players_bs_.find(c) != players_bs_.end()){
+            if(players_bs_[c] == ATTACKER){
+                std::pair<const ClientID, PlayerRole> attacker(c, players_bs_[c]);
+                first_attacker_ = &attacker;
+                bsu_msg.attackers.push_front(c);
+                attack_order_.push_front(c);
+            }else if(players_bs_[c] == DEFENDER){
+                bsu_msg.defender = c;
+            }else if(players_bs_[c] == CO_ATTACKER){
+                bsu_msg.attackers.push_back(c);
+                attack_order_.push_back(c);
+            }else if(players_bs_[c] == IDLE || players_bs_[c] == FINISHED){
+                bsu_msg.idle.push_back(c);
+            }
+        }
+        else{
+            bsu_msg.idle.push_back(c);
         }
     }
+    // for(auto& pl : players_bs_){
+    //     if(pl.second == ATTACKER){
+    //         first_attacker_ = &pl;
+    //         bsu_msg.attackers.push_front(pl.first);
+    //         attack_order_.push_front(pl.first);
+    //         //send the normal action update
+    //     }
+    // }
     // then we iterate through another time to ensure the co attacker is appended to the list and does not come in front of the attacker
     for(auto& pl : players_bs_){
-        if(pl.second == CO_ATTACKER){
-            bsu_msg.attackers.push_back(pl.first);
-            attack_order_.push_back(pl.first);
-            //send the normal action update
-        }
-        else if(pl.second == DEFENDER){
-            bsu_msg.defender = pl.first;
-            //send the normal action update
-        }
-        else if(pl.second == IDLE){
-            bsu_msg.idle.push_back(pl.first);
-            //send the normal action update
-        }
+        // if(pl.second == CO_ATTACKER){
+        //     bsu_msg.attackers.push_back(pl.first);
+        //     attack_order_.push_back(pl.first);
+        //     //send the normal action update
+        // }
+        // else if(pl.second == DEFENDER){
+        //     bsu_msg.defender = pl.first;
+        //     //send the normal action update
+        // }
+        // else if(pl.second == IDLE || pl.second == FINISHED){
+        //     bsu_msg.idle.push_back(pl.first);
+        //     //send the normal action update
+        // }
         std::cout << "Debugging purposes: id: " << pl.first << ": role" << pl.second << std::endl;
     }
 
-    //the finished players are automatically just observers
-    for(ClientID f : finished_players_){
-        bsu_msg.idle.push_back(f);
-    }
+    // //the finished players are automatically just observers
+    // for(ClientID f : finished_players_){
+    //     bsu_msg.idle.push_back(f);
+    // }
 
-    for(auto& pl : players_bs_){
-        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), pl.first); //maybe make function to broadcast to all
+    for(ClientID c : DurakServer::clients){
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), c); //maybe make function to broadcast to all
     }
 
     updateAvailableAction();
@@ -453,6 +474,7 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
 
 void Battle::tryPickUp() {
     switch(btype_){
+        case BATTLETYPE_FIRST:
         case BATTLETYPE_NORMAL:
             if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
                 card_manager_ptr_->pickUp(getCurrentDefender());
@@ -476,7 +498,7 @@ void Battle::tryPickUp() {
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
                 movePlayerRoles(); //loses right to attack when picking up
-
+                //why only called once?
                 //das isch alles chli goofy
                 curr_attacks_ = 0;
                 ok_msg_[ATTACKER] = false;
@@ -729,7 +751,7 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
     }
     if(cards.size() > 1){
         for(auto c : cards){
-            if(!isValidMove(c, player_id, slot) || curr_attacks_ == max_attacks_){
+            if(!isValidMove(c, player_id, slot) || curr_attacks_ + cards.size() == max_attacks_){
                 return false;
             }
         }
@@ -738,7 +760,7 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
         //moves player roles one up/next
         movePlayerRoles();
         //This function should only be calles when there are 3 or more active players
-        if(getPlayerRolesMap().size() >= 3){
+        if(card_manager_ptr_->getNumberActivePlayers() >= 3){
             UpdatePickUpOrder();
         }
 
@@ -927,6 +949,16 @@ void Battle::attack(ClientID client, Card card){
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
     if(ok_msg_[ATTACKER]) ok_msg_[ATTACKER] = false;
     if(ok_msg_[CO_ATTACKER]) ok_msg_[CO_ATTACKER] = false;
+    
+    //check for other players to finish during an active battle and set flag move_could_end_game to true
+    if(card_manager_ptr_->getNumberActivePlayers() == 2){
+        for(auto c : players_bs_){
+            if(card_manager_ptr_->getNumberOfCardsInHand(c.first) == 1){
+                move_could_end_game_ = true;
+            }
+        }
+    }
+
     updateAvailableAction();
 
 }
@@ -970,17 +1002,50 @@ std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole>
 
 void Battle::removeFinishedPlayers(){
     //TODO: da no checke obs nur no öpper het wo nöd fertig isch oder so ka
-
+    // if(!battle_done_){
+    //     std::cout << "postpone until a battle is finished or after pick up"<<std::endl;
+    //     return;
+    // }
     //Find the player to be removed, return if all players still have cards
     auto no_cards = [this](const auto& pair) {
             return card_manager_ptr_->getPlayerHand(pair.first).empty();};
     auto finished = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
-    if (finished == players_bs_.end()) return;
+
+
+    if (finished == players_bs_.end()) {
+        // Special handling for exactly 3 players
+        if (players_bs_.size() == 3) {
+            std::cout << "handling 3 players case in removeFinishedPLayers"<<std::endl;
+            auto it = std::find_if(players_bs_.begin(), players_bs_.end(), [](const std::pair<ClientID, PlayerRole>& pair){return pair.second == ATTACKER;});
+            nextInOrderIt(it)->second = DEFENDER;
+            it = nextInOrderIt(it);
+            nextInOrderIt(it)->second = CO_ATTACKER; // Third player becomes CO-ATTACKER
+
+            std::cout << "\nthe 3 players when in removeFinishedPLayers roles: \n";
+            for(auto c : players_bs_){
+                std::cout << "id: " << c.first << " role: " << c.second << "\n";
+            }
+            std::cout << std::endl;
+        }
+        if(players_bs_.size() == 2){
+            std::cout << "handling 2 players case in removeFinishedPLayers"<<std::endl;
+            auto it = std::find_if(players_bs_.begin(), players_bs_.end(), [](const std::pair<ClientID, PlayerRole>& pair){return pair.second == ATTACKER;});
+            nextInOrderIt(it)->second = DEFENDER;
+
+            std::cout << "\nthe 2 players when in removeFinishedPLayers roles: \n";
+            for(auto c : players_bs_){
+                std::cout << "id: " << c.first << " role: " << c.second << "\n";
+            }
+            std::cout << std::endl;
+        }
+        return;
+    }
     
     if(finished->second == ATTACKER) {
         previous(players_bs_, finished)->second = ATTACKER;
         players_bs_.erase(finished);
-        removeFinishedPlayers();
+        std::cout << "made attacker to finshed and removed from players_bs" << std::endl;
+        removeFinishedPlayers(); //same function?
         return;
     }
 
@@ -992,7 +1057,11 @@ void Battle::removeFinishedPlayers(){
         current = next(players_bs_, current);
         next_role = next(players_bs_, current)->second;
     }
+    std::cout << "removing finished player: " << finished->first << std::endl;
+
     players_bs_.erase(finished);
+
+
     removeFinishedPlayers();
 }
 
@@ -1009,12 +1078,34 @@ void Battle::movePlayerRoles(){
     
     removeFinishedPlayers();
 
+        // Handle role rotation for exactly 3 players
+    if (players_bs_.size() == 3) {
+        auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
+                                        [](const auto& pair) { return pair.second == ATTACKER; });
+        auto defender_it = std::find_if(players_bs_.begin(), players_bs_.end(),
+                                        [](const auto& pair) { return pair.second == DEFENDER; });
+        auto coattacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
+                                          [](const auto& pair) { return pair.second == CO_ATTACKER; });
+
+        if (attacker_it == players_bs_.end() || defender_it == players_bs_.end() || coattacker_it == players_bs_.end()) {
+            std::cerr << "Error: Missing required roles when rotating with 3 players." << std::endl;
+            return;
+        }
+
+        // Rotate roles: ATTACKER -> CO-ATTACKER -> DEFENDER -> ATTACKER
+        attacker_it->second = CO_ATTACKER;
+        coattacker_it->second = DEFENDER;
+        defender_it->second = ATTACKER;
+
+        return;
+    }
+
     PlayerRole end_role = std::prev(players_bs_.end())->second;
     for(auto it = players_bs_.rbegin(); it != std::prev(players_bs_.rend()); it++) {
         it->second = std::next(it)->second;        
     }
     players_bs_.begin()->second = end_role;
-
+    std::cout << "\nRoles updated\n"<<std::endl;
     // BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
 
     // // Check the number of active players
@@ -1077,18 +1168,33 @@ void Battle::movePlayerRoles(){
     // }
 
     BattleStateUpdate bsu_msg; 
-
-    for (const auto& [player_id, role] : players_bs_) {
-        if (role == ATTACKER) {
-            bsu_msg.attackers.push_back(player_id);
-        } else if (role == CO_ATTACKER) {
-            bsu_msg.attackers.push_back(player_id);
-        } else if (role == DEFENDER) {
-            bsu_msg.defender = player_id;
-        } else if (role == IDLE || role == FINISHED) {
-            bsu_msg.idle.push_back(player_id);
+    for(ClientID c : DurakServer::clients){
+        if(players_bs_.find(c) != players_bs_.end()){
+            if(players_bs_[c] == ATTACKER){
+                bsu_msg.attackers.push_front(c);
+            }else if(players_bs_[c] == DEFENDER){
+                bsu_msg.defender = c;
+            }else if(players_bs_[c] == CO_ATTACKER){
+                bsu_msg.attackers.push_back(c);
+            }else if(players_bs_[c] == IDLE || players_bs_[c] == FINISHED){
+                bsu_msg.idle.push_back(c);
+            }
+        }
+        else{
+            bsu_msg.idle.push_back(c);
         }
     }
+    // for (const auto& [player_id, role] : players_bs_) {
+    //     if (role == ATTACKER) {
+    //         bsu_msg.attackers.push_front(player_id);
+    //     } else if (role == CO_ATTACKER) {
+    //         bsu_msg.attackers.push_back(player_id);
+    //     } else if (role == DEFENDER) {
+    //         bsu_msg.defender = player_id;
+    //     } else if (role == IDLE || role == FINISHED) {
+    //         bsu_msg.idle.push_back(player_id);
+    //     }
+    // }
 
     // Update clients with new roles
     for (ClientID client : DurakServer::clients) {
@@ -1104,7 +1210,6 @@ void Battle::movePlayerRoles(){
     }
     updateAvailableAction();
 }
-
 
 //getter function for game
 bool Battle::battleIsDone(){

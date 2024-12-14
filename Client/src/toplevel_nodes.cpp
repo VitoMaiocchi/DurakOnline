@@ -489,6 +489,11 @@ GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     quit_button = std::make_unique<ButtonNode>("QUIT");
     quit_button->setClickEventCallback([](float x, float y){
         std::cout << "quit" << std::endl;
+
+        ClientActionEvent event;
+        event.action = CLIENTACTION_LOBBY;
+        Network::sendMessage(std::make_unique<ClientActionEvent>(event));
+
         Network::closeConnection();
     });
     cast(ButtonNode, quit_button)->visible = true;
@@ -496,7 +501,11 @@ GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     lobby_button = std::make_unique<ButtonNode>("LOBBY");
     lobby_button->setClickEventCallback([](float x, float y){
         std::cout << "lobby" << std::endl;
+        ClientActionEvent event;
+        event.action = CLIENTACTION_LOBBY;
+        Network::sendMessage(std::make_unique<ClientActionEvent>(event));
     });
+
     cast(ButtonNode, lobby_button)->visible = true;
     updateExtends(ext);
 }
@@ -541,22 +550,37 @@ void GameOverScreenNode::draw() {
         extends.height * 0.9f,
     };
     OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+    std::string title;
+    std::string picture;
+    if(durak){
+        title = "YOU ARE THE DURAK";
+        picture = "./icons/durak_end.png";
+    }else{
+        title = "YOU ARE NOT THE DURAK"; 
+        picture = "./icons/king_end.png";
+    }
+
+    Extends durak_ext = {
+        extends.x + extends.width * 0.15f,
+        extends.y + extends.height * 0.05f,
+        extends.width * 0.7f,
+        extends.height * 0.9f,
+    };
+    auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+picture);
+    OpenGL::drawImage(CLIENT_RES_DIR+picture, computeCompactExtends(durak_ext, size.second, size.first));
+
     quit_button->draw();
     lobby_button->draw();
     
-    std::string title;
-    if(durak){
-        title = "YOU ARE THE DURAK";
-    }else{
-        title = "YOU ARE NOT THE DURAK"; 
-    }
     Extends title_ext = {
         extends.x + extends.width * 0.175f,
-        extends.y + extends.height * 0.7f,
+        extends.y + extends.height * 0.75f,
         extends.width * 0.65f,
         extends.height * 0.2f,
     };
     OpenGL::drawText(title, title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
+
     
 }
 

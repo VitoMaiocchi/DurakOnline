@@ -104,6 +104,13 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                     std::cerr << "No active game to handle action event" << std::endl;
                 }
             }
+            else if(action && action->action == CLIENTACTION_LOBBY){
+                GameStateUpdate game_state;
+                game_state.state = GAMESTATE_LOBBY;
+
+                ready_clients.erase(client);
+                Network::sendMessage(std::make_unique<GameStateUpdate>(game_state),client);
+            }
             else{
                 std::cerr << "game exists already or not all players ready" << std::endl;
             }

@@ -1,11 +1,12 @@
 ## Table of Contents
+1. [HOW TO USE](#how-to-use)
 
-1. [High Level Overview of the Code](#high-level-overview-of-the-code)
+2. [High Level Overview of the Code](#high-level-overview-of-the-code)
    - Client
    - Networking
    - Server
 
-2. [Git](#git)
+3. [Git](#git)
    - Cloning the Repository
    - Before Starting Work: Pull Latest Changes
    - Creating a Branch for Your Work
@@ -14,7 +15,7 @@
    - Creating a Merge Request
    - Handling Merge Conflicts
    - Final Steps After Merging
-3. [Durak](#durak)
+4. [Durak](#durak)
    - Description
    - Rules
    - SRS Durak project first deadline
@@ -22,6 +23,14 @@
    - ToDo
 
 ---
+#HOW TO USE
+do `git clone https://gitlab.ethz.ch/durak/durak.git`
+or with ssh idk
+then in **bash** run `source setup.sh`
+you should be in the _build_ directroy now 
+from there you can run `./Server/DurakServer` to start the server
+and in a different terminal but same build directory run 
+`./Client/DurakClient`
 
 # High level Overview of the Code
 <details> <summary>Click to expand Code section</summary>

@@ -24,13 +24,19 @@
 
 ---
 # HOW TO USE
-do `git clone https://gitlab.ethz.ch/durak/durak.git`
-or with ssh idk
-then in **bash** run `source setup.sh`
-you should be in the _build_ directroy now 
-from there you can run `./Server/DurakServer` to start the server
-and in a different terminal but same build directory run 
-`./Client/DurakClient`
+- clone repo: `git clone https://gitlab.ethz.ch/durak/durak.git` 
+
+- run: 
+`source setup.sh` \
+- in the build directory run: \
+ `./Server/DurakServer` \
+ to start the server 
+- open a different terminal and navigate to the same _build_ directory `durak/build`
+- run: `./Client/DurakClient` \
+to start the client
+- repeat the previous steps until you have at least 3 clients or at most 6 clients.
+- enter your information & press "CONNECT"
+- press "READY" in the lobby to signal your readiness, once all clients in the lobby pressed ready the game will begin.
 
 # High level Overview of the Code
 <details> <summary>Click to expand Code section</summary>

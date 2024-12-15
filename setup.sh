@@ -65,8 +65,14 @@ fi
 cd .. # back to client
 cd .. #back to durak main dir
 
-echo $'\nCreating the Durak documentation with Doxygen\n'
 
+echo $'\ninstalling dependencies\n'
+sudo apt update
+sudo apt install doxygen
+
+sudo apt install graphviz
+
+echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile
 
 mkdir -p build

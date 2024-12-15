@@ -176,6 +176,10 @@ namespace Viewport {
                 GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;
                 master_node = std::make_unique<LoginScreenNode>(extends);
                 createPopup("You got disconnected from the Server", 3);
+
+                //reset global state post disconnect
+                GlobalState::clientID = 0;
+                GlobalState::players.clear();
             break;
             default:
                 //unknown message type: do nothing

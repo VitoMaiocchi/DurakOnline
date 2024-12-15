@@ -723,7 +723,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
 }
 
 void Battle::updateAvailableAction() {
-    //DEBUG
+    // DEBUG, print battlephase
     std::string s = "";
     switch(phase_) {
         case BATTLEPHASE_FIRST_ATTACK:
@@ -743,7 +743,7 @@ void Battle::updateAvailableAction() {
     }
 
     std::cout << "\n\nPHASE: " << s << "\n\n" << std::endl;
-    //END DEBUG
+    // END DEBUG
 
     for(auto bs : players_bs_) {
         const ClientID id = bs.first;
@@ -763,61 +763,22 @@ void Battle::updateAvailableAction() {
         update.pick_up = false;
         if(role == DEFENDER && phase_ == BATTLEPHASE_OPEN)
             update.pick_up = true;
-        
+        // send available action update
         Network::sendMessage(std::make_unique<AvailableActionUpdate>(update), id);
     }
 }
 
 bool Battle::successfulDefend(){
     for(uint i = 0; i<6; i++)
-        if(card_manager_ptr_->getMiddleSlot(i).has_value() 
+        if(card_manager_ptr_->getMiddleSlot(i).has_value()
+            // If theres a card on the bottom slot, make sure there is also a card on the top slot
             && !card_manager_ptr_->getMiddleSlot(i+6).has_value())
                 return false;
     return true;
-
-    // //fetches middle from the cardmanager, loops over the middle checks if all the attacks have been
-    // //defended, or we do
-    // std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
-    // for(const auto slot : field){
-    //     if(slot.first.has_value() && !slot.second.has_value()){
-    //         return false;
-    //     }
-    // }
-    // if(attacks_to_defend_ == 0){
-    //     // ----------> send message ok = true, pick up = false, pass on = false
-    //     sendAvailableActionUpdate(2, getCurrentDefender());
-    //     return true;
-    // }
-    // return true;
 }
 
-/**
-    *PRE: the defender clicks his card/cards and then an empty slot on the battlefield
-    *POST: it shifts the player battle states and sends message to client and returns true
- */
 bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlot slot){
-    //check if isValidMove() -> there cannot be anything defended
-    //                       -> the defender has to lay down the card on a free card slot
-    //                       -> card has to be valid (i.e same number)
 
-    //getPlayerHand(player_id) check if a card with the same number is in the hand
-    //if no return invalid move
-    //if yes set attacker to idle, defender to attacker, coattacker to defender, the next player to coattacker
-    // if(isValidMove(card, player_id, slot)) 
-
-    //if the next player after player_id is the first_attacker_ then the first_attacker_ pointer moves one
-    //in the direction of the game
-
-    /*
-
-    p1 --> p2
-    |      |
-    p4 <-- p3
-    
-    */
-    // players_bs_[player_id] this guy is still defender currently
-
-    
     //check if valid move
     //this should happen before the player roles are moved
     if(!isValidMove(*cards.begin(), player_id, slot) || curr_attacks_ == max_attacks_){
@@ -859,24 +820,9 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
                 return true;
             }
         }
-     
-
-
-
-
-
     return false;
 }
 
-/**
-    *PRE: const Card &card, int player_id, message?
-    *POST: returns boolean if the move is valid or not
-
-    *QUESTIONS: should it also pass the message? how does it know if its attacker/defender/idle
-                does it check only one card at the time or also multiple if there are multiple that are
-                being played? 
-
- */ 
 bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     std::cout << "isValidMove() was called" << std::endl;
     //initialize the error message which will be sent if an invalid move is found
@@ -941,9 +887,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
                         return true;
                     }
                 }
-
             }
-
         }
         else if(middle[slot % 6].second.has_value()){
             sendPopup("The card has already been defended", player_id);
@@ -963,8 +907,6 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         } 
     }
     if(role == ATTACKER){
-        //set max attacks to the amount of cards in defenders hand
-        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -986,7 +928,6 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     }
     //coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
-        // max_attacks_ = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) < 6 ? card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender()) : 6;
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
@@ -1041,9 +982,7 @@ void Battle::attack(ClientID client, Card card){
             }
         }
     }
-
     updateAvailableAction();
-
 }
 
 void Battle::defend(ClientID client, Card card, CardSlot slot){ 
@@ -1063,7 +1002,6 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
 }
 
 
-// irrelevant?
 const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     if(first_attacker_ == nullptr){
         std::cerr << "Error: 'first attacker' not found" <<std::endl;
@@ -1084,11 +1022,6 @@ std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole>
 }
 
 void Battle::removeFinishedPlayers(){
-    //TODO: da no checke obs nur no öpper het wo nöd fertig isch oder so ka
-    // if(!battle_done_){
-    //     std::cout << "postpone until a battle is finished or after pick up"<<std::endl;
-    //     return;
-    // }
     //Find the player to be removed, return if all players still have cards
     auto no_cards = [this](const auto& pair) {
             return card_manager_ptr_->getPlayerHand(pair.first).empty();};
@@ -1153,18 +1086,10 @@ void Battle::removeFinishedPlayers(){
 
     players_bs_.erase(finished);
 
-
     removeFinishedPlayers();
 }
 
-// std::map<ClientID, PlayerRole>::reverse_iterator &non_finished_next(std::map<ClientID, PlayerRole>::reverse_iterator &it) {
-//     it++;
-//     while(it->second == FINISHED) it++;
-//     return it;
-// }
-/**
- * POST: moves the player roles one to the next 
- */
+
 void Battle::movePlayerRoles(){
      std::cout << "Moving player roles" << std::endl;
     
@@ -1205,65 +1130,7 @@ void Battle::movePlayerRoles(){
     std::cout << "\nRoles updated\n"<<std::endl;
     // BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
 
-    // // Check the number of active players
-    // size_t active_players = 0;
-    // for(auto player : players_bs_){
-    // if(player.second == ATTACKER || player.second == DEFENDER || player.second == CO_ATTACKER){
-    //     active_players++;
-    // }
-    // }
-
-    // // Handle cases where there are fewer than 3 players left
-    // if (btype_ == BATTLETYPE_ENDGAME) {
-    //     // Rotate roles between ATTACKER and DEFENDER only
-    //     auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
-    //                                     [](const auto& pair) { return pair.second == ATTACKER; });
-    //     auto defender_it = std::find_if(players_bs_.begin(), players_bs_.end(),
-    //                                     [](const auto& pair) { return pair.second == DEFENDER; });
-
-    //     if (attacker_it != players_bs_.end() && defender_it != players_bs_.end()) {
-    //         // Swap their roles
-    //         attacker_it->second = DEFENDER;
-    //         defender_it->second = ATTACKER;
-    //     } else {
-    //         std::cerr << "Error: Missing ATTACKER or DEFENDER role in player roles." << std::endl;
-    //     }
-    //     for(auto player : players_bs_){
-    //         if(player.second != ATTACKER && player.second != DEFENDER){
-    //             player.second = IDLE;
-    //         }
-    //     }
-
-    //     // Prepare BattleStateUpdate message
-    //     for (const auto& [player_id, role] : players_bs_) {
-    //         if (role == ATTACKER) {
-    //             bsu_msg.attackers.push_back(player_id);
-    //         } else if (role == DEFENDER) {
-    //             bsu_msg.defender = player_id;
-    //         }
-    //         else{
-    //             bsu_msg.idle.push_back(player_id);
-    //         }
-    //     }
-    // }
-    // // Handle the case where there are 3 or more players
-    // else {
-    //     // Rotate roles in a circular fashion: ATTACKER -> CO_ATTACKER -> DEFENDER -> IDLE
-    //     PlayerRole last_role = players_bs_.rbegin()->second; // Save the last player's role
-    //     for (auto it = players_bs_.rbegin(); it != players_bs_.rend(); ++it) {
-    //         if (std::next(it) != players_bs_.rend()) {
-    //             if(std::next(it)->second == FINISHED) continue;
-    //             it->second = std::next(it)->second;
-    //         }
-    //     }
-    //     if(last_role != FINISHED){
-    //         players_bs_.begin()->second = last_role; // Assign the last role to the first player
-    //     }
-
-    //     // Prepare BattleStateUpdate message
-
-    // }
-
+    
     sendBattleStateUpdate();
 
     // Adapt max_attacks to the new defender's card count (min 6 or their card count)
@@ -1285,9 +1152,7 @@ std::map<ClientID, PlayerRole> Battle::getPlayerRolesMap(){
     return players_bs_;
 }
 
-//This function is called when an attack is passed on & Player Roles have already been moved
-//it updates the attack order deque
-//This function should only be called for when there are 3 or more active players
+
 void Battle::UpdatePickUpOrder(){
     //find client IDs of defender, attacker CoAttacker and first attacker of the battle
     //IDs correspond to Player Roles after they have been moved
@@ -1332,8 +1197,7 @@ void Battle::UpdatePickUpOrder(){
     
 }
 
-//For any valid ClientID returns the ID of the player who is next
-//This function assumes that only "active" players (who haven't finished yet) are in the players_bs_ map
+
 ClientID Battle::nextInOrder(ClientID current_player){
     //Check that map isn't empty
     assert(!players_bs_.empty() && "Map should not be empty here");
@@ -1361,10 +1225,6 @@ ClientID Battle::nextInOrder(ClientID current_player){
     return it->first;
 }
 
-//Call this function with either ATTACKER, DEFENDER or COATTACKER
-//and it returns the corresponding CLientID
-//THIS FUNCTION SHOULD ONLY BE CALLED WITH CO_ATTACKER IF THERE ARE 3 OR MORE PLAYERS (it expects the Role to be found)
-//THIS FUNCTION SHOULDNT BE CALLED FOR IDLE
 ClientID Battle::findRole(PlayerRole role){
     for(const auto& pair : players_bs_){
         if (pair.second == role){
@@ -1376,10 +1236,7 @@ ClientID Battle::findRole(PlayerRole role){
 
 }
 
-/**
- * POST: returns the current defenders player id
- */
-// irrelevant?
+
 ClientID Battle::getCurrentDefender(){
     ClientID player_id = -1;
     for(auto player : players_bs_){
@@ -1390,7 +1247,6 @@ ClientID Battle::getCurrentDefender(){
     return player_id;
 }
 
-//Returns an iterator to the next active player in order
 std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientID, PlayerRole>::iterator it){
     // Increment the iterator
     ++it;
@@ -1406,8 +1262,6 @@ std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientI
             it = players_bs_.begin();
         }
     }
-    
-
     return it;
 }
 
@@ -1416,5 +1270,3 @@ std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientI
     void Battle::setPlayerRoles(std::map<ClientID,PlayerRole> battlestate){
         players_bs_ = battlestate;
     }
-
-

@@ -107,6 +107,16 @@ class Battle {
         void handleActionEvent(ClientID player_id, ClientAction action);
         bool successfulDefend();
         bool passOn(std::unordered_set<Card> &cards, ClientID player_id, CardSlot slot);
+
+        /**
+            *PRE: const Card &card, int player_id, message?
+            *POST: returns boolean if the move is valid or not
+
+            *QUESTIONS: should it also pass the message? how does it know if its attacker/defender/idle
+                        does it check only one card at the time or also multiple if there are multiple that are
+                        being played? 
+
+        */ 
         bool isValidMove( const Card &card, ClientID player_id, CardSlot slot);
 
         // helper functions
@@ -114,7 +124,9 @@ class Battle {
         void defend(ClientID client, Card card, CardSlot slot); //calls the cardmanagers defend function
         bool attackedWithMaxCards(); // returns whether the maximum amount of attacks have been played
 
-        //moves the player roles one to the right and circles around again
+        /**
+         * POST: moves the player roles one to the next 
+         */
         void movePlayerRoles();
         void UpdatePickUpOrder();
         ClientID nextInOrder(ClientID current);

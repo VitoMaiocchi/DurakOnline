@@ -2,24 +2,12 @@
 #include "Networking/util.hpp"
 #include "../include/server.hpp"
 
-
-/**
-* QUESTIONS: do i need a game pointer?
-* TODO: - implement a check for how many cards are already in middle (handleCardEvent)
-        - send messages AvailableActionUpdate
-        - send messages BattleStateUpdate when pass_on is called
-        - save the first attacker and who all played cards for the card manager
-        - implement handleActionEvent()
-        - test pass on function
- */
-
-//constructor, passes if it is first battle or not and passes the players with their roles
 Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardManager &card_manager, std::set<ClientID> finished_players) : 
                                     btype_(btype), players_bs_(players), card_manager_ptr_(&card_manager),
                                     finished_players_(finished_players), curr_attacks_(0){
     
-        //DEBUG
-    std::cout <<"\nnumber of players in player_bs at start of battle = " << players_bs_.size() << "\n" << std::endl; 
+    // DEBUG
+    std::cout <<"\n Number of players in player_bs at start of battle = " << players_bs_.size() << "\n" << std::endl; 
     std::string s = "";
     switch(btype_) {
         case BATTLETYPE_FIRST:
@@ -42,8 +30,8 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
             break;
     }
 
-    std::cout << "\n\nBTYPE: " << s << "\n\n" << std::endl;
-    //END DEBUG
+    std::cout << "\n BTYPE: " << s << "\n\n" << std::endl;
+    // END DEBUG
     
     std::cout << "CREATE NEW BATTLE" << std::endl;
     phase_ = BATTLEPHASE_FIRST_ATTACK;
@@ -52,18 +40,17 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
     if(first_battle_){
         max_attacks_ = 5;
     }
-    //if in the endgame, where players have less than 6 cards on hand
+    // if in the endgame, where players have less than 6 cards on hand
     else if(card_manager_ptr_->getPlayerHand(getCurrentDefender()).size() < 6){
         max_attacks_ = card_manager_ptr_->getPlayerHand(getCurrentDefender()).size();
-    }
-    else{
+    } else {
         max_attacks_ = 6;
     }
     battle_done_ = false;
 
     BattleStateUpdate bsu_msg;
-    //set the first attacker pointer to the one that attacks first
-    //while iterating prepare the message BattleStateUpdate to send to the client
+    // set the first attacker pointer to the one that attacks first
+    // while iterating prepare the message BattleStateUpdate to send to the client
     // we first iterate through to set the first attacker
     for(ClientID c : DurakServer::clients){
         if(players_bs_.find(c) != players_bs_.end()){
@@ -72,49 +59,22 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
                 first_attacker_ = &attacker;
                 bsu_msg.attackers.push_front(c);
                 attack_order_.push_front(c);
-            }else if(players_bs_[c] == DEFENDER){
+            } else if(players_bs_[c] == DEFENDER){
                 bsu_msg.defender = c;
-            }else if(players_bs_[c] == CO_ATTACKER){
+            } else if(players_bs_[c] == CO_ATTACKER){
                 bsu_msg.attackers.push_back(c);
                 attack_order_.push_back(c);
-            }else if(players_bs_[c] == IDLE || players_bs_[c] == FINISHED){
+            } else if(players_bs_[c] == IDLE || players_bs_[c] == FINISHED){
                 bsu_msg.idle.push_back(c);
             }
-        }
-        else{
+        } else{
             bsu_msg.idle.push_back(c);
         }
     }
-    // for(auto& pl : players_bs_){
-    //     if(pl.second == ATTACKER){
-    //         first_attacker_ = &pl;
-    //         bsu_msg.attackers.push_front(pl.first);
-    //         attack_order_.push_front(pl.first);
-    //         //send the normal action update
-    //     }
-    // }
     // then we iterate through another time to ensure the co attacker is appended to the list and does not come in front of the attacker
     for(auto& pl : players_bs_){
-        // if(pl.second == CO_ATTACKER){
-        //     bsu_msg.attackers.push_back(pl.first);
-        //     attack_order_.push_back(pl.first);
-        //     //send the normal action update
-        // }
-        // else if(pl.second == DEFENDER){
-        //     bsu_msg.defender = pl.first;
-        //     //send the normal action update
-        // }
-        // else if(pl.second == IDLE || pl.second == FINISHED){
-        //     bsu_msg.idle.push_back(pl.first);
-        //     //send the normal action update
-        // }
         std::cout << "Debugging purposes: id: " << pl.first << ": role" << pl.second << std::endl;
     }
-
-    // //the finished players are automatically just observers
-    // for(ClientID f : finished_players_){
-    //     bsu_msg.idle.push_back(f);
-    // }
 
     for(ClientID c : DurakServer::clients){
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), c); //maybe make function to broadcast to all
@@ -124,7 +84,6 @@ Battle::Battle(BattleType btype, std::map<ClientID, PlayerRole> players, CardMan
 
 };
 
-//default dtor
 Battle::~Battle() = default;
 
 void sendPopup(std::string message, ClientID clientID) {
@@ -138,8 +97,8 @@ void Battle::sendBattleStateUpdate(){
 
     BattleStateUpdate bsu_msg;
     bsu_msg.defender = 0;
-    //set the first attacker pointer to the one that attacks first
-    //while iterating prepare the message BattleStateUpdate to send to the client
+    // set the first attacker pointer to the one that attacks first
+    // while iterating prepare the message BattleStateUpdate to send to the client
     // we first iterate through to set the first attacker
     for(ClientID c : DurakServer::clients){
         if(players_bs_.find(c) != players_bs_.end()){
@@ -157,14 +116,13 @@ void Battle::sendBattleStateUpdate(){
         }
     }
 
-    //dont send if there is no defender left (this is the case at the end of the game)
+    // dont send if there is no defender left (this is the case at the end of the game)
     if(bsu_msg.defender == 0) return; 
 
     for(ClientID c : DurakServer::clients){
-        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), c); //maybe make function to broadcast to all
+        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), c); // maybe make function to broadcast to all
     }
 }
-
 
 void broadcastPopup(std::string message) {
     PopupNotify popup;
@@ -178,7 +136,6 @@ std::string getClientName(ClientID clientID){
     return DurakServer::players_map[clientID].name;
 }
 
-// returns true if there are at least 6 cards attacking the current defender and thus if the defender picks up it should not need done from attacker and co-attacker
 bool Battle::attackedWithMaxCards(){
     return std::all_of(card_manager_ptr_->getMiddle().begin(), card_manager_ptr_->getMiddle().begin() + max_attacks_, 
             [](const std::pair<std::optional<Card>, std::optional<Card>>& pair) { 
@@ -187,22 +144,22 @@ bool Battle::attackedWithMaxCards(){
 }
 
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
-    //if only 1 card with which is being attacked, check if valid move
+    // if only 1 card with which is being attacked, check if valid move
     if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot) && !pickUp_){
-        //if valid move then attack with this card
+        // if valid move then attack with this card
         attack(player_id, cards.at(0));
         // sendAvailableActionUpdate(0, player_id);
         // sendAvailableActionUpdate(0, getCurrentDefender());
         phase_ = BATTLEPHASE_OPEN;
         return;
     }
-    //else if more than one card is being played at the same time
-    //also checks for if the max_attacks are reached
+    // else if more than one card is being played at the same time
+    // also checks for if the max_attacks are reached
     // tp place multiple cards we need to check if they exist in the middle
     else if(cards.size() > 1 && (cards.size() + curr_attacks_ <= max_attacks_) && !pickUp_){
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
         
-        //we will iterate through the middle with std::find
+        // we will iterate through the middle with std::find
         if(curr_attacks_ > 0){
             Rank targetrank = cards[0].rank;
             auto it = std::find_if(field.begin(), field.end(), 
@@ -216,20 +173,17 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
                 Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
                 return;
             }
-        
-
 
             for(size_t i = 1; i < cards.size(); ++i){
 
-                //we will iterate through the middle with std::find
+                // we will iterate through the middle with std::find
                 Rank targetrank = cards[i].rank;
                 auto it = std::find_if(field.begin(), field.end(), 
                         [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
                             return (pair.first.has_value() && pair.first->rank == targetrank) || 
                                 (pair.second.has_value() && pair.second->rank == targetrank);
                         });
-                // BUG: break this if statement up
-                if(/*cards[i].rank != cards[i - 1].rank &&*/ it == field.end()){
+                if(it == field.end()){
                     PopupNotify err_msg;
                     err_msg.message = "Illegal Move: 'the selected cards do not match in rank'";
                     Network::sendMessage(std::make_unique<PopupNotify>(err_msg), player_id);
@@ -247,14 +201,14 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
                 }
             }
         }
-        //now place all attacks on the field
+        // now place all attacks on the field
         for(size_t i = 0; i < cards.size(); ++i){
             attack(player_id, cards.at(i));
             phase_ = BATTLEPHASE_OPEN;
         }
         return;
     }
-    //to throw in cards after the defender has picked them up
+    // to throw in cards after the defender has picked them up
     else if(phase_ == BATTLEPHASE_POST_PICKUP && !ok_msg_[ATTACKER]){
         if(cards.size() + curr_attacks_ <= max_attacks_){
             for(size_t i = 0; i < cards.size(); ++i){
@@ -265,28 +219,27 @@ void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, Car
                             (pair.second.has_value() && pair.second->rank == targetrank);
                     });
                 if(it == picked_up_cards_.end()){
-                    //send illegal move msg
+                    // send illegal move msg
                     return;
                 }
             }
-            //place the cards but without calling attack from battle
-            //we call attack from card manager and then pick up for the defender
+            // place the cards but without calling attack from battle
+            // we call attack from card manager and then pick up for the defender
             for(size_t i = 0; i < cards.size(); ++i){
                 card_manager_ptr_->attackCard(cards[i], player_id);
                 card_manager_ptr_->pickUp(getCurrentDefender());
             }
-
         }
     }
     else if(ok_msg_[ATTACKER]){
-        //illegal move msg
+        // illegal move msg
         return;
     }
 }
 
 void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
-    //coattacker can only start attacking once the attacker placed at least one card
-    //we just check the amount of current attacks 
+    // coattacker can only start attacking once the attacker placed at least one card
+    // we just check the amount of current attacks 
     if(curr_attacks_ == 0) {
         PopupNotify err_msg;
         err_msg.message = "Illegal Move: 'You are only co-attacker and you cannot start the attack'";
@@ -295,7 +248,7 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
     }
 
     if(curr_attacks_ > 0 && !pickUp_ && cards.size() == 1){
-        //if only one card is being attacked with
+        // if only one card is being attacked with
         if(isValidMove(cards.at(0), player_id, slot)){
             //if valid move then attack with this card
             attack(player_id, cards.at(0));
@@ -304,13 +257,13 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
             return;
         }
     }
-    //else if more than one card is being played at the same time
-    //also checks for if the max_attacks are reached
+    // else if more than one card is being played at the same time
+    // also checks for if the max_attacks are reached
     // tp place multiple cards we need to check if they exist in the middle
     else if(cards.size() > 1 && (cards.size() + curr_attacks_ <= max_attacks_) && !pickUp_){
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> field = card_manager_ptr_->getMiddle();
         
-        //we will iterate through the middle with std::find
+        // we will iterate through the middle with std::find
         Rank targetrank = cards[0].rank;
         auto it = std::find_if(field.begin(), field.end(), 
                 [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
@@ -327,7 +280,7 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
 
         for(size_t i = 1; i < cards.size(); ++i){
 
-            //we will iterate through the middle with std::find
+            // we will iterate through the middle with std::find
             Rank targetrank = cards[i].rank;
             auto it = std::find_if(field.begin(), field.end(), 
                     [&targetrank](const std::pair<std::optional<Card>,std::optional<Card>>& pair){
@@ -342,7 +295,7 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
                 return;
             }
         }
-        //now place all attacks on the field
+        // now place all attacks on the field
         for(size_t i = 0; i < cards.size(); ++i){
             attack(player_id, cards.at(i));
             phase_ = BATTLEPHASE_OPEN;
@@ -359,13 +312,13 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
                             (pair.second.has_value() && pair.second->rank == targetrank);
                     });
                 if(it == picked_up_cards_.end()){
-                    //send illegal move msg
+                    // send illegal move msg
                     std::cerr << "not correct" <<std::endl;
                     return;
                 }
             }
-            //place the cards but without calling attack from battle
-            //we call attack from card manager and then pick up for the defender
+            // place the cards but without calling attack from battle
+            // we call attack from card manager and then pick up for the defender
             for(size_t i = 0; i < cards.size(); ++i){
                 card_manager_ptr_->attackCard(cards[i], player_id);
                 card_manager_ptr_->pickUp(getCurrentDefender());
@@ -374,12 +327,11 @@ void Battle::coAttackerCardEvent(std::vector<Card> &cards, ClientID player_id, C
         }
     }
     else if(ok_msg_[CO_ATTACKER]){
-        //illegal move msg
+        // illegal move msg
         return;
     }
 }
 
-//TODO: das sött rank si
 bool checkIdenticalSuit(std::unordered_set<Card> &cards, ClientID clientID) {
     const Suit suit = cards.begin()->suit;
     for(Card c : cards) if(c.suit != suit) {
@@ -388,6 +340,7 @@ bool checkIdenticalSuit(std::unordered_set<Card> &cards, ClientID clientID) {
     }
     return false;
 }
+
 bool checkIdenticalRank(std::unordered_set<Card> &cards, ClientID clientID){
     const Rank rank = cards.begin()->rank;
     for(Card c : cards)if(c.rank != rank){
@@ -395,7 +348,6 @@ bool checkIdenticalRank(std::unordered_set<Card> &cards, ClientID clientID){
         return true;
     }
     return false;
-
 }
 
 bool Battle::topSlotsClear() {
@@ -432,10 +384,10 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
                 return;
             }
             break;
-    } //BATTLE STATE OPEN:
+    } // BATTLE STATE OPEN:
 
     uint s = (uint) slot;
-    if(card_manager_ptr_->getMiddleSlot(s%6).has_value()) { //SLOT is not empty
+    if(card_manager_ptr_->getMiddleSlot(s%6).has_value()) { // SLOT is not empty
         if(cards.size() > 1) {
             sendPopup("You can only defend with one card per slot.", clientID);
             return;
@@ -466,7 +418,6 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
         return;
     }
     
-    //TODO: das gaht nur mit einere karte...
     passOn(cards, clientID, slot);
     // inform all clients except the one passing on, that said player has done so
     for(ClientID c : DurakServer::clients) {
@@ -484,25 +435,25 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
     std::cout << "handleCardEvent was called" << std::endl;
 
     
-    //calls isvalidmove and gives the message parameters with the function,
-    //here we should handle the list and maybe break it down? by card, then we can call isValidMove multiple 
-    //times and check if each card is valid, and if yes, then we give to go
+    // calls isvalidmove and gives the message parameters with the function,
+    // here we should handle the list and maybe break it down? by card, then we can call isValidMove multiple 
+    // times and check if each card is valid, and if yes, then we give to go
 
 
-    //set initial player role to IDLE
+    // set initial player role to IDLE
     PlayerRole role = IDLE;
 
-    //check if the key exists in the map
+    // check if the key exists in the map
     if (players_bs_.find(player_id) == players_bs_.end()) {
         std::cerr << "player id not found in the role vector" << std::endl;
         return false; // or handle error
     }
-    //access the role with the key player_id
+    // access the role with the key player_id
     role = players_bs_[player_id];
 
     auto card_set = std::unordered_set<Card>(cards.begin(), cards.end());
 
-    //attacker or coattacker
+    // attacker or coattacker
     switch (role) {
         case ATTACKER:
             attackerCardEvent(cards, player_id, slot);
@@ -536,9 +487,9 @@ void Battle::tryPickUp() {
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                 movePlayerRoles();
-                movePlayerRoles(); //loses right to attack when picking up
+                movePlayerRoles(); // loses right to attack when picking up
 
-                //das isch alles chli goofy
+                // das isch alles chli goofy
                 curr_attacks_ = 0;
                 ok_msg_[ATTACKER] = false;
                 ok_msg_[CO_ATTACKER] = false;
@@ -553,9 +504,9 @@ void Battle::tryPickUp() {
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
-                movePlayerRoles(); //loses right to attack when picking up
-                //why only called once?
-                //das isch alles chli goofy
+                movePlayerRoles(); // loses right to attack when picking up
+                // why only called once?
+                // das isch alles chli goofy
                 curr_attacks_ = 0;
                 ok_msg_[ATTACKER] = false;
                 phase_ = BATTLEPHASE_FIRST_ATTACK;
@@ -568,11 +519,13 @@ void Battle::tryPickUp() {
             return;
     }
 }
+
 void sendReadyUpdate(ClientID client){
     ReadyUpdate rupdate;
     rupdate.players.insert(client);
     Network::sendMessage(std::make_unique<ReadyUpdate>(rupdate), client);
 }
+
 void Battle::doneEvent(ClientID clientID) {
 
     if(players_bs_[clientID] == ATTACKER)    {ok_msg_[ATTACKER] = true; sendReadyUpdate(clientID);}
@@ -582,8 +535,8 @@ void Battle::doneEvent(ClientID clientID) {
             card_manager_ptr_->clearMiddle();
             card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
             movePlayerRoles(); 
+            sendBattleStateUpdate(); // inform all clients of their new roles
             
-            //das isch alles chli goofy
             curr_attacks_ = 0;
             ok_msg_[ATTACKER] = false;
             ok_msg_[CO_ATTACKER] = false;
@@ -604,7 +557,7 @@ void Battle::doneEvent(ClientID clientID) {
                     card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                     movePlayerRoles();
                     sendBattleStateUpdate(); // inform all clients of their new roles
-                    //das isch alles chli goofy
+
                     curr_attacks_ = 0;
                     ok_msg_[ATTACKER] = false;
                     phase_ = BATTLEPHASE_FIRST_ATTACK;
@@ -619,7 +572,8 @@ void Battle::doneEvent(ClientID clientID) {
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                 movePlayerRoles();
-                //das isch alles chli goofy
+                sendBattleStateUpdate(); // inform all clients of their new roles
+
                 curr_attacks_ = 0;
                 ok_msg_[ATTACKER] = false;
                 phase_ = BATTLEPHASE_FIRST_ATTACK;
@@ -645,7 +599,6 @@ std::optional<Card> Battle::getReflectCard(ClientID clientID) {
         if(!passOnRankMatch(card.rank)) continue;
         return card;
     }
-
     return std::nullopt;
 }
 
@@ -672,10 +625,6 @@ void Battle::pickupEvent(ClientID clientID) {
     tryPickUp();
 }
 
-/**
- * PRE: takes the message (already broken down)
- * POST: calls the next functions, either pick_up or pass_on
- */
 void Battle::handleActionEvent(ClientID player_id, ClientAction action){
     std::string message = "";
     switch(action){
@@ -721,6 +670,10 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
     card_manager_ptr_->cardUpdate();
     return;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 void Battle::updateAvailableAction() {
     // DEBUG, print battlephase

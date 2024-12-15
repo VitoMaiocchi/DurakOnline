@@ -122,6 +122,7 @@ class Battle {
         // helper functions
         void attack(ClientID client, Card card); //calls the cardmanagers attack function
         void defend(ClientID client, Card card, CardSlot slot); //calls the cardmanagers defend function
+        // returns true if there are at least 6 cards attacking the current defender and thus if the defender picks up it should not need done from attacker and co-attacker
         bool attackedWithMaxCards(); // returns whether the maximum amount of attacks have been played
 
         /**

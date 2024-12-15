@@ -2,7 +2,7 @@
 
 #include <string>
 #include <exception>
-#include "../../Networking/include/Networking/util.hpp"
+#include <Networking/util.hpp>
 
 #define cast(type, ptr) dynamic_cast<type*>(ptr.get()) 
 #define CARD_TEXTURE_WIDTH 500

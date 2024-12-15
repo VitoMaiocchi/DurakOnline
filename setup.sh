@@ -103,6 +103,7 @@ echo $'\ncheck that xkbcommon is installed correctly\n'
 pkg-config --cflags --libs xkbcommon
 echo $'----------------------------------------------------'
 
+sudo apt install libxrandr-dev
 
 
 

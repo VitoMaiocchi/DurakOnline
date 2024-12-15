@@ -10,6 +10,12 @@
 #include <algorithm>
 #include <mutex>
 
+#define POPUP_DISTANCE 0.123f
+#define POPUP_HEIGHT 0.05f
+#define IN_TIME 350
+#define OUT_TIME 500
+#define POPUP_TEXT_MARGIN 10.0f
+
 namespace GlobalState {
     GameState game_state;
     std::set<Player> players;
@@ -44,12 +50,6 @@ namespace Viewport {
         master_node->sendClickEvent(x,y);
     }
 
-    #define POPUP_DISTANCE 0.123f
-    #define POPUP_HEIGHT 0.05f
-    #define IN_TIME 350
-    #define OUT_TIME 500
-    #define POPUP_TEXT_MARGIN 10.0f
-
     void drawPopup(std::string text, uint time, uint end_time) {
         float opacity = 1.0f;
         float fade_in_factor = 1.0f;
@@ -79,6 +79,7 @@ namespace Viewport {
     void draw(uint time_delta) {
         master_node->draw();
         
+        //popups are drawn seperatly from the main node structure
         if(popup_time_end == 0) return;
         popup_time += time_delta;
         if(popup_time < popup_time_end) {
@@ -90,6 +91,7 @@ namespace Viewport {
         popup_time_end = 0;
     }
 
+    //switches the master node depending on game state update sent by the server
     void handleGameStateUpdate(GameStateUpdate update) {
         if(GlobalState::game_state == update.state) return;
 
@@ -101,13 +103,13 @@ namespace Viewport {
                 master_node = std::make_unique<LobbyNode>(extends);
                 break;
             case GAMESTATE_LOGIN_SCREEN:
-                //das bruchts nur wenn mer server disconnect handled
+                //Do nothing (not sent by server)
                 break;
             case GAMESTATE_GAME_OVER:
                 master_node = std::make_unique<GameOverScreenNode>(extends, 0);
                 break;
             case GAMESTATE_SPECTATOR:
-                //todo
+                //not implemented initial idea
                 break;
             case GAMESTATE_DURAK_SCREEN:
                 master_node = std::make_unique<GameOverScreenNode>(extends, 1);
@@ -117,6 +119,7 @@ namespace Viewport {
         GlobalState::game_state = update.state;
     } 
 
+    //updates the player set acording to the update
     void handlePlayerUpdate(PlayerUpdate update) {
         for(auto player : GlobalState::players) {
             if(update.player_names.find(player.id) != update.player_names.end()) continue;
@@ -128,10 +131,10 @@ namespace Viewport {
         for(auto entry : update.player_names) {
             if(GlobalState::players.find({entry.first}) != GlobalState::players.end()) continue;
             const Player p = {
-                entry.first,                                    //clientID
-                entry.second,                                   //name
-                entry.first == update.durak ? true : false,     //durak
-                entry.first == GlobalState::clientID ? true : false,         //isYou
+                entry.first,                                            //clientID
+                entry.second,                                           //name
+                entry.first == update.durak ? true : false,             //durak
+                entry.first == GlobalState::clientID ? true : false,    //isYou
                 new PlayerGameData(),
                 new PlayerLobbyData()
             };
@@ -142,6 +145,7 @@ namespace Viewport {
         if(GlobalState::game_state == GAMESTATE_LOBBY) cast(LobbyNode, master_node)->playerUpdateNotify();
     }
 
+    //pass all messages to the responsible function or class
     void handleMessage(std::unique_ptr<Message> message) {
         switch (message->messageType) {
             case MESSAGETYPE_SEND_POPUP:
@@ -172,10 +176,9 @@ namespace Viewport {
                 GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;
                 master_node = std::make_unique<LoginScreenNode>(extends);
                 createPopup("You got disconnected from the Server", 3);
-
             break;
             default:
-                //print debug warning: unknown message type
+                //unknown message type: do nothing
             break;
         }
     }

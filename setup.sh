@@ -1,53 +1,99 @@
 #!/bin/bash
 
-Networking="$(pwd)/Networking"  # Or provide the absolute path
+echo $'Setting up your environment for the Durak game...\n'
 
-echo "Setting up your environment for the Durak game..."
+# Get the script's directory (resolves symlinks and ensures it's absolute)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Create the Networking directory if it doesn't exist
-if [ ! -d "$Networking" ]; then
-    echo "Networking directory not found. Creating it..."
-    mkdir -p "$Networking"
-fi
-
+NETWORKING_DIR="$SCRIPT_DIR/Networking"
 # Navigate to the Networking directory
-cd "$Networking" || { echo "Failed to navigate to $Networking"; exit 1; }
+cd "$NETWORKING_DIR" || { echo "Failed to navigate to Networking"; exit 1; }
 
+echo $'\nCloning git repos: sockpp & rapidjson\n'
+
+SOCKPP_DIR="$SCRIPT_DIR/Networking/sockpp"
 # Clone the sockpp repository if not already cloned
-if [ ! -d "sockpp" ]; then
-    echo "Getting the sockpp repo..."
-    git clone https://github.com/fpagliughi/sockpp || { echo "Failed to clone sockpp"; exit 1; }
-else
-    echo "sockpp repo already exists. Skipping cloning."
+if [ -d "$SOCKPP_DIR" ]; then
+    if [ -z "$(ls -A "$SOCKPP_DIR")" ]; then #if empty clone
+        git clone https://github.com/fpagliughi/sockpp || { echo "Failed to clone sockpp"; exit 1; }
+    else #just pull
+        cd "$SOCKPP_DIR" || { echo "Failed to navigate to sockpp"; exit 1;}
+
+        git pull || { echo "Failed to pull from git sockpp"; exit 1;}
+        cd .. #back to networking
+    fi
+else #dir doesnt exits
+    git clone https://github.com/fpagliughi/sockpp "$SOCKPP_DIR" || { echo "Failed to clone sockpp"; exit 1; }
 fi
 
 # Clone the rapidjson repository if not already cloned
-if [ ! -d "rapidjson" ]; then
-    echo "Getting the rapidjson repo..."
-    git clone https://github.com/Tencent/rapidjson || { echo "Failed to clone rapidjson"; exit 1; }
-else
-    echo "rapidjson repo already exists. Skipping cloning."
+RAPIDJSON_DIR="$SCRIPT_DIR/Networking/rapidjson"
+# Clone the sockpp repository if not already cloned
+if [ -d "$RAPIDJSON_DIR" ]; then
+    if [ -z "$(ls -A "$RAPIDJSON_DIR")" ]; then #if empty clone
+        git clone https://github.com/Tencent/rapidjson || { echo "Failed to clone rapidjson"; exit 1; }
+    else #just pull
+        cd "$RAPIDJSON_DIR" || { echo "Failed to navigate to rapidjson"; exit 1;}
+
+        git pull || { echo "Failed to pull from git rapidjson"; exit 1;}
+        cd .. #back to networking
+    fi
+else #dir doesnt exits
+    git clone https://github.com/Tencent/rapidjson "$RAPIDJSON_DIR" || { echo "Failed to clone rapidjson"; exit 1; }
 fi
 
-# Navigate to Client/libs directory
-ClientLibs="$(pwd)/../Client/libs"
-if [ ! -d "$ClientLibs" ]; then
-    echo "Client/libs directory not found. Creating it..."
-    mkdir -p "$ClientLibs"
+cd .. #back to durak main parent dir
+
+echo $'\nCloning git repo: glfw...\n' 
+
+CLIENTLIBS_DIR="$SCRIPT_DIR/Client/libs"
+cd "$CLIENTLIBS_DIR"
+GLFW_DIR="$CLIENTLIBS_DIR/glfw"
+
+if [ -d "$GLFW_DIR" ]; then
+    if [ -z "$(ls -A "$GLFW_DIR")" ]; then #if empty clone
+        git clone https://github.com/glfw/glfw.git || { echo "Failed to clone glfw"; exit 1; }
+    else #just pull
+        cd "$GLFW_DIR" || { echo "Failed to navigate to glfw"; exit 1; }
+        git pull || { echo "Failed to pull from git glfw"; exit 1;}
+        cd .. #back in libs
+    fi
+else #dir doesnt exist
+    git clone https://github.com/glfw/glfw.git || { echo "Failed to clone glfw"; exit 1; }
 fi
 
-cd "$ClientLibs" || { echo "Failed to navigate to $ClientLibs"; exit 1; }
+cd .. # back to client
+cd .. #back to durak main dir
 
-# Clone the GLFW repository with submodules if not already cloned
-if [ ! -d "glfw" ]; then
-    echo "Getting the glfw repo..."
-    git clone --recurse-submodules https://github.com/glfw/glfw.git || { echo "Failed to clone glfw"; exit 1; }
-else
-    echo "glfw repo already exists. Skipping cloning."
-    # Ensure submodules are initialized
-    cd glfw
-    git submodule update --init --recursive || { echo "Failed to update glfw submodules"; exit 1; }
-    cd ..
-fi
 
-echo "Environment setup complete."
+echo $'\ninstalling dependencies\n'
+sudo apt update
+sudo apt install doxygen
+
+sudo apt install graphviz
+
+echo $'\nCreating the Durak documentation with Doxygen\n'
+doxygen Doxyfile
+
+mkdir -p build
+cd "$SCRIPT_DIR/build"
+cmake ..
+make clean
+make -j4
+
+echo $'\nSetting up your environment complete...\n'
+
+echo $'\n!!!ALWAYS RUN EVERYTHING IN THE "build" DIRECTORY!!!\n'
+echo $'----------------------------------------------------'
+echo $'\nTO RUN THE SERVER: \n\n ./Server/DurakServer\n'
+echo $'----------------------------------------------------'
+echo $'\nTO RUN THE CLIENT: \n\n ./Client/DurakClient\n'
+echo $'----------------------------------------------------'
+
+echo $'\nIF SERVER HOSTET LOCALLY, JUST PRESS CONNECT\n'
+
+echo $'THE DEFAULT IP IS LOCALHOST\n' 
+
+echo $'----------------------------------------------------'
+echo $'\nTO OPEN THE DOCUMENTATION GO TO "docs/html"\n'
+echo $'open "index.html" with your preferred browser\n'

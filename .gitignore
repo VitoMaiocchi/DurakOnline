@@ -4,6 +4,7 @@
 Networking/build/
 Client/build/
 Server/build/
+docs/
 build/
-Server/docs
 .cache
+doxygen_warnings.log

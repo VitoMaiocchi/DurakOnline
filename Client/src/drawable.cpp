@@ -2,6 +2,7 @@
 #include "global_state.hpp"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 
 //NODE
 void Node::sendClickEvent(float x, float y) {
@@ -75,17 +76,25 @@ Extends PlayerNode::getCompactExtends(Extends ext) {
     return ext;
 }
 
+//For humorous purposes this replaces the default playericon for an array of preselected names
+static const std::unordered_map<std::string, std::string> playerIcons = {
+    {"danil", "player.png"},
+    {"thomas", "clown.png"},
+    {"vito", "chad.jpg"},
+    {"eric", "zauberlehrling.png"},
+    {"kingthomas", "königthomas.jpg"},
+    {"noah", "hund.png"},
+    {"lennard", "lennardjones.jpeg"},
+    {"clemens", "clemo.jpeg"}
+};
+
 inline std::string getPlayerIconPath(const std::string &name) {
-    std::string path = "durak.png";
-    if(name == "danil" || name == "Danil") path = "player.png";
-    if(name == "thomas" || name == "Thomas") path = "clown.png";
-    if(name == "vito" || name == "Vito") path = "chad.jpg";
-    if(name == "eric" || name == "Eric") path = "zauberlehrling.png";
-    if(name == "kingthomas" || name == "KingThomas") path = "königthomas.jpg";
-    if(name == "noah" || name == "Noah") path = "hund.png";
-    if(name == "lennard" || name == "Lennard") path = "lennardjones.jpeg";
-    if(name == "clemens" || name == "Clemens") path = "clemo.jpeg";
-    return CLIENT_RES_DIR + "skins/" + path;
+    std::string str = name;
+    std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    auto it = playerIcons.find(str);
+    if (it != playerIcons.end()) return CLIENT_RES_DIR + "skins/" + it->second;
+    return CLIENT_RES_DIR + "skins/durak.png";
 }
 
 void drawGamePlayer(Extends extends, const std::string &name, const uint cards, const PlayerState state) {

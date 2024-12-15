@@ -11,10 +11,38 @@
 #define DEFAULT_TRANSPARANCY 0.1f
 #define TEXTFIELD_BORDER 5.0f
 
+/*
+The Node Framework Provides a way to stucture anything displayed on screen
+in a hirachy of nodes. Any updates in the Window size propagte trough the node tree.
+The size of each Node in the tree is only calulated when the window size changes.
+This Extends of the Node is used to handle drawing and mouse events like hover/click.
+This makes everything scale dynamically
+
+drawable contains any components that can be reused across the atual game nodes.
+
+the abstract Base class Node provides the following functionality:
+click events that propagate trough the node tree and call a click callback
+a hover bool that is dynamically updated when ever the mouse leaves or enters
+the Node
+
+TreeNode is a template for any Nodes that do not draw anything themselves but
+only contain other nodes. it implements a draw function that draws all children.
+
+LeafNode is a template for any Node that does not have any children. It implements 
+extend updates and the callForAllChildren helper (here it does nothing)
+
+ButtonNode: obvious functionality
+
+PlayerNode: draws a player icon with the correct name
+The Lobby version displays if the player is ready
+and the game version some information about his game state.
+
+TextInputNode: displays text input including a default text.
+*/
+
 class Node {
     public:
-        virtual ~Node() = default; // without this line the client crashes when connecting on M1 Mac
-        bool visible = false;
+        virtual ~Node() = default;
         virtual void draw() = 0;
         virtual void updateExtends(Extends ext) = 0;
         virtual Extends getCompactExtends(Extends ext) = 0;

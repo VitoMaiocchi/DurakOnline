@@ -9,15 +9,15 @@ include_directories(${CMAKE_SOURCE_DIR}/Networking/rapidjson/include)
 include_directories(${CMAKE_SOURCE_DIR}/Server/include)
 
 # server
-add_executable(test_server2
-    server2.cpp
-    ${CMAKE_SOURCE_DIR}/Server/src/game.cpp
-    ${CMAKE_SOURCE_DIR}/Server/src/battle.cpp
-    ${CMAKE_SOURCE_DIR}/Server/src/card_manager.cpp
-)
+# add_executable(test_server2
+#     server2.cpp
+#     ${CMAKE_SOURCE_DIR}/Server/src/game.cpp
+#     ${CMAKE_SOURCE_DIR}/Server/src/battle.cpp
+#     ${CMAKE_SOURCE_DIR}/Server/src/card_manager.cpp
+# )
 add_executable(test_server server.cpp)
 # add_executable(test_server server.cpp)
-target_link_libraries(test_server2 durak_networking)
+# target_link_libraries(test_server2 durak_networking)
 target_link_libraries(test_server durak_networking)
 
 # client

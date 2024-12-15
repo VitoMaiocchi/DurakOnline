@@ -6,7 +6,7 @@
 #include <random>
 #include <iostream>
 
-// LobbyNode
+//Lobby (for the LobbyNode)
 class Lobby : public LeafNode {
 public:
     Lobby() {}
@@ -16,23 +16,10 @@ public:
     }
 
     void draw() override {
-        // Base rectangle extends
-        Extends base_ext = {
-            extends.x + extends.width * 0.05f,
-            extends.y + extends.height * 0.05f,
-            extends.width * 0.9f,
-            extends.height * 0.9f,
-        };
-        OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-
-        // Title extends
-        Extends title_ext = {
-            extends.x + extends.width * 0.15f,
-            extends.y + extends.height * 0.6f,
-            extends.width * 0.7f,
-            extends.height * 0.3f,
-        };
-        OpenGL::drawText("LOBBY", title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
+        // Base rectangle
+        OpenGL::drawRectangle(alignExtends(extends, 0.05f, 0.05f, 0.9f, 0.9f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        // Title
+        OpenGL::drawText("LOBBY", alignExtends(extends, 0.15f, 0.6f, 0.7f, 0.3f), COLOR_BLACK, TEXTSIZE_XLARGE);
     }
 
     Extends getCompactExtends(Extends ext) override {
@@ -40,7 +27,9 @@ public:
     }
 };
 
-//Settings
+//----------------------------------------------------------------------------------------------------------
+
+//Settings (for the LobbyNode)
 class Settings_screen : public Node {
     bool show = false;
     bool disappear = false;
@@ -99,12 +88,7 @@ public:
     void updateExtends(Extends ext) override {
         extends = ext;
 
-        back_button->updateExtends({
-            extends.x + extends.width * 0.25f,
-            extends.y + extends.height * 0.125f,
-            extends.width * 0.5f,
-            extends.height * 0.1f,
-        });
+        back_button->updateExtends(alignExtends(extends, 0.25f, 0.125f, 0.5f, 0.1f));
 
         float button_width = ext.width * 0.15f;
         float available_area = ext.width * 0.5f;
@@ -139,14 +123,8 @@ public:
         if(!show) return;
         //Background
         OpenGL::drawRectangle(extends, glm::vec4(0, 0, 0, .7f));
-        // Base rectangle extends
-        Extends base_ext = {
-            extends.x + extends.width * 0.2f,
-            extends.y + extends.height * 0.075f,
-            extends.width * 0.6f,
-            extends.height * 0.85f,
-        };
-        OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        // Base rectangle
+        OpenGL::drawRectangle(alignExtends(extends, 0.2f, 0.075f, 0.6f, 0.85f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 
         Extends ext = extends;
         float button_width = ext.width * 0.15f;
@@ -177,22 +155,9 @@ public:
         if(selected == 2) button_background = ascend_ext;
         OpenGL::drawRectangle(button_background, COLOR_RED);
 
-        // Title extends
-        Extends title_ext = {
-                extends.x + extends.width * 0.25f,
-                extends.y + extends.height * 0.65f,
-                extends.width * 0.5f,
-                extends.height * 0.3f,
-        };
-        OpenGL::drawText("SETTINGS", title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
-
-        Extends sort = {
-            extends.x + extends.width * 0.25f,
-            extends.y + extends.height * 0.45f,
-            extends.width * 0.5f,
-            extends.height * 0.3f,
-        };
-        OpenGL::drawText("SORT BY:", sort, COLOR_BLACK, TEXTSIZE_LARGE);
+        // Title
+        OpenGL::drawText("SETTINGS", alignExtends(extends, 0.25f, 0.65f, 0.5f, 0.3f), COLOR_BLACK, TEXTSIZE_XLARGE);
+        OpenGL::drawText("SORT BY:", alignExtends(extends, 0.25f, 0.45f, 0.5f, 0.3f), COLOR_BLACK, TEXTSIZE_LARGE);
 
         back_button->draw();
         trump_button->draw();
@@ -213,7 +178,9 @@ public:
 
 };
 
-// LobbyNode Implementation
+//----------------------------------------------------------------------------------------------------------
+
+//LobbyNode Implementation
 LobbyNode::LobbyNode(Extends ext) {
     lobby = std::make_unique<Lobby>();
     setting = std::make_unique<Settings_screen>();
@@ -277,12 +244,7 @@ void LobbyNode::updateExtends(Extends ext) {
         ext.height * 0.1f,
     });
 
-    Extends player_ext = {
-        ext.x + ext.width * 0.1f,
-        ext.y + ext.height * 0.3f,
-        ext.width * 0.8f,
-        ext.height * 0.25f,
-    };
+    Extends player_ext = alignExtends(extends, 0.1f, 0.3f, 0.8f, 0.25f);
 
     int num_players = static_cast<int>(player_nodes.size());
     float player_width = player_ext.width / num_players;
@@ -347,6 +309,7 @@ void LobbyNode::draw() {
 
 //-----------------------------------------------------------------------------------------------------
 
+//LoginScreenNode implementation
 void LoginScreenNode::connect() {
     std::cout << "Trying to connect to server..." << std::endl;
     if(ip.empty()) ip = "localhost";
@@ -373,9 +336,9 @@ void LoginScreenNode::connect() {
 LoginScreenNode::LoginScreenNode(Extends ext){
     //Text input field for name and for Ip
     name_input = std::make_unique<TextInputNode>("Enter your name");
-    name_input->visible = true;
+    cast(TextInputNode, name_input)->visible = true;
     ip_input = std::make_unique<TextInputNode>("localhost");
-    ip_input->visible = true;
+    cast(TextInputNode,ip_input)->visible = true;
     OpenGL::setCharacterInputCallback([this](char c) {
         if(c == '\n') {
             connect();
@@ -405,9 +368,9 @@ LoginScreenNode::LoginScreenNode(Extends ext){
         connect();
     });
 
-    connect_button->visible = true;
-    name_input->visible = true;
-    ip_input->visible = true;
+    cast(ButtonNode,connect_button)->visible = true;
+    cast(TextInputNode,name_input)->visible = true;
+    cast(TextInputNode,ip_input)->visible = true;
 
     updateExtends(ext);
 }
@@ -415,58 +378,23 @@ LoginScreenNode::LoginScreenNode(Extends ext){
 void LoginScreenNode::updateExtends(Extends ext){
     extends = ext;
     //button
-    connect_button->updateExtends({
-        ext.x + ext.width * 0.25f,
-        ext.y + ext.height * 0.1f,
-        ext.width * 0.5f,
-        ext.height * 0.1f,
-    });
+    connect_button->updateExtends(alignExtends(extends, 0.25f, 0.1f, 0.5f, 0.1f));
 
-    ip_input->updateExtends({
-        ext.x + ext.width * 0.25f,
-        ext.y + ext.height * 0.25f,
-        ext.width * 0.5f,
-        ext.height * 0.1f,
-    });
+    ip_input->updateExtends(alignExtends(extends, 0.25f, 0.25f, 0.5f, 0.1f));
 
-    name_input->updateExtends({
-        ext.x + ext.width * 0.25f,
-        ext.y + ext.height * 0.45f,
-        ext.width * 0.5f,
-        ext.height * 0.1f,
-    });
+    name_input->updateExtends(alignExtends(extends, 0.25f, 0.45f, 0.5f, 0.1f));
 }
 
 void LoginScreenNode::draw() {
-    Extends base_ext = {
-        extends.x + extends.width * 0.2f,
-        extends.y + extends.height * 0.05f,
-        extends.width * 0.6f,
-        extends.height * 0.9f,
-    };
-    OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    Extends title_ext = {
-            extends.x + extends.width * 0.175f,
-            extends.y + extends.height * 0.65f,
-            extends.width * 0.65f,
-            extends.height * 0.3f,
-    };
+    //Base rectangle
+    OpenGL::drawRectangle(alignExtends(extends, 0.2f, 0.05f, 0.6f, 0.9f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
     auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+"fonts/durak.png");
-    OpenGL::drawImage(CLIENT_RES_DIR+"fonts/durak.png", computeCompactExtends(title_ext, size.second, size.first));
-    Extends server_ip_ext = {
-            extends.x + extends.width * 0.25f,
-            extends.y + extends.height * 0.45f,
-            extends.width * 0.5f,
-            extends.height * 0.3f,
-    };
-    OpenGL::drawText("PLAYER NAME", server_ip_ext, COLOR_BLACK, TEXTSIZE_LARGE);
-    Extends player_name_ext = {
-            extends.x + extends.width * 0.25f,
-            extends.y + extends.height * 0.25f,
-            extends.width * 0.5f,
-            extends.height * 0.3f,
-    };
-    OpenGL::drawText("HOSTNAME / IP", player_name_ext, COLOR_BLACK, TEXTSIZE_LARGE);
+    OpenGL::drawImage(CLIENT_RES_DIR+"fonts/durak.png", computeCompactExtends(alignExtends(extends, 0.175f, 0.65f, 0.65f, 0.3f), size.second, size.first));
+
+    OpenGL::drawText("PLAYER NAME", alignExtends(extends, 0.25f, 0.45f, 0.5f, 0.3f), COLOR_BLACK, TEXTSIZE_LARGE);
+
+    OpenGL::drawText("HOSTNAME / IP", alignExtends(extends, 0.25f, 0.25f, 0.5f, 0.3f), COLOR_BLACK, TEXTSIZE_LARGE);
 
     connect_button->draw();
     name_input->draw();
@@ -485,6 +413,7 @@ void LoginScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node
 
 //--------------------------------------------------------------------------------------------------
 
+//GameOverScreenNode implementation
 GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     quit_button = std::make_unique<ButtonNode>("QUIT");
     quit_button->setClickEventCallback([](float x, float y){
@@ -496,7 +425,11 @@ GameOverScreenNode::GameOverScreenNode(Extends ext, bool durak):durak(durak){
     lobby_button = std::make_unique<ButtonNode>("LOBBY");
     lobby_button->setClickEventCallback([](float x, float y){
         std::cout << "lobby" << std::endl;
+        ClientActionEvent event;
+        event.action = CLIENTACTION_LOBBY;
+        Network::sendMessage(std::make_unique<ClientActionEvent>(event));
     });
+
     cast(ButtonNode, lobby_button)->visible = true;
     updateExtends(ext);
 }
@@ -528,36 +461,31 @@ Extends GameOverScreenNode::getCompactExtends(Extends ext){
 }
 
 void GameOverScreenNode::callForAllChildren(std::function<void(std::unique_ptr<Node>&)> function){
-    //Base
     function(quit_button);
     function(lobby_button);
 }
 
 void GameOverScreenNode::draw() {
-    Extends base_ext = {
-        extends.x + extends.width * 0.15f,
-        extends.y + extends.height * 0.05f,
-        extends.width * 0.7f,
-        extends.height * 0.9f,
-    };
-    OpenGL::drawRectangle(base_ext, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-    quit_button->draw();
-    lobby_button->draw();
-    
+    //Base
+    OpenGL::drawRectangle(alignExtends(extends, 0.15f, 0.05f, 0.7f, 0.9f), glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
     std::string title;
+    std::string picture;
     if(durak){
         title = "YOU ARE THE DURAK";
+        picture = "./icons/durak_end.png";
     }else{
         title = "YOU ARE NOT THE DURAK"; 
+        picture = "./icons/king_end.png";
     }
-    Extends title_ext = {
-        extends.x + extends.width * 0.175f,
-        extends.y + extends.height * 0.7f,
-        extends.width * 0.65f,
-        extends.height * 0.2f,
-    };
-    OpenGL::drawText(title, title_ext, COLOR_BLACK, TEXTSIZE_XLARGE);
-    
+
+    auto size = OpenGL::getImageDimensions(CLIENT_RES_DIR+picture);
+    OpenGL::drawImage(CLIENT_RES_DIR+picture, computeCompactExtends(alignExtends(extends, 0.15f, 0.05f, 0.7f, 0.9f), size.second, size.first));
+
+    quit_button->draw();
+    lobby_button->draw();
+
+    OpenGL::drawText(title, alignExtends(extends, 0.175f, 0.75f, 0.65f, 0.2f), COLOR_BLACK, TEXTSIZE_XLARGE); 
 }
 
 

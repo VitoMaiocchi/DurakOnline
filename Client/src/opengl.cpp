@@ -15,7 +15,9 @@
 #include <chrono>
 #include FT_FREETYPE_H
 
+//running the client in the wrong dir is the most common cause of errors.
 #define FONT_PATH "../Client/resources/fonts/OpenSans-Bold.ttf"
+#define WD_WARN "\n \033[31m    Note: this error is allmost allways caused because you are running Client in the wrong working directory. \n     Plase make sure you are running the Client from build (Client/DurakClient) not build/Client (./DurakClient) \033[0m"
 
 namespace Window {
     unsigned int height = 600;
@@ -315,7 +317,7 @@ namespace OpenGL {
             if(nrChannels == 4) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
             if(nrChannels == 3) glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);
-        } else throw std::runtime_error("OpenGL: error loading the following texture: "+path);
+        } else throw std::runtime_error("OpenGL: error loading the following texture: "+path+ WD_WARN);
         
         stbi_image_free(data);
 
@@ -354,7 +356,7 @@ namespace OpenGL {
         if (FT_Init_FreeType(&ft)) throw std::runtime_error("FreeType: init error");
 
         FT_Face face;
-        if (FT_New_Face(ft, FONT_PATH, 0, &face)) throw std::runtime_error(std::string("FreeType: failed to load font: ")+FONT_PATH);
+        if (FT_New_Face(ft, FONT_PATH, 0, &face)) throw std::runtime_error(std::string("FreeType: failed to load font: ")+FONT_PATH+WD_WARN);
 
         // set size to load glyphs as
         FT_Set_Pixel_Sizes(face, 0, 200);

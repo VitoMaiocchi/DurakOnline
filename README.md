@@ -1,11 +1,12 @@
 ## Table of Contents
+1. [HOW TO USE](#how-to-use)
 
-1. [High Level Overview of the Code](#high-level-overview-of-the-code)
+2. [High Level Overview of the Code](#high-level-overview-of-the-code)
    - Client
    - Networking
    - Server
 
-2. [Git](#git)
+3. [Git](#git)
    - Cloning the Repository
    - Before Starting Work: Pull Latest Changes
    - Creating a Branch for Your Work
@@ -14,7 +15,7 @@
    - Creating a Merge Request
    - Handling Merge Conflicts
    - Final Steps After Merging
-3. [Durak](#durak)
+4. [Durak](#durak)
    - Description
    - Rules
    - SRS Durak project first deadline
@@ -22,6 +23,20 @@
    - ToDo
 
 ---
+# HOW TO USE
+- clone repo: `git clone https://gitlab.ethz.ch/durak/durak.git` 
+
+- run: 
+`source setup.sh` \
+- in the build directory run: \
+ `./Server/DurakServer` \
+ to start the server 
+- open a different terminal and navigate to the same _build_ directory `durak/build`
+- run: `./Client/DurakClient` \
+to start the client
+- repeat the previous steps until you have at least 3 clients or at most 6 clients.
+- enter your information & press "CONNECT"
+- press "READY" in the lobby to signal your readiness, once all clients in the lobby pressed ready the game will begin.
 
 # High level Overview of the Code
 <details> <summary>Click to expand Code section</summary>

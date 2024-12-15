@@ -406,15 +406,15 @@ bool Battle::passOnRankMatch(Rank rank) {
 void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot) {
     switch (phase_) {
         case BATTLEPHASE_FIRST_ATTACK:
-            sendPopup("Can not place card; Waiting for first attack.", clientID);
+            sendPopup("Can not place card. Waiting for first attack.", clientID);
             return;
         case BATTLEPHASE_DONE:
             return;
         case BATTLEPHASE_POST_PICKUP:
-            sendPopup("You allready picked up. You can not place any more cards", clientID);
+            sendPopup("You already picked up. You can not place any more cards.", clientID);
             return;
         case BATTLEPHASE_DEFENDED:
-            sendPopup("Everything is defended. Can not place any more cards", clientID);
+            sendPopup("Everything is defended. Can not place any more cards.", clientID);
             return;
         case BATTLEPHASE_OPEN:
             break;
@@ -423,14 +423,14 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     uint s = (uint) slot;
     if(card_manager_ptr_->getMiddleSlot(s%6).has_value()) { //SLOT is not empty
         if(cards.size() > 1) {
-            sendPopup("you can only defend with one card per slot", clientID);
+            sendPopup("You can only defend with one card per slot.", clientID);
             return;
         }
         if(isValidMove(*cards.begin(), clientID, slot)) {
             defend(clientID, *cards.begin(), slot);
             if(successfulDefend()) phase_ = BATTLEPHASE_DEFENDED;
         }
-        else sendPopup("invalid defend", clientID);
+        else sendPopup("Invalid defend.", clientID);
         return;
     }
 
@@ -438,7 +438,7 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     if(checkIdenticalRank(cards, clientID)) return;
 
     if(!topSlotsClear()) {
-        sendPopup("you allready defended a card. Pass on is not possilbe", clientID);
+        sendPopup("You already defended a card. Pass on is not possilbe", clientID);
         return;
     }
 
@@ -454,6 +454,13 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     
     //TODO: das gaht nur mit einere karte...
     passOn(cards, clientID, slot);
+    // inform all clients except the one passing on, that said player has done so
+    for(ClientID c : DurakServer::clients) {
+        if(c == clientID){
+            sendPopup("You passed on.", c);
+        }
+        sendPopup(getClientName(clientID) + " passed on.", c);
+    }
     phase_ = BATTLEPHASE_OPEN;
 }
 
@@ -630,6 +637,13 @@ void Battle::reflectEvent(ClientID clientID) {
     std::cout << "reflect event" << std::endl;
     if(!card.has_value()) return;
     std::cout << "reflect event succesfull" << std::endl;
+    // send popup to all clients except the one reflecting, that he has done so
+    for(ClientID c : DurakServer::clients) {
+        if(c == clientID){
+            sendPopup("You reflected.", c);
+        }
+        sendPopup(getClientName(clientID) + " reflected.", c);
+    }
     movePlayerRoles();
     UpdatePickUpOrder();
 }

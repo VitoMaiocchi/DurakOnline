@@ -104,10 +104,11 @@ pkg-config --cflags --libs xkbcommon
 echo $'----------------------------------------------------'
 
 sudo apt install libxrandr-dev
-
 sudo apt install libxinerama-dev
-
 sudo apt install libxcursor-dev
+sudo apt install libxi-dev
+
+
 
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile

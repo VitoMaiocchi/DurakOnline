@@ -387,13 +387,6 @@ class Battle {
          */
         std::map<ClientID, PlayerRole> getPlayerRolesMap();
 
-        /**
-         * @brief Sends an update of the battle state to all clients.
-         * 
-         * Prepares and sends the BattleStateUpdate message to clients.
-         */
-        void sendBattleStateUpdate();
-
         //////////////////////////////
         // setter and getter functions
         //////////////////////////////
@@ -484,6 +477,8 @@ class Battle {
 
         /**
          * @brief Sends an update of the battle state to all clients.
+         * 
+         * Prepares and sends the BattleStateUpdate message to clients.
          */
         void sendBattleStateUpdate();
 };

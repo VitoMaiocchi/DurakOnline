@@ -201,4 +201,9 @@ public:
      * 
      */
     void eraseDeck();
+    void setTrump(Suit trump);
+    void clearPlayerHand(ClientID player_id);
+    unsigned int putRandomCardsInMiddle();
+    void addCardToPlayerHandFromDeck(ClientID playerID);
+
 };

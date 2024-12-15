@@ -148,4 +148,9 @@ class Battle {
         // message functions
         void sendBattleStateUpdate();
 
+        // helper functions for testing, TODO: Delete after deadline
+        void setPlayerRoles(std::map<ClientID,PlayerRole> battlestate);
+        void callRemoveFinishedPlayers(){removeFinishedPlayers();}
+
+
 };

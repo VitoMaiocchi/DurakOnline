@@ -531,7 +531,7 @@ void Battle::tryPickUp() {
         case BATTLETYPE_FIRST:
         case BATTLETYPE_NORMAL:
             // either both attacker and co attacker press done or the middle is full
-            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER] || attackedWithMaxCards()){
+            if( (ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) || attackedWithMaxCards()){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
@@ -562,6 +562,7 @@ void Battle::tryPickUp() {
                 first_battle_ = false;
                 battle_done_ = true;
             }
+            return;
         default:
             std::cout << "tryPickUp called in wrong phase" << std::endl;
             return;

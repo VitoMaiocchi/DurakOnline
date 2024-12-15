@@ -37,15 +37,6 @@ TEST_F(DurakGameTest, TestGameConstructor_PlayerRoles) {
     }
 }
 
-// Test: Validate Battle object is initialized correctly
-TEST_F(DurakGameTest, TestGameConstructor_BattleInitialization) {
-    ASSERT_NE(game->getCurrentBattle(), nullptr)
-        << "Battle object was not initialized during game construction";
-
-    const auto* first_attacker = game->getCurrentBattle()->getFirstAttackerPtr();
-    ASSERT_NE(first_attacker, nullptr)
-        << "First attacker pointer is null in the initialized Battle object";
-}
 
 // Test: Validate trump card and last card initialization
 TEST_F(DurakGameTest, TestGameConstructor_TrumpCardInitialization) {

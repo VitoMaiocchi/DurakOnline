@@ -134,7 +134,10 @@ void sendPopup(std::string message, ClientID clientID) {
 }
 
 void Battle::sendBattleStateUpdate(){
+    if(players_bs_.size() == 0) return;
+
     BattleStateUpdate bsu_msg;
+    bsu_msg.defender = 0;
     //set the first attacker pointer to the one that attacks first
     //while iterating prepare the message BattleStateUpdate to send to the client
     // we first iterate through to set the first attacker
@@ -153,6 +156,9 @@ void Battle::sendBattleStateUpdate(){
             bsu_msg.idle.push_back(c);
         }
     }
+
+    //dont send if there is no defender left (this is the case at the end of the game)
+    if(bsu_msg.defender == 0) return; 
 
     for(ClientID c : DurakServer::clients){
         Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), c); //maybe make function to broadcast to all
@@ -1206,39 +1212,7 @@ void Battle::movePlayerRoles(){
 
     // }
 
-    BattleStateUpdate bsu_msg; 
-    for(ClientID c : DurakServer::clients){
-        if(players_bs_.find(c) != players_bs_.end()){
-            if(players_bs_[c] == ATTACKER){
-                bsu_msg.attackers.push_front(c);
-            }else if(players_bs_[c] == DEFENDER){
-                bsu_msg.defender = c;
-            }else if(players_bs_[c] == CO_ATTACKER){
-                bsu_msg.attackers.push_back(c);
-            }else if(players_bs_[c] == IDLE || players_bs_[c] == FINISHED){
-                bsu_msg.idle.push_back(c);
-            }
-        }
-        else{
-            bsu_msg.idle.push_back(c);
-        }
-    }
-    // for (const auto& [player_id, role] : players_bs_) {
-    //     if (role == ATTACKER) {
-    //         bsu_msg.attackers.push_front(player_id);
-    //     } else if (role == CO_ATTACKER) {
-    //         bsu_msg.attackers.push_back(player_id);
-    //     } else if (role == DEFENDER) {
-    //         bsu_msg.defender = player_id;
-    //     } else if (role == IDLE || role == FINISHED) {
-    //         bsu_msg.idle.push_back(player_id);
-    //     }
-    // }
-
-    // Update clients with new roles
-    for (ClientID client : DurakServer::clients) {
-        Network::sendMessage(std::make_unique<BattleStateUpdate>(bsu_msg), client);
-    }
+    sendBattleStateUpdate();
 
     // Adapt max_attacks to the new defender's card count (min 6 or their card count)
     auto defender_it = std::find_if(players_bs_.begin(), players_bs_.end(),

@@ -72,7 +72,7 @@ public:
     bool playCard(Card card, ClientID playerID);   //Playing a card to attack or defend, I might have to add some arguments like the position where the card will be played or if the player is an attacker or a defender 
     bool clearMiddle();         //When attack is succesfully defended
     void pickUp(ClientID playerID_def);              //When attack wasn't succesfully defended
-    void distributeNewCards(std::deque<ClientID> attack_order_, ClientID current_defender, bool succesful_defend);
+    void distributeNewCards(ClientID first, std::map<ClientID, PlayerRole> players);
     void drawFromMiddle(ClientID playerID);
     bool compareCards(Card card1, Card card2);
 

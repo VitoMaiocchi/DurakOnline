@@ -507,7 +507,7 @@ void Battle::tryPickUp() {
             if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
-                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
+                card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                 movePlayerRoles();
                 movePlayerRoles(); //loses right to attack when picking up
 
@@ -524,7 +524,7 @@ void Battle::tryPickUp() {
             if(ok_msg_[ATTACKER]){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
-                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), false);
+                card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                 movePlayerRoles(); //loses right to attack when picking up
                 //why only called once?
                 //das isch alles chli goofy
@@ -547,7 +547,7 @@ void Battle::doneEvent(ClientID clientID) {
     if(btype_ == BATTLETYPE_NORMAL || btype_ == BATTLETYPE_FIRST) {
         if(phase_ == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
             card_manager_ptr_->clearMiddle();
-            card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+            card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
             movePlayerRoles(); 
             
             //das isch alles chli goofy
@@ -568,7 +568,7 @@ void Battle::doneEvent(ClientID clientID) {
             case BATTLEPHASE_DEFENDED:
                 if(ok_msg_[ATTACKER]){
                     card_manager_ptr_->clearMiddle();
-                    card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+                    card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                     movePlayerRoles();
                     sendBattleStateUpdate(); // inform all clients of their new roles
                     //das isch alles chli goofy
@@ -584,7 +584,7 @@ void Battle::doneEvent(ClientID clientID) {
             case BATTLEPHASE_POST_PICKUP:
                 tryPickUp();
                 card_manager_ptr_->clearMiddle();
-                card_manager_ptr_->distributeNewCards(attack_order_, getCurrentDefender(), true);
+                card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
                 movePlayerRoles();
                 //das isch alles chli goofy
                 curr_attacks_ = 0;

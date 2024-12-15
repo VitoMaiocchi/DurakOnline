@@ -64,6 +64,11 @@ fi
 
 cd .. # back to client
 cd .. #back to durak main dir
+
+echo $'\nCreating the Durak documentation with Doxygen\n'
+
+doxygen Doxyfile
+
 mkdir -p build
 cd "$SCRIPT_DIR/build"
 cmake ..
@@ -82,3 +87,7 @@ echo $'----------------------------------------------------'
 echo $'\nIF SERVER HOSTET LOCALLY, JUST PRESS CONNECT\n'
 
 echo $'THE DEFAULT IP IS LOCALHOST\n' 
+
+echo $'----------------------------------------------------'
+echo $'\nTO OPEN THE DOCUMENTATION GO TO "docs/html"\n'
+echo $'open "index.html" with your preferred browser\n'

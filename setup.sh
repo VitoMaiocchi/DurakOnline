@@ -74,8 +74,14 @@ sudo apt install graphviz
 
 sudo apt install cmake
 sudo apt install make
+sudo apt install g++
+echo $'\ncheck compiler version\n'
+gcc --version
+g++ --version
+
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile
+
 
 mkdir -p build
 cd "$SCRIPT_DIR/build"

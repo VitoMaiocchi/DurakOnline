@@ -25,13 +25,13 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
                 }
             }
         }
-        std::cout << "Determined attacker: " << DurakServer::getClientName(first_attacker) << std::endl;
+        std::cout << "Determined attacker: " << first_attacker << std::endl;
         if(first_attacker == -1){
             // no one has a trump, choose a random player as the first attacker
             first_attacker = rand() % players.size();
 
             // debugging
-            std::cout << "Random determined first attacker: " << DurakServer::getClientName(first_attacker) << std::endl;
+            std::cout << "Random determined first attacker: " << first_attacker << std::endl;
         }
 
         // determine the defender
@@ -39,14 +39,14 @@ Game::Game(std::set<ClientID> &players) : card_manager_(players) {
         it++;
         if(it == players.end()) it = players.begin();
         ClientID first_defender = *it;
-        std::cout << "Determined defender: " << DurakServer::getClientName(first_defender) << std::endl;
+        std::cout << "Determined defender: " << first_defender << std::endl;
 
         // determine the second attacker
         it = players.find(first_defender);
         it++;
         if(it == players.end()) it = players.begin();
         ClientID second_attacker = *it;
-        std::cout << "Determined second attacker: " << DurakServer::getClientName(second_attacker) << std::endl;
+        std::cout << "Determined second attacker: " << second_attacker << std::endl;
 
 
     // set private member player_roles_

@@ -192,16 +192,18 @@ void CardManager::pickUp(ClientID playerID_def){
     }
 }   
 
-void CardManager::distributeNewCards(std::deque<ClientID> attack_order_, ClientID current_defender, bool succesful_defend){
-    // attackers pick up cards
-    while (getNumberOfCardsOnDeck() && !attack_order_.empty()){
-        drawFromMiddle(attack_order_.front());
-        attack_order_.pop_front();
-    }
-    // defender only picks up if all attacks where defended succesfully
-    if (succesful_defend){
-        drawFromMiddle(current_defender);
-    }
+//PRE: correct order for picking up cards saved in attack_order_
+//POST: cards have been assigned from deck to player hands in the correcr order
+void CardManager::distributeNewCards(ClientID first, std::map<ClientID, PlayerRole> players) {
+    auto f_it = players.find(first);
+    if(f_it == players.end()) f_it = players.begin();
+    auto it = f_it;
+
+    do {
+        drawFromMiddle(it->first);
+        it++;
+        if(it == players.end()) it = players.begin();
+    } while (it != f_it);
 }
 
 void CardManager::drawFromMiddle(ClientID playerID){

@@ -182,7 +182,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             clients.erase(client);
             ready_clients.erase(client);
             players_map.erase(client);
-            if(players_map.size() < 2){
+            if(players_map.size() < 3){
                 current_game.reset();
                 GameStateUpdate game_update;
                 game_update.state = GAMESTATE_LOBBY;

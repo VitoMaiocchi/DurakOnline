@@ -5,26 +5,6 @@
 #include <Networking/util.hpp>
 
 
-
-// Test case: Broadcasting a popup message
-// TEST(BattleTest, BroadcastPopup) {
-//     std::map<unsigned int, PlayerRole> players = {
-//         {1, PlayerRole::ATTACKER},
-//         {2, PlayerRole::DEFENDER},
-//         {3, PlayerRole::IDLE}
-//     };
-//     std::set<unsigned int> clients = {1, 2, 3};
-//     CardManager card_manager(clients);
-
-//     Battle battle(BattleType::BATTLETYPE_NORMAL, players, card_manager, clients);
-//     DurakServer::clients.insert(1);
-//     DurakServer::clients.insert(2);
-//     DurakServer::clients.insert(3);
-
-//     std::string popup_message = "Game Starting!";
-//     EXPECT_NO_THROW(battle.broadcastPopup(popup_message));
-// }
-
 // Main function to run all tests
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
@@ -468,9 +448,6 @@ TEST_F(DurakBattleTest, TestMovePlayerRolesMultipleConfigurations) {
         }
     }
 }
-
-
-
 
 
 /*

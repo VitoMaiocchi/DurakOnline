@@ -105,7 +105,7 @@ echo $'----------------------------------------------------'
 
 sudo apt install libxrandr-dev
 
-
+sudo apt install libxinerama-dev
 
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile

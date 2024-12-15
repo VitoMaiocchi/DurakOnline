@@ -671,10 +671,6 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
     return;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 void Battle::updateAvailableAction() {
     // DEBUG, print battlephase
     std::string s = "";
@@ -732,8 +728,8 @@ bool Battle::successfulDefend(){
 
 bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlot slot){
 
-    //check if valid move
-    //this should happen before the player roles are moved
+    // check if valid move
+    // this should happen before the player roles are moved
     if(!isValidMove(*cards.begin(), player_id, slot) || curr_attacks_ == max_attacks_){
         // PopupNotify popup;
         // popup.message = "Illegal Move: "
@@ -754,19 +750,19 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
         }
     }
 
-        //moves player roles one up/next
+        // moves player roles one up/next
         movePlayerRoles();
-        //This function should only be calles when there are 3 or more active players
+        // This function should only be calles when there are 3 or more active players
         if(card_manager_ptr_->getNumberActivePlayers() >= 3){
             UpdatePickUpOrder();
         }
 
-        //player_bs_[player_id] is now attacker
+        // player_bs_[player_id] is now attacker
         for(auto& c : cards){
             attack(player_id, c);
         }
 
-        //check if everything worked
+        // check if everything worked
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         for(auto slotM : middle){
             if(slotM.first == *cards.begin() && players_bs_[player_id] == ATTACKER){
@@ -778,26 +774,26 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
 
 bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
     std::cout << "isValidMove() was called" << std::endl;
-    //initialize the error message which will be sent if an invalid move is found
+    // initialize the error message which will be sent if an invalid move is found
     PopupNotify err_message;
 
-    //if its an attacker
-    //check if its the first card being played? if yes check if only one card is played
-    //if yes then true
-    //else if its two or more cards at the same time check that all of the cards are the same number
-    //else if the card is the same number as one of the cards in the middle then it is ok to play
+    // if its an attacker
+    // check if its the first card being played? if yes check if only one card is played
+    // if yes then true
+    // else if its two or more cards at the same time check that all of the cards are the same number
+    // else if the card is the same number as one of the cards in the middle then it is ok to play
 
-    //get the defenders hand to check how many cards can be played, this is a second check to ensure
-    //when an attack was passed on that the defender can defend all cards
+    // get the defenders hand to check how many cards can be played, this is a second check to ensure
+    // when an attack was passed on that the defender can defend all cards
     std::size_t defender_card_amount = card_manager_ptr_->getPlayerHand(getCurrentDefender()).size();
-    //check if the card is in the players hand 
+    // check if the card is in the players hand 
     const std::vector<Card>& player_hand = card_manager_ptr_->getPlayerHand(player_id);
     if(std::find(player_hand.begin(), player_hand.end(), card) == player_hand.end()){
         err_message.message = "Illegal move: 'card was not found in your hand'";
         Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
         std::cout << "the card was not found in the players hand" << std::endl;
 
-        //for debugging purposes we will print the player hand and the card we try to access
+        // for debugging purposes we will print the player hand and the card we try to access
         std::cout << "the card we try to play: " << card.rank << "-" << card.suit << std::endl;
         std::cout << "player hand:  ";
         for(Card c : player_hand){
@@ -807,33 +803,33 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         return false; // card not found in the hand
     }
 
-    //set the role per default to idle and it will return false if this is not changed
+    // set the role per default to idle and it will return false if this is not changed
     int role = IDLE;
 
-    //get the role of the player that is trying to play the card
+    // get the role of the player that is trying to play the card
     role = players_bs_[player_id];
 
-    //if the player is defender
+    // if the player is defender
     if(role == DEFENDER){
-        //fetch middle from cardmanager 
+        // fetch middle from cardmanager 
         std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
         std::cout << "slot: " << slot << std::endl;
         std::optional<Card> first = middle[slot % 6].first;
         
-        //check the slot, if its empty and the defense was already started return false
+        // check the slot, if its empty and the defense was already started return false
         if(!first.has_value()){
 
             // the card was played on a slot that is empty
             if(defense_started_){
                 std::cout << "ERROR MESSAGE: Illegal move: empty slot" <<std::endl;
-                //notify the illegal move
+                // notify the illegal move
                 err_message.message = "Illegal move: 'Cannot place a card on an empty slot when defending'";
                 Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
                 return false;
             }
             else{
                 std::cout << "TRYING TO PASS THE ATTACK ON" << std::endl;
-                //need checks here
+                // need checks here
                 for(const auto s : middle){
                     if(s.first->rank == card.rank){
                         std::cout << "passing on is valid" << std::endl;
@@ -846,14 +842,14 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             sendPopup("The card has already been defended", player_id);
             return false;
         }
-        //check if the card is higher with card_compare
+        // check if the card is higher with card_compare
         else if(card_manager_ptr_->compareCards(*first, card)){
             return true;
         }
 
         else {
             std::cout << "ERROR MESSAGE: Illegal move: compare cards is not correct" <<std::endl;
-            //notify the illegal move
+            // notify the illegal move
             err_message.message = "Illegal move";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
             return false;
@@ -863,14 +859,14 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
-            return false; //idk about this maybe should be > and if == true
+            return false;
         }
         if(curr_attacks_ == 0){
             return true;
         }
-        //check if card rank is in middle
+        // check if card rank is in middle
         if(curr_attacks_ < max_attacks_ && 0 < defender_card_amount){
-            //fetch middle if the card is in play
+            // fetch middle if the card is in play
             std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
             for(auto card_in_middle : middle){
                 if(card_in_middle.first->rank == card.rank || card_in_middle.second->rank == card.rank){
@@ -879,21 +875,21 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
             } 
         }
     }
-    //coattacker can only jump in on the attack after the attacker started attcking
+    // coattacker can only jump in on the attack after the attacker started attcking
     if(role == CO_ATTACKER){
         if(curr_attacks_ == max_attacks_ || 0 == defender_card_amount){
             err_message.message = "Illegal move: 'the maximum amount of attacks is already reached'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
-            return false; //idk about this maybe should be > and if == true
+            return false;
         }
         if(curr_attacks_ == 0){
             err_message.message = "Illegal move: 'First Attacker hasnt attacked yet'";
             Network::sendMessage(std::make_unique<PopupNotify>(err_message), player_id);
             return false;
         }
-        //check if card rank is in middle
+        // check if card rank is in middle
         if(curr_attacks_ < max_attacks_ && 0 < defender_card_amount){
-            //fetch middle if the card is in play
+            // fetch middle if the card is in play
             std::vector<std::pair<std::optional<Card>, std::optional<Card>>> middle = card_manager_ptr_->getMiddle();
             for(auto card_in_middle : middle){
                 if(card_in_middle.first->rank == card.rank || card_in_middle.second->rank == card.rank){
@@ -912,7 +908,7 @@ bool Battle::isValidMove( const Card &card, ClientID player_id, CardSlot slot){
 
 void Battle::attack(ClientID client, Card card){
     std::cout << "attack() was called"<<std::endl;
-    //calls attack
+    // calls attack
     card_manager_ptr_->attackCard(card, client);
     // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
     if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
@@ -927,7 +923,7 @@ void Battle::attack(ClientID client, Card card){
     if(ok_msg_[ATTACKER]) ok_msg_[ATTACKER] = false;
     if(ok_msg_[CO_ATTACKER]) ok_msg_[CO_ATTACKER] = false;
     
-    //check for other players to finish during an active battle and set flag move_could_end_game to true
+    // check for other players to finish during an active battle and set flag move_could_end_game to true
     if(card_manager_ptr_->getNumberActivePlayers() == 2){
         for(auto c : players_bs_){
             if(card_manager_ptr_->getNumberOfCardsInHand(c.first) == 1){
@@ -940,7 +936,7 @@ void Battle::attack(ClientID client, Card card){
 
 void Battle::defend(ClientID client, Card card, CardSlot slot){ 
     std::cout << "defend was called" <<std::endl;
-    //calls defendCard
+    // calls defendCard
     card_manager_ptr_->defendCard(card, client, slot);
     // if there are only two players left (and thus a move could end the game) and the attacker has no cards left, the game should end
     if( (card_manager_ptr_->getPlayerHand(client).size() == 0) && move_could_end_game_){
@@ -953,7 +949,6 @@ void Battle::defend(ClientID client, Card card, CardSlot slot){
     defense_started_ = true;
     std::cout << "attacks to defend: " << attacks_to_defend_ <<std::endl;
 }
-
 
 const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     if(first_attacker_ == nullptr){
@@ -975,7 +970,7 @@ std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole>
 }
 
 void Battle::removeFinishedPlayers(){
-    //Find the player to be removed, return if all players still have cards
+    // Find the player to be removed, return if all players still have cards
     auto no_cards = [this](const auto& pair) {
             return card_manager_ptr_->getPlayerHand(pair.first).empty();};
     auto finished = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
@@ -1023,7 +1018,7 @@ void Battle::removeFinishedPlayers(){
         previous(players_bs_, finished)->second = ATTACKER;
         players_bs_.erase(finished);
         std::cout << "made attacker to finshed and removed from players_bs" << std::endl;
-        removeFinishedPlayers(); //same function?
+        removeFinishedPlayers();
         return;
     }
 
@@ -1041,7 +1036,6 @@ void Battle::removeFinishedPlayers(){
 
     removeFinishedPlayers();
 }
-
 
 void Battle::movePlayerRoles(){
      std::cout << "Moving player roles" << std::endl;
@@ -1096,7 +1090,6 @@ void Battle::movePlayerRoles(){
     updateAvailableAction();
 }
 
-//getter function for game
 bool Battle::battleIsDone(){
     return battle_done_;
 }
@@ -1105,64 +1098,62 @@ std::map<ClientID, PlayerRole> Battle::getPlayerRolesMap(){
     return players_bs_;
 }
 
-
 void Battle::UpdatePickUpOrder(){
-    //find client IDs of defender, attacker CoAttacker and first attacker of the battle
-    //IDs correspond to Player Roles after they have been moved
+    // find client IDs of defender, attacker CoAttacker and first attacker of the battle
+    // IDs correspond to Player Roles after they have been moved
     ClientID current_attacker = findRole(ATTACKER);
     ClientID current_defender = findRole(DEFENDER);
     ClientID current_coattacker;
     if(btype_ == BATTLETYPE_ENDGAME) current_coattacker = current_attacker;
     else current_coattacker = findRole(CO_ATTACKER);
-    ClientID first_attacker = getFirstAttackerPtr()->first; //First player to attack during this battle
+    ClientID first_attacker = getFirstAttackerPtr()->first; // First player to attack during this battle
     
-    //1a Case: New Defender already was first attacker during this battle
-    //Case 1a can only occur when there are either 3 or 4 players left
+    // 1a Case: New Defender already was first attacker during this battle
+    // Case 1a can only occur when there are either 3 or 4 players left
     if(current_defender == attack_order_.front()){
         attack_order_.pop_front();
         attack_order_.push_back(current_attacker);
     }
 
 
-    //1b Case: New attacker is the first attacker who started this battle
-    //Case 1b can only occur when there are exactly 3 players left
+    // 1b Case: New attacker is the first attacker who started this battle
+    // Case 1b can only occur when there are exactly 3 players left
     
     else if (current_attacker == first_attacker) {
-        attack_order_.pop_front();                      //remove current defender
-        attack_order_.push_front(current_attacker);  //add previous defender who already was an attacker
+        attack_order_.pop_front();                      // remove current defender
+        attack_order_.push_front(current_attacker);  // add previous defender who already was an attacker
     }
 
     //2. Case: New Co-Attacker already was first attacker during this battle
     else if(current_coattacker == first_attacker) {
-        attack_order_.pop_back();                       //remove current defender
-        attack_order_.push_back(current_attacker);   //add previous defender
-        //current coattacker doesn't have to be added, already is in the list
+        attack_order_.pop_back();                       // remove current defender
+        attack_order_.push_back(current_attacker);   // add previous defender
+        // current coattacker doesn't have to be added, already is in the list
     }
 
 
-    //3. Case: none of the cases above,
-    //New Defender is removed and new attacker & coattacker are added
+    // 3. Case: none of the cases above,
+    // New Defender is removed and new attacker & coattacker are added
     else{
-        attack_order_.pop_back();                       //remove current defender
-        attack_order_.push_back(current_attacker);   //add previous defender
-        attack_order_.push_back(current_coattacker); //add current coattacker
+        attack_order_.pop_back();                       // remove current defender
+        attack_order_.push_back(current_attacker);   // add previous defender
+        attack_order_.push_back(current_coattacker); // add current coattacker
     }
     
 }
 
-
 ClientID Battle::nextInOrder(ClientID current_player){
-    //Check that map isn't empty
+    // Check that map isn't empty
     assert(!players_bs_.empty() && "Map should not be empty here");
-    //Create Iterator pointing to current client ID
+    // Create Iterator pointing to current client ID
     auto it = players_bs_.find(current_player);
 
-    //Handle the case where a wrong ClientID was entered
+    // Handle the case where a wrong ClientID was entered
     assert (it != players_bs_.end() && "Invalid PlayerID");
     
 
     ++it;
-    //Check for case where the ClientID was at the end of the map
+    // Check for case where the ClientID was at the end of the map
     if(it == players_bs_.end()){
         it = players_bs_.begin();
     }
@@ -1188,7 +1179,6 @@ ClientID Battle::findRole(PlayerRole role){
     throw std::logic_error("No Player with role found when calling findRole function.");
 
 }
-
 
 ClientID Battle::getCurrentDefender(){
     ClientID player_id = -1;
@@ -1219,7 +1209,7 @@ std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientI
 }
 
     //------------------------------------------ TEST FUNCTIONS ------------------------------------------
-    //These functions are only used to create the test environment for the unit tests These functions will be removed after the deadline
+    // These functions are only used to create the test environment for the unit tests These functions will be removed after the deadline
     void Battle::setPlayerRoles(std::map<ClientID,PlayerRole> battlestate){
         players_bs_ = battlestate;
     }

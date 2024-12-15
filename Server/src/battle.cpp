@@ -178,6 +178,14 @@ std::string getClientName(ClientID clientID){
     return DurakServer::players_map[clientID].name;
 }
 
+// returns true if there are at least 6 cards attacking the current defender and thus if the defender picks up it should not need done from attacker and co-attacker
+bool Battle::attackedWithMaxCards(){
+    return std::all_of(card_manager_ptr_->getMiddle().begin(), card_manager_ptr_->getMiddle().begin() + max_attacks_, 
+            [](const std::pair<std::optional<Card>, std::optional<Card>>& pair) { 
+                return pair.first.has_value(); 
+            });
+}
+
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
     //if only 1 card with which is being attacked, check if valid move
     if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot) && !pickUp_){
@@ -406,31 +414,37 @@ bool Battle::passOnRankMatch(Rank rank) {
 void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientID, CardSlot slot) {
     switch (phase_) {
         case BATTLEPHASE_FIRST_ATTACK:
-            sendPopup("Can not place card; Waiting for first attack.", clientID);
+            sendPopup("Can not place card. Waiting for first attack.", clientID);
             return;
         case BATTLEPHASE_DONE:
             return;
         case BATTLEPHASE_POST_PICKUP:
-            sendPopup("You allready picked up. You can not place any more cards", clientID);
+            sendPopup("You already picked up. You can not place any more cards.", clientID);
             return;
         case BATTLEPHASE_DEFENDED:
-            sendPopup("Everything is defended. Can not place any more cards", clientID);
+            sendPopup("Everything is defended. Can not place any more cards.", clientID);
             return;
         case BATTLEPHASE_OPEN:
+            // if the defender has previously pressed pick up
+            // he should not be able to defend anymore
+            if(previous_phase_ == BATTLEPHASE_POST_PICKUP){
+                sendPopup("You already picked up. You can't defend anymore", clientID);
+                return;
+            }
             break;
     } //BATTLE STATE OPEN:
 
     uint s = (uint) slot;
     if(card_manager_ptr_->getMiddleSlot(s%6).has_value()) { //SLOT is not empty
         if(cards.size() > 1) {
-            sendPopup("you can only defend with one card per slot", clientID);
+            sendPopup("You can only defend with one card per slot.", clientID);
             return;
         }
         if(isValidMove(*cards.begin(), clientID, slot)) {
             defend(clientID, *cards.begin(), slot);
             if(successfulDefend()) phase_ = BATTLEPHASE_DEFENDED;
         }
-        else sendPopup("invalid defend", clientID);
+        else sendPopup("Invalid defend.", clientID);
         return;
     }
 
@@ -438,7 +452,7 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     if(checkIdenticalRank(cards, clientID)) return;
 
     if(!topSlotsClear()) {
-        sendPopup("you allready defended a card. Pass on is not possilbe", clientID);
+        sendPopup("You already defended a card. Pass on is not possilbe", clientID);
         return;
     }
 
@@ -454,6 +468,13 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
     
     //TODO: das gaht nur mit einere karte...
     passOn(cards, clientID, slot);
+    // inform all clients except the one passing on, that said player has done so
+    for(ClientID c : DurakServer::clients) {
+        if(c == clientID){
+            sendPopup("You passed on.", c);
+        }
+        sendPopup(getClientName(clientID) + " passed on.", c);
+    }
     phase_ = BATTLEPHASE_OPEN;
 }
 
@@ -509,7 +530,8 @@ void Battle::tryPickUp() {
     switch(btype_){
         case BATTLETYPE_FIRST:
         case BATTLETYPE_NORMAL:
-            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
+            // either both attacker and co attacker press done or the middle is full
+            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER] || attackedWithMaxCards()){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
@@ -526,7 +548,8 @@ void Battle::tryPickUp() {
             }
             return;
         case BATTLETYPE_ENDGAME:
-            if(ok_msg_[ATTACKER]){
+            // either the attacker presses done or the middle is full
+            if(ok_msg_[ATTACKER] || attackedWithMaxCards()){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
@@ -630,6 +653,13 @@ void Battle::reflectEvent(ClientID clientID) {
     std::cout << "reflect event" << std::endl;
     if(!card.has_value()) return;
     std::cout << "reflect event succesfull" << std::endl;
+    // send popup to all clients except the one reflecting, that he has done so
+    for(ClientID c : DurakServer::clients) {
+        if(c == clientID){
+            sendPopup("You reflected.", c);
+        }
+        sendPopup(getClientName(clientID) + " reflected.", c);
+    }
     movePlayerRoles();
     UpdatePickUpOrder();
 }
@@ -637,6 +667,7 @@ void Battle::reflectEvent(ClientID clientID) {
 void Battle::pickupEvent(ClientID clientID) {
     if(players_bs_[clientID] != DEFENDER || phase_ != BATTLEPHASE_OPEN) return;
     phase_ = BATTLEPHASE_POST_PICKUP;
+    previous_phase_ = BATTLEPHASE_POST_PICKUP; // this is set to check against in the next battlephase
     tryPickUp();
 }
 
@@ -657,6 +688,18 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
             broadcastPopup(message);
             break;
         case CLIENTACTION_PICK_UP:
+            // if the max amount of attacks are reached (i.e. no more cards can be thrown in)
+            // it should not wait for attacker and co-attacker pressing done
+            if(attackedWithMaxCards()) {
+                pickupEvent(player_id);
+                message = getClientName(player_id) + " picked up all cards.";
+                for(auto it : players_bs_) {
+                    if(it.second == ATTACKER || it.second == CO_ATTACKER) {
+                        sendPopup(message, it.first);    
+                    }
+                }
+                break;
+            }
             pickupEvent(player_id);
             message = getClientName(player_id) + " picked up. You can now throw in or press done.";
             for(auto it : players_bs_) {

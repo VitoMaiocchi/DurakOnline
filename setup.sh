@@ -97,6 +97,15 @@ echo $'\ncheck pkg-config version\n'
 pkg-config --version
 echo $'----------------------------------------------------'
 
+sudo apt install libxkbcommon-dev
+echo $'----------------------------------------------------'
+echo $'\ncheck that xkbcommon is installed correctly\n'
+pkg-config --cflags --libs xkbcommon
+echo $'----------------------------------------------------'
+
+
+
+
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile
 

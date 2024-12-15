@@ -235,24 +235,6 @@ void CardManager::fillDeck() {
     }
 }
 
-void CardManager::placeAttackCard(Card card, int slot){
-    middle_[slot % 6].first = card;
-}
-
-void CardManager::addCardToPlayerHand(ClientID playerID, const Card& card) {
-    bool flag = false;
-
-    for(int i = 0; i < player_hands_[playerID].size(); ++i){
-        if (player_hands_[playerID].at(i)== card){
-            flag = true; //card is already in the hand
-            break;
-        }
-    }
-    if(flag == false){
-        player_hands_[playerID].push_back(card);
-        player_number_of_cards_[playerID]++;
-    }
-}
 
 void CardManager::cardUpdate() {
     CardUpdate card_message;
@@ -286,12 +268,91 @@ void CardManager::cardUpdate() {
 //     return (!getNumberOfCardsInHand(playerID) && !getNumberOfCardsOnDeck());
 // }
 
+
+
+//------------------------------------------ TEST FUNCTIONS ------------------------------------------
+//These functions are only used to create the test environment for the unit tests These functions will be removed after the deadline
+void CardManager::placeAttackCard(Card card, int slot){
+    middle_[slot % 6].first = card;
+}
+
+void CardManager::addCardToPlayerHand(ClientID playerID, const Card& card) {
+    bool flag = false;
+
+    for(int i = 0; i < player_hands_[playerID].size(); ++i){
+        if (player_hands_[playerID].at(i)== card){
+            flag = true; //card is already in the hand
+            break;
+        }
+    }
+    if(flag == false){
+        player_hands_[playerID].push_back(card);
+        player_number_of_cards_[playerID]++;
+    }
+}
+
 std::optional<Card> CardManager::getMiddleSlot(uint slot) {
     auto stack = middle_[slot%6];
     if(slot/6) return stack.second; //top
     else return stack.first;        //bottom
 }
 
+
 void CardManager::eraseDeck() {
     deck_.clear();
+}
+
+void CardManager::setTrump(Suit trump_suit){
+    trump_ = trump_suit;
+}
+
+void CardManager::clearPlayerHand(ClientID player_id) {
+    if (player_hands_.find(player_id) != player_hands_.end()) {
+        player_hands_[player_id].clear();
+        player_number_of_cards_[player_id] = 0;
+    }
+}
+
+unsigned int CardManager::putRandomCardsInMiddle() {
+    // Clear the middle before placing new cards
+    clearMiddle();
+
+    unsigned int cards_added = 0;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(1, 6); // Random number of bottom slots to fill (1 to 6)
+
+
+
+    int num_bottom_slots_to_fill = dis(gen);
+    std::cout << "slots to fill: " << num_bottom_slots_to_fill;
+
+    // Fill random cards in the middle
+    for (int i = 0; i < num_bottom_slots_to_fill; ++i) {
+
+        if (!deck_.empty()) {
+            // Place a card in the bottom slot
+            middle_[i].first = deck_.front();
+            deck_.pop_front();
+            ++number_cards_middle_;
+            ++cards_added;
+
+            // Randomly decide whether to fill the top slot (if deck is not empty)
+            std::uniform_int_distribution<int> fill_top_dis(0, 1); // 0: no top card, 1: place top card
+            if (!deck_.empty() && fill_top_dis(gen) == 1) {
+                middle_[i].second = deck_.front();
+                deck_.pop_front();
+                ++number_cards_middle_;
+                ++cards_added;
+            }
+
+        }
+    }
+    return cards_added;
+}
+
+void CardManager::addCardToPlayerHandFromDeck(ClientID playerID){
+    player_hands_[playerID].push_back(deck_.front());
+    deck_.pop_front();
+
 }

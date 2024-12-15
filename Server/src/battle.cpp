@@ -1410,3 +1410,11 @@ std::map<ClientID, PlayerRole>::iterator Battle::nextInOrderIt (std::map<ClientI
 
     return it;
 }
+
+    //------------------------------------------ TEST FUNCTIONS ------------------------------------------
+    //These functions are only used to create the test environment for the unit tests These functions will be removed after the deadline
+    void Battle::setPlayerRoles(std::map<ClientID,PlayerRole> battlestate){
+        players_bs_ = battlestate;
+    }
+
+

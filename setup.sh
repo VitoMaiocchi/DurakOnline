@@ -72,6 +72,8 @@ sudo apt install doxygen
 
 sudo apt install graphviz
 
+sudo apt install cmake
+sudo apt install make
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile
 

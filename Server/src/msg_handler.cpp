@@ -183,13 +183,28 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             ready_clients.erase(client);
             players_map.erase(client);
             if(players_map.size() < 3){
-                current_game.reset();
+                PlayerUpdate player_update;
+                player_update.player_count = players_map.size();
+                player_update.durak = 0;
+                for(ClientID c : clients){
+                    player_update.player_names[c] = players_map[c].name;
+                }
+                for(ClientID c : clients){
+                    Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                }
                 GameStateUpdate game_update;
                 game_update.state = GAMESTATE_LOBBY;
-                for(auto c : ready_clients){
+                for(auto c : clients){
                     //send message to send the players into the lobby
+                    ready_clients.erase(c);
                     Network::sendMessage(std::make_unique<GameStateUpdate>(game_update), c);
                 }
+                ReadyUpdate ready_update_d;
+                ready_update_d.players = ready_clients;
+                for(auto c : clients){
+                    Network::sendMessage(std::make_unique<ReadyUpdate>(ready_update_d), c);
+                }
+                current_game.reset();
             }
             PlayerUpdate player_update;
             player_update.player_count = players_map.size();

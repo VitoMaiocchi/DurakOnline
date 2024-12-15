@@ -544,11 +544,15 @@ void Battle::tryPickUp() {
             return;
     }
 }
-
+void sendReadyUpdate(ClientID client){
+    ReadyUpdate rupdate;
+    rupdate.players.insert(client);
+    Network::sendMessage(std::make_unique<ReadyUpdate>(rupdate), client);
+}
 void Battle::doneEvent(ClientID clientID) {
 
-    if(players_bs_[clientID] == ATTACKER)    ok_msg_[ATTACKER] = true;
-    if(players_bs_[clientID] == CO_ATTACKER) ok_msg_[CO_ATTACKER] = true;
+    if(players_bs_[clientID] == ATTACKER)    {ok_msg_[ATTACKER] = true; sendReadyUpdate(clientID);}
+    if(players_bs_[clientID] == CO_ATTACKER) {ok_msg_[CO_ATTACKER] = true; sendReadyUpdate(clientID);}
     if(btype_ == BATTLETYPE_NORMAL || btype_ == BATTLETYPE_FIRST) {
         if(phase_ == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
             card_manager_ptr_->clearMiddle();

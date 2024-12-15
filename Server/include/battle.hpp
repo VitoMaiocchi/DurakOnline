@@ -112,6 +112,7 @@ class Battle {
         // helper functions
         void attack(ClientID client, Card card); //calls the cardmanagers attack function
         void defend(ClientID client, Card card, CardSlot slot); //calls the cardmanagers defend function
+        bool attackedWithMaxCards(); // returns whether the maximum amount of attacks have been played
 
         //moves the player roles one to the right and circles around again
         void movePlayerRoles();

@@ -178,6 +178,14 @@ std::string getClientName(ClientID clientID){
     return DurakServer::players_map[clientID].name;
 }
 
+// returns true if there are at least 6 cards attacking the current defender and thus if the defender picks up it should not need done from attacker and co-attacker
+bool Battle::attackedWithMaxCards(){
+    return std::all_of(card_manager_ptr_->getMiddle().begin(), card_manager_ptr_->getMiddle().begin() + max_attacks_, 
+            [](const std::pair<std::optional<Card>, std::optional<Card>>& pair) { 
+                return pair.first.has_value(); 
+            });
+}
+
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
     //if only 1 card with which is being attacked, check if valid move
     if(cards.size() == 1 && isValidMove(cards.at(0), player_id, slot) && !pickUp_){
@@ -522,7 +530,8 @@ void Battle::tryPickUp() {
     switch(btype_){
         case BATTLETYPE_FIRST:
         case BATTLETYPE_NORMAL:
-            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
+            // either both attacker and co attacker press done or the middle is full
+            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER] || attackedWithMaxCards()){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
@@ -539,7 +548,8 @@ void Battle::tryPickUp() {
             }
             return;
         case BATTLETYPE_ENDGAME:
-            if(ok_msg_[ATTACKER]){
+            // either the attacker presses done or the middle is full
+            if(ok_msg_[ATTACKER] || attackedWithMaxCards()){
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
@@ -678,6 +688,18 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
             broadcastPopup(message);
             break;
         case CLIENTACTION_PICK_UP:
+            // if the max amount of attacks are reached (i.e. no more cards can be thrown in)
+            // it should not wait for attacker and co-attacker pressing done
+            if(attackedWithMaxCards()) {
+                pickupEvent(player_id);
+                message = getClientName(player_id) + " picked up all cards.";
+                for(auto it : players_bs_) {
+                    if(it.second == ATTACKER || it.second == CO_ATTACKER) {
+                        sendPopup(message, it.first);    
+                    }
+                }
+                break;
+            }
             pickupEvent(player_id);
             message = getClientName(player_id) + " picked up. You can now throw in or press done.";
             for(auto it : players_bs_) {

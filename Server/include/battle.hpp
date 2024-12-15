@@ -214,13 +214,6 @@ class Battle {
          */
         void tryPickUp();
 
-        /**
-         * @brief Remove players who have finished the game from the active player list.
-         * 
-         * This function removes players who have finished the game from the active player list
-         * and updates the game state accordingly.
-         */
-        void removeFinishedPlayers();
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -332,6 +325,14 @@ class Battle {
          */
         void movePlayerRoles();
 
+        /**
+         * @brief Remove players who have finished the game from the active player list.
+         * 
+         * This function removes players who have finished the game from the active player list
+         * and updates the game state accordingly.
+         */
+        void removeFinishedPlayers();
+        
         /**
          * @brief Updates the order of players who need to pick up cards.
          * 

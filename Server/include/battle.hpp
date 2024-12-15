@@ -1,5 +1,4 @@
-#ifndef BATTLE_HPP
-#define BATTLE_HPP
+#pragma once
 
 #include <vector>
 #include <tuple>
@@ -15,6 +14,7 @@
 #include "card_manager.hpp"
 
 #include "../../Networking/include/Networking/util.hpp"
+#include "../../Networking/include/Networking/message.hpp"
 #include <Networking/message.hpp>
 #define NETWORKTYPE_SERVER
 #include <Networking/network.hpp>
@@ -147,7 +147,3 @@ class Battle {
         void sendBattleStateUpdate();
 
 };
-
-#endif
-//first_battle
-

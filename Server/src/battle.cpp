@@ -174,10 +174,9 @@ void broadcastPopup(std::string message) {
     }
 }
 
-std::string getClientName(ClientID clientID) {
+std::string getClientName(ClientID clientID){
     return DurakServer::players_map[clientID].name;
 }
-
 
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
     //if only 1 card with which is being attacked, check if valid move
@@ -650,7 +649,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
         case CLIENTACTION_OK:
             std::cout << "clientaction ok in handleactionevent" << std::endl;
             doneEvent(player_id);
-            message = getClientName(player_id) + " pressed done.";
+            message = (player_id) + " pressed done.";
             broadcastPopup(message);
             break;
         case CLIENTACTION_PICK_UP:

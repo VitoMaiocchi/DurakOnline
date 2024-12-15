@@ -15,7 +15,10 @@ namespace DurakServer{
     std::set<ClientID> ready_clients;
     std::unique_ptr<Game> current_game = nullptr;
     std::map<ClientID, Player> players_map;
+
+
 }
+
 
 void broadcastMessage(std::unique_ptr<Message> message) {
     //for all in map

@@ -1146,8 +1146,6 @@ void Battle::movePlayerRoles(){
         defender_it->second = ATTACKER;
 
         // Adapt max_attacks to the new defender's card count (min 6 or their card count)
-        auto defender_it = std::find_if(players_bs_.begin(), players_bs_.end(),
-                                        [](const auto& pair) { return pair.second == DEFENDER; });
         if (defender_it != players_bs_.end()) {
             size_t defender_cards = card_manager_ptr_->getNumberOfCardsInHand(defender_it->first);
             max_attacks_ = std::min<size_t>(defender_cards, 6);

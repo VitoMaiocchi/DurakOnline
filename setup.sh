@@ -75,12 +75,17 @@ sudo apt install graphviz
 sudo apt install cmake
 sudo apt install make
 sudo apt install g++
-echo $'\ncheck compiler version\n'
 echo $'----------------------------------------------------'
+echo $'\ncheck compiler version\n'
 gcc --version
 g++ --version
 echo $'----------------------------------------------------'
+
 sudo apt install wayland-protocols wayland-devel
+sudo apt install wayland-protocols libwayland-dev
+echo $'----------------------------------------------------'
+echo $'\ncheck wayland scanner version\n'
+wayland-scanner --version
 echo $'----------------------------------------------------'
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile

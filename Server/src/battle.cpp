@@ -411,12 +411,18 @@ void Battle::defenderCardEvent(std::unordered_set<Card> &cards, ClientID clientI
         case BATTLEPHASE_DONE:
             return;
         case BATTLEPHASE_POST_PICKUP:
-            sendPopup("You allready picked up. You can not place any more cards", clientID);
+            sendPopup("You already picked up. You can not place any more cards", clientID);
             return;
         case BATTLEPHASE_DEFENDED:
             sendPopup("Everything is defended. Can not place any more cards", clientID);
             return;
         case BATTLEPHASE_OPEN:
+            // if the defender has previously pressed pick up
+            // he should not be able to defend anymore
+            if(previous_phase_ == BATTLEPHASE_POST_PICKUP){
+                sendPopup("You already picked up. You can't defend anymore", clientID);
+                return;
+            }
             break;
     } //BATTLE STATE OPEN:
 
@@ -637,6 +643,7 @@ void Battle::reflectEvent(ClientID clientID) {
 void Battle::pickupEvent(ClientID clientID) {
     if(players_bs_[clientID] != DEFENDER || phase_ != BATTLEPHASE_OPEN) return;
     phase_ = BATTLEPHASE_POST_PICKUP;
+    previous_phase_ = BATTLEPHASE_POST_PICKUP; // this is set to check against in the next battlephase
     tryPickUp();
 }
 
@@ -653,7 +660,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
         case CLIENTACTION_OK:
             std::cout << "clientaction ok in handleactionevent" << std::endl;
             doneEvent(player_id);
-            message = (player_id) + " pressed done.";
+            message = getClientName(player_id) + " pressed done.";
             broadcastPopup(message);
             break;
         case CLIENTACTION_PICK_UP:

@@ -41,6 +41,7 @@ class Battle {
         std::set<ClientID> finished_players_; //they get the battle state update idle 
 
         BattlePhase phase_;
+        BattlePhase previous_phase_; // this is used to prevent the player from defending after already picking up
         BattleType btype_;
 
         bool move_could_end_game_ = false;

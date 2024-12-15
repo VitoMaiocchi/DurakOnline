@@ -76,9 +76,12 @@ sudo apt install cmake
 sudo apt install make
 sudo apt install g++
 echo $'\ncheck compiler version\n'
+echo $'----------------------------------------------------'
 gcc --version
 g++ --version
-
+echo $'----------------------------------------------------'
+sudo apt install wayland-protocols wayland-devel
+echo $'----------------------------------------------------'
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile
 

@@ -35,7 +35,7 @@ namespace DurakServer{
     // Minimum number of players required to start a game
     constexpr size_t MIN_PLAYERS = 2; // changed this to test two player games
     //maximum number of players that can play the game
-    constexpr size_t MAX_PLAYERS = 6;
+    constexpr size_t MAX_PLAYERS = 4;
 }
 void cleanup(int signum);
 

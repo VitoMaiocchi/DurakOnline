@@ -19,6 +19,13 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
         break;
 
         case MESSAGETYPE_CLIENT_CONNECT_EVENT: {
+            
+            if(clients.size() >= MAX_PLAYERS || current_game) {
+                RemoteDisconnectEvent event;
+                Network::sendMessage(std::make_unique<RemoteDisconnectEvent>(event), client);
+                break;
+            }
+
             // Client connected, add name to a datastructure maybe a map
             PlayerUpdate player_update;
             if (clients.find(client) == clients.end() && clients.size() <= MAX_PLAYERS) {

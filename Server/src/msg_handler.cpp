@@ -157,8 +157,13 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
                             Network::sendMessage(std::make_unique<GameStateUpdate>(normal_update), c);
                         }
                     }
+                    ReadyUpdate ready_update;
                     for(auto c : clients){
                         ready_clients.erase(c); //unready the clients in the lobby so they restart the game
+                    }
+                    ready_update.players = ready_clients; // should be empty
+                    for(ClientID c : clients){
+                        Network::sendMessage(std::make_unique<ReadyUpdate>(ready_update), c);
                     }
                     std::cout << "Game ended, durak found" << durak << std::endl;
                     // delete current game

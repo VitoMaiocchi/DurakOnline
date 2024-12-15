@@ -182,7 +182,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             clients.erase(client);
             ready_clients.erase(client);
             players_map.erase(client);
-            if(players_map.size() < 2){
+            if(players_map.size() < 3){
                 current_game.reset();
                 GameStateUpdate game_update;
                 game_update.state = GAMESTATE_LOBBY;
@@ -203,8 +203,22 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             // Handle cleanup if a client disconnects mid-game
             if (current_game) {
                 // current_game->
-                // Implement logic to handle a player leaving
-                // e.g., burn their cards, adjust turn order, etc.
+                current_game->getCardManager()->clearPlayerHand(client);
+                PlayerUpdate player_update_g;
+                player_update_g.player_count = players_map.size();
+                player_update_g.durak = 0;
+                for(ClientID c : clients){
+                    player_update.player_names[c] = players_map[c].name;
+                }
+                for(ClientID c : clients){
+                    Network::sendMessage(std::make_unique<PlayerUpdate>(player_update), c);
+                }
+                current_game->getCurrentBattle()->removeFinishedPlayers();
+
+                current_game->getCurrentBattle()->sendBattleStateUpdate();
+
+                current_game->getCardManager()->cardUpdate();
+
             }
             break;
         }

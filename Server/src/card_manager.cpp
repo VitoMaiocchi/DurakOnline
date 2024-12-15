@@ -238,7 +238,7 @@ void CardManager::fillDeck() {
 
 void CardManager::cardUpdate() {
     CardUpdate card_message;
-    for(ClientID pl : players) card_message.opponent_cards[pl] = player_hands_[pl].size();
+    for(ClientID pl : DurakServer::clients) card_message.opponent_cards[pl] = player_hands_[pl].size();
     card_message.draw_pile_cards = deck_.size();
     card_message.trump_card = trump_card_;
     card_message.trump_suit = trump_;

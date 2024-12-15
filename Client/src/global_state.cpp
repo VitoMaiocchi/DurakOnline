@@ -169,8 +169,14 @@ namespace Viewport {
                 handleGameStateUpdate(*dynamic_cast<GameStateUpdate*>(message.get()));
             break;
             case MESSAGETYPE_READY_UPDATE:
-                if(GlobalState::game_state == GAMESTATE_LOBBY)
-                    cast(LobbyNode, master_node)->handleReadyUpdate(*dynamic_cast<ReadyUpdate*>(message.get()));
+            {
+                //update ready for all the players
+                ReadyUpdate update = *dynamic_cast<ReadyUpdate*>(message.get());
+                for(const Player &player : GlobalState::players) {
+                    if(update.players.find(player.id) == update.players.end()) player.lobby->ready = false;
+                    else player.lobby->ready = true;
+                }
+            }
             break;
             case MESSAGETYPE_REMOTE_DISCONNECT_EVENT:
                 GlobalState::game_state = GAMESTATE_LOGIN_SCREEN;

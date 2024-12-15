@@ -97,6 +97,19 @@ echo $'\ncheck pkg-config version\n'
 pkg-config --version
 echo $'----------------------------------------------------'
 
+sudo apt install libxkbcommon-dev
+echo $'----------------------------------------------------'
+echo $'\ncheck that xkbcommon is installed correctly\n'
+pkg-config --cflags --libs xkbcommon
+echo $'----------------------------------------------------'
+
+sudo apt install libxrandr-dev
+sudo apt install libxinerama-dev
+sudo apt install libxcursor-dev
+sudo apt install libxi-dev
+sudo apt install libfreetype6-dev
+sudo apt install libgl1-mesa-dev
+sudo apt install libglm-dev
 echo $'\nCreating the Durak documentation with Doxygen\n'
 doxygen Doxyfile
 

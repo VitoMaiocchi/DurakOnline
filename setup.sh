@@ -108,7 +108,7 @@ sudo apt install libxinerama-dev
 sudo apt install libxcursor-dev
 sudo apt install libxi-dev
 sudo apt install libfreetype6-dev
-
+sudo apt install libgl1-mesa-dev
 
 
 echo $'\nCreating the Durak documentation with Doxygen\n'

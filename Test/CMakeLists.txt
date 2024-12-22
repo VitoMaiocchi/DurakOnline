@@ -58,13 +58,22 @@ add_executable(test_game
 )
 target_link_libraries(test_game gtest_main durak_networking)
 
+# Test for Roles
+add_executable(test_roles 
+    test_roles.cpp
+    ${CMAKE_SOURCE_DIR}/Server/src/game.cpp
+    ${CMAKE_SOURCE_DIR}/Server/src/battle.cpp
+    ${CMAKE_SOURCE_DIR}/Server/src/card_manager.cpp
+    )
+target_link_libraries(test_roles gtest_main durak_networking)
 # add_test(NAME hello_world_test COMMAND hello_world_test)
 
 # Register tests
 add_test(NAME DurakTests COMMAND test_battle)
 add_test(NAME DurakGameTests COMMAND test_game)
+add_test(NAME DurakRoleTests COMMAND test_roles)
 
 include(GoogleTest)
 gtest_discover_tests(test_battle)
 gtest_discover_tests(test_game)
-
+gtest_discover_tests(test_roles)

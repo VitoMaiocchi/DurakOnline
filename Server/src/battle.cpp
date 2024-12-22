@@ -137,10 +137,19 @@ std::string getClientName(ClientID clientID){
 }
 
 bool Battle::attackedWithMaxCards(){
-    return std::all_of(card_manager_ptr_->getMiddle().begin(), card_manager_ptr_->getMiddle().begin() + max_attacks_, 
-            [](const std::pair<std::optional<Card>, std::optional<Card>>& pair) { 
-                return pair.first.has_value(); 
-            });
+    // bool return_b = std::all_of(card_manager_ptr_->getMiddle().begin(), card_manager_ptr_->getMiddle().begin() + max_attacks_, 
+    //         [](const std::pair<std::optional<Card>, std::optional<Card>>& pair) { 
+    //             return pair.first.has_value(); 
+    //         });
+    auto number_cardsinhand = card_manager_ptr_->getNumberOfCardsInHand(getCurrentDefender());
+    bool return_b = false;
+
+    if(curr_attacks_ == max_attacks_){
+        return_b = true;
+    } else return_b = false;
+    std::cout << "attackedwith max cards is: " << return_b << " but the cards in middle are: " << curr_attacks_ << " and cards in hand are: " << number_cardsinhand << " and max_attacks_ are: " << max_attacks_ <<std::endl;
+
+    return return_b;
 }
 
 void Battle::attackerCardEvent(std::vector<Card> &cards, ClientID player_id, CardSlot slot) {
@@ -478,6 +487,7 @@ bool Battle::handleCardEvent(std::vector<Card> &cards, ClientID player_id, CardS
 }
 
 void Battle::tryPickUp() {
+    std::cout << "tryPickUp was called"<< std::endl;
     switch(btype_){
         case BATTLETYPE_FIRST:
         case BATTLETYPE_NORMAL:
@@ -486,6 +496,7 @@ void Battle::tryPickUp() {
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
+                std::cout << "moving roles after the cards were distributed"<<std::endl;
                 movePlayerRoles();
                 movePlayerRoles(); // loses right to attack when picking up
 
@@ -504,6 +515,7 @@ void Battle::tryPickUp() {
                 card_manager_ptr_->pickUp(getCurrentDefender());
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
+                std::cout << "move player roles in endgame in trypickup()"<<std::endl;
                 movePlayerRoles(); // loses right to attack when picking up
                 // why only called once?
                 // das isch alles chli goofy
@@ -531,21 +543,31 @@ void Battle::doneEvent(ClientID clientID) {
     if(players_bs_[clientID] == ATTACKER)    {ok_msg_[ATTACKER] = true; sendReadyUpdate(clientID);}
     if(players_bs_[clientID] == CO_ATTACKER) {ok_msg_[CO_ATTACKER] = true; sendReadyUpdate(clientID);}
     if(btype_ == BATTLETYPE_NORMAL || btype_ == BATTLETYPE_FIRST) {
-        if(phase_ == BATTLEPHASE_DEFENDED && ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]) {
-            card_manager_ptr_->clearMiddle();
-            card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
-            movePlayerRoles(); 
-            sendBattleStateUpdate(); // inform all clients of their new roles
-            
-            curr_attacks_ = 0;
-            ok_msg_[ATTACKER] = false;
-            ok_msg_[CO_ATTACKER] = false;
-            phase_ = BATTLEPHASE_FIRST_ATTACK;
-            if(BATTLETYPE_NORMAL) first_battle_ = false;
-            else if(BATTLETYPE_FIRST) first_battle_ = true;
-            battle_done_ = true;
+    std::cout << "doneEvent in Normal battle or first battle" << std::endl;
+    std::cout << "ok msg attacker: " << ok_msg_[ATTACKER] << "ok msg coattacker: " << ok_msg_[CO_ATTACKER] << std::endl;
+        if(phase_ == BATTLEPHASE_DEFENDED) {
+            if(ok_msg_[ATTACKER] && ok_msg_[CO_ATTACKER]){
+                card_manager_ptr_->clearMiddle();
+                std::cout << "distribute new roles will cause seg fault"<<std::endl;
+                if(first_attacker_ == nullptr){
+                    std::cerr << "first attacker is a nullptr"<<std::endl;
+                }
+                card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
+                std::cout << "move player roles in doneEvent() in defended"<< std::endl;
+                movePlayerRoles(); 
+                sendBattleStateUpdate(); // inform all clients of their new roles
+                
+                curr_attacks_ = 0;
+                ok_msg_[ATTACKER] = false;
+                ok_msg_[CO_ATTACKER] = false;
+                phase_ = BATTLEPHASE_FIRST_ATTACK;
+                if(BATTLETYPE_NORMAL) first_battle_ = false;
+                else if(BATTLETYPE_FIRST) first_battle_ = true;
+                battle_done_ = true;
 
-            return;
+                return;
+            }
+            else return;
         }
         if(phase_ == BATTLEPHASE_POST_PICKUP) tryPickUp();
     } else if(btype_ == BATTLETYPE_ENDGAME){
@@ -555,6 +577,7 @@ void Battle::doneEvent(ClientID clientID) {
                 if(ok_msg_[ATTACKER]){
                     card_manager_ptr_->clearMiddle();
                     card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
+                    std::cout << "movePLayerRoles in endgame in doneEvent() in defended phase"<<std::endl;
                     movePlayerRoles();
                     sendBattleStateUpdate(); // inform all clients of their new roles
 
@@ -571,6 +594,7 @@ void Battle::doneEvent(ClientID clientID) {
                 tryPickUp();
                 card_manager_ptr_->clearMiddle();
                 card_manager_ptr_->distributeNewCards(first_attacker_->first, players_bs_);
+                std::cout << "move player roles in post pick up in doneEvent() in endgame"<<std::endl;
                 movePlayerRoles();
                 sendBattleStateUpdate(); // inform all clients of their new roles
 
@@ -614,6 +638,7 @@ void Battle::reflectEvent(ClientID clientID) {
         }
         sendPopup(getClientName(clientID) + " reflected.", c);
     }
+    std::cout << "moving player roles in refelctEvent()" << std::endl;
     movePlayerRoles();
     UpdatePickUpOrder();
 }
@@ -621,6 +646,7 @@ void Battle::reflectEvent(ClientID clientID) {
 void Battle::pickupEvent(ClientID clientID) {
     if(players_bs_[clientID] != DEFENDER || phase_ != BATTLEPHASE_OPEN) return;
     phase_ = BATTLEPHASE_POST_PICKUP;
+    std::cout << "pickupEvent()"<<std::endl;
     previous_phase_ = BATTLEPHASE_POST_PICKUP; // this is set to check against in the next battlephase
     tryPickUp();
 }
@@ -638,9 +664,11 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
             broadcastPopup(message);
             break;
         case CLIENTACTION_PICK_UP:
+            std::cout << "clientaction pick up in handleactionevent"<<std::endl;
             // if the max amount of attacks are reached (i.e. no more cards can be thrown in)
             // it should not wait for attacker and co-attacker pressing done
             if(attackedWithMaxCards()) {
+                std::cout << "into the if statement of clientactionpickup"<<std::endl;
                 pickupEvent(player_id);
                 message = getClientName(player_id) + " picked up all cards.";
                 for(auto it : players_bs_) {
@@ -649,7 +677,7 @@ void Battle::handleActionEvent(ClientID player_id, ClientAction action){
                     }
                 }
                 break;
-            }
+            } //else anyways?
             pickupEvent(player_id);
             message = getClientName(player_id) + " picked up. You can now throw in or press done.";
             for(auto it : players_bs_) {
@@ -750,12 +778,15 @@ bool Battle::passOn(std::unordered_set<Card>& cards, ClientID player_id, CardSlo
         }
     }
 
+
         // moves player roles one up/next
+        std::cout << "moving player roles in passOn"<<std::endl;
+        // if(findRole(ATTACKER));
         movePlayerRoles();
         // This function should only be calles when there are 3 or more active players
-        if(card_manager_ptr_->getNumberActivePlayers() >= 3){
-            UpdatePickUpOrder();
-        }
+        // if(card_manager_ptr_->getNumberActivePlayers() >= 3){
+        //     UpdatePickUpOrder();
+        // }
 
         // player_bs_[player_id] is now attacker
         for(auto& c : cards){
@@ -958,25 +989,32 @@ const std::pair<const ClientID, PlayerRole>* Battle::getFirstAttackerPtr(){
     return first_attacker_;
 }
 
-std::map<ClientID, PlayerRole>::iterator next(std::map<ClientID, PlayerRole> map, std::map<ClientID, PlayerRole>::iterator it) {
+std::map<ClientID, PlayerRole>::iterator next(std::map<ClientID, PlayerRole>& map, std::map<ClientID, PlayerRole>::iterator it) {
     auto next = std::next(it);
     if(next == map.end()) return map.begin();
     return next;
 }
 
-std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole> map, std::map<ClientID, PlayerRole>::iterator it) {
+std::map<ClientID, PlayerRole>::iterator previous(std::map<ClientID, PlayerRole>& map, std::map<ClientID, PlayerRole>::iterator it) {
     if(it == map.begin()) return std::prev(map.end());
     return std::prev(it);
 }
 
 void Battle::removeFinishedPlayers(){
+    std::cout << "removeFinishedPlayers()"<<std::endl;
     // Find the player to be removed, return if all players still have cards
     auto no_cards = [this](const auto& pair) {
             return card_manager_ptr_->getPlayerHand(pair.first).empty();};
     auto finished = std::find_if(players_bs_.begin(), players_bs_.end(), no_cards);
 
+    // if(phase_ == BATTLEPHASE_OPEN){
+    //     return;
+    // }
 
     if (finished == players_bs_.end()) {
+        // if (players_bs_.size() >= 4){
+
+        // }
         // Special handling for exactly 3 players
         if (players_bs_.size() == 3) {
             std::cout << "handling 3 players case in removeFinishedPLayers"<<std::endl;
@@ -1014,34 +1052,131 @@ void Battle::removeFinishedPlayers(){
         return;
     }
     
-    if(finished->second == ATTACKER) {
-        previous(players_bs_, finished)->second = ATTACKER;
-        players_bs_.erase(finished);
-        std::cout << "made attacker to finshed and removed from players_bs" << std::endl;
+    else if(finished->second == ATTACKER) {
+        auto prev = previous(players_bs_, finished);
+        prev->second = ATTACKER;
+        std::cout << "id: " << prev->first << " was made attacker"<<std::endl;
+        auto current = next(players_bs_, finished); // should point to the defender
+        players_bs_.erase(finished); 
+        std::cout << "id: " << current->first << "has role: " << current->second <<std::endl;
+        std::cout << "made attacker to finshed and removed from players_bs\nnew playerbs roles:" << std::endl;
+        for(auto player : players_bs_){
+            std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+        }
+        // removeFinishedPlayers();
+        // auto current = finished;
+        // PlayerRole next_role = next(players_bs_, current)->second; //coattacker
+        // std::cout << "next role before the while loop should be 2 is: " << next_role << std::endl;
+        // while (next_role != ATTACKER){
+        //     std::cout << "id: " << current->first << " role: " << current->second<<std::endl;
+        //     auto next_it = next(players_bs_, current); //pount to coattacker
+        //     next_role = next_it->second; //coattacker
+        //     next_it->second = current->second; //defender
+
+        //     std::cout << "next role: " << next_role << std::endl;
+        //     current = next(players_bs_, current);
+        // }
         removeFinishedPlayers();
-        return;
     }
+    else if(finished->second == DEFENDER){
+        auto prev_it = previous(players_bs_, finished); //Attacker
+        auto next_it = next(players_bs_, finished); //CoAttacker
 
-    auto current = finished;
-    PlayerRole next_role = next(players_bs_, current)->second;
+        auto pre_prev_it = previous(players_bs_, prev_it); //Idle if players >= 4
+        pre_prev_it->second = prev_it->second; // Idle is now attacker
 
-    while (next_role != ATTACKER){
-        next(players_bs_, current)->second = current->second;
-        current = next(players_bs_, current);
-        next_role = next(players_bs_, current)->second;
+        prev_it->second = finished->second; // attacker is now defender
+        players_bs_.erase(finished);
+        std::cout << "id: " << prev_it->first << "has role: " << prev_it->second << "should be "<<std::endl;
+        std::cout << "made defender to finshed and removed from players_bs\nnew playerbs roles:" << std::endl;
+        for(auto player : players_bs_){
+            std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+        }
+        std::cout << "moving the player roles once more because the attacker is not moved" << std::endl;
+        movePlayerRoles(); // this will just move the roles because the finished player was already removed
     }
-    std::cout << "removing finished player: " << finished->first << std::endl;
+    else if(finished->second == CO_ATTACKER){ //coattacker
+        // auto prev_it = previous(players_bs_, finished); // defender
+        auto next_it = next(players_bs_, finished); //idle or attacker
+        
+        // attacker defender coattacker idle 
+        if(next_it->second == ATTACKER){
+            players_bs_.erase(finished);
+            std::cout << "erased coattacker"<<std::endl;
+            for(auto player : players_bs_){
+                std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+            }
+            removeFinishedPlayers(); //now theres only two people in the game
+        }
+        next_it->second = finished->second;
+        players_bs_.erase(finished);
 
-    players_bs_.erase(finished);
+        std::cout << "id: " << next_it->first << "has role: " << next_it->second << "should be "<<std::endl;
+        std::cout << "made coattacker to finshed and removed from players_bs\nnew playerbs roles:" << std::endl;
+        for(auto player : players_bs_){
+            std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+        }
+        // auto current = finished;
+        // PlayerRole next_role = next(players_bs_, current)->second;
 
+        // unsigned iterations = 0;
+        // while (next_role != ATTACKER){
+        //     std::cout << "welcome to the infinite loop\t"<< "the current id: "<< current->first << " the current role: " << current->second << std::endl;
+            
+        //     next_role = next(players_bs_, current)->second;
+        //     next(players_bs_, current)->second = current->second;
+        //     current = next(players_bs_, current);
+        //     next(players_bs_, current)->second = next_role;
+        //     if(iterations >= 5){
+        //         break;
+        //     }
+        //     iterations++;
+        // }
+    }
+    else{
+        std::cout << "Idle case to handle passing on well and for client disconnect"<<std::endl;
+        players_bs_.erase(finished);
+        std::cout << "new roles: "<<std::endl;
+        for(auto player : players_bs_){
+            std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+        }
+    }
     removeFinishedPlayers();
 }
 
 void Battle::movePlayerRoles(){
      std::cout << "Moving player roles" << std::endl;
-    
-    removeFinishedPlayers();
+    // DEBUG, print battlephase
+    std::string s = "";
+    switch(phase_) {
+        case BATTLEPHASE_FIRST_ATTACK:
+            s = "FIRST ATTACK";
+        break;
+        case BATTLEPHASE_POST_PICKUP:
+            s = "POST PICKUP";
+        break;
+        case BATTLEPHASE_OPEN:
+            s = "OPEN";
+        break;
+        case BATTLEPHASE_DEFENDED:
+            s = "DEFENDED";
+        break;
+        case BATTLEPHASE_DONE:
+            s = "DONE";
+    }
 
+    std::cout << "\n\nPHASE when in movePlayerRoles: " << s << "\n\n" << std::endl;
+    // END DEBUG
+
+    //not call when passing on so the rotation works out good
+    if(phase_ != BATTLEPHASE_OPEN){
+        removeFinishedPlayers();
+    }
+
+    std::cout << "player roles before roatiation"<<std::endl;
+    for(auto player : players_bs_){
+        std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+    }
         // Handle role rotation for exactly 3 players
     if (players_bs_.size() == 3) {
         auto attacker_it = std::find_if(players_bs_.begin(), players_bs_.end(),
@@ -1066,6 +1201,8 @@ void Battle::movePlayerRoles(){
             size_t defender_cards = card_manager_ptr_->getNumberOfCardsInHand(defender_it->first);
             max_attacks_ = std::min<size_t>(defender_cards, 6);
         }
+        sendBattleStateUpdate();
+        updateAvailableAction();
         return;
     }
 
@@ -1075,8 +1212,6 @@ void Battle::movePlayerRoles(){
     }
     players_bs_.begin()->second = end_role;
     std::cout << "\nRoles updated\n"<<std::endl;
-    // BattleStateUpdate bsu_msg; // Prepare message to broadcast role updates
-
     
     sendBattleStateUpdate();
 
@@ -1088,6 +1223,13 @@ void Battle::movePlayerRoles(){
         max_attacks_ = std::min<size_t>(defender_cards, 6);
     }
     updateAvailableAction();
+
+    std::cout << "\nplayer roles AFTER roatiation"<<std::endl;
+    for(auto player : players_bs_){
+        std::cout << "id: " << player.first << " role: "<<player.second<<std::endl;
+    }
+
+    if(phase_ = BATTLEPHASE_OPEN) removeFinishedPlayers(); //call after rotation happend to pass ojn
 }
 
 bool Battle::battleIsDone(){
@@ -1184,6 +1326,15 @@ ClientID Battle::getCurrentDefender(){
     ClientID player_id = -1;
     for(auto player : players_bs_){
         if(player.second == DEFENDER){
+            player_id = player.first;
+        }
+    }
+    return player_id;
+}
+ClientID Battle::getCurrentAttacker(){
+    ClientID player_id = 0; //if not found ->0
+    for(auto player : players_bs_){
+        if(player.second == ATTACKER){
             player_id = player.first;
         }
     }

@@ -103,7 +103,7 @@ void handleMessage(std::unique_ptr<Message> msg_r, ClientID client){
             else if(action && action->action == CLIENTACTION_PICK_UP || 
                                 action->action == CLIENTACTION_PASS_ON ||
                                 action->action == CLIENTACTION_OK){
-                std::cout << "pick up message received from client: " << client << std::endl;
+                std::cout << "action message received from client: " << client << std::endl;
                 if(current_game){
                     current_game->handleClientActionEvent(std::move(msg_r), client);
                 }

@@ -445,7 +445,12 @@ class Battle {
          * @return ClientID The ID of the current defender.
          */
         ClientID getCurrentDefender();
-
+        /**
+         * @brief Get the ID of the current attacker.
+         * 
+         * @return ClientID The ID of the current attacker.
+         */
+        ClientID getCurrentAttacker();
         /**
          * @brief Set the number of attacks to defend.
          * 

@@ -53,6 +53,7 @@ protected:
 
 // Case 1: Attacker finishes, defender picks up
 TEST_F(DurakRoleTest, AttackerFinishesDefenderPicksUp) {
+    card_manager->eraseDeck();
     card_manager->clearPlayerHand(1); // Attacker finishes
     battle->movePlayerRoles();
 
@@ -66,6 +67,7 @@ TEST_F(DurakRoleTest, AttackerFinishesDefenderPicksUp) {
 
 // Case 2: Attacker finishes, defender defends
 TEST_F(DurakRoleTest, AttackerFinishesDefenderDefends) {
+    card_manager->eraseDeck();
     card_manager->clearPlayerHand(1); // Attacker finishes
     battle->movePlayerRoles();
 
@@ -79,6 +81,7 @@ TEST_F(DurakRoleTest, AttackerFinishesDefenderDefends) {
 
 // Case 3: Defender passes on
 TEST_F(DurakRoleTest, CoAttackerFinishes) {
+    card_manager->eraseDeck();
     card_manager->clearPlayerHand(3); // Co-attacker finishes
     battle->movePlayerRoles();
 
@@ -92,6 +95,7 @@ TEST_F(DurakRoleTest, CoAttackerFinishes) {
 
 // Case 4: Defender finishes
 TEST_F(DurakRoleTest, DefenderFinishes) {
+    card_manager->eraseDeck();
     card_manager->clearPlayerHand(2); // Defender finishes
     battle->movePlayerRoles();
     // battle->movePlayerRoles();
@@ -106,6 +110,7 @@ TEST_F(DurakRoleTest, DefenderFinishes) {
 
 // Case 5: Co-attacker finishes, defender picks up
 TEST_F(DurakRoleTest, CoAttackerFinishesDefenderPicksUp) {
+    card_manager->eraseDeck();
     card_manager->clearPlayerHand(3); // Co-attacker finishes
     battle->movePlayerRoles();
     battle->movePlayerRoles(); //because of the pick up
@@ -120,6 +125,7 @@ TEST_F(DurakRoleTest, CoAttackerFinishesDefenderPicksUp) {
 
 // Case 6: Co-attacker finishes, defender defends
 TEST_F(DurakRoleTest, CoAttackerFinishesDefenderDefends) {
+    card_manager->eraseDeck();
     card_manager->clearPlayerHand(3); // Co-attacker finishes
     battle->movePlayerRoles();
 
@@ -147,6 +153,7 @@ TEST_F(DurakRoleTest, CoAttackerFinishesDefenderDefends) {
 // }
 
 TEST_F(DurakRoleTest, AttackerFinishesDefenderPassOn){
+    card_manager->eraseDeck();
     card_manager->clearMiddle();
     card_manager->clearPlayerHand(1);
     Card cardA = Card(RANK_EIGHT, SUIT_CLUBS);
@@ -167,6 +174,7 @@ TEST_F(DurakRoleTest, AttackerFinishesDefenderPassOn){
 }
 
 TEST_F(DurakRoleTest, DefenderFinishesDefenderPassOn){
+    card_manager->eraseDeck();
     card_manager->clearMiddle();
     card_manager->clearPlayerHand(2);
     Card cardD = Card(RANK_EIGHT, SUIT_SPADES);
@@ -199,7 +207,7 @@ TEST_F(DurakRoleTest, DefenderFinishesDefenderPassOn){
 }
 
 TEST_F(DurakRoleTest, AttackerFinishesDefenderPassOnMoreExplicit){
-
+    card_manager->eraseDeck();
     card_manager->clearMiddle();
     card_manager->clearPlayerHand(1);
     Card cardA = Card(RANK_EIGHT, SUIT_CLUBS);
@@ -233,6 +241,7 @@ TEST_F(DurakRoleTest, AttackerFinishesDefenderPassOnMoreExplicit){
 }
 
 TEST_F(DurakRoleTest, DefenderFinishesMoreExplicit){
+    card_manager->eraseDeck();
     card_manager->clearMiddle();
     Card cardA = Card(RANK_EIGHT, SUIT_CLUBS);
     card_manager->addCardToPlayerHand(1, cardA);
@@ -269,6 +278,7 @@ TEST_F(DurakRoleTest, DefenderFinishesMoreExplicit){
 }
 
 TEST_F(DurakRoleTest, AttackerAndDefenderPlayerFinish){
+    card_manager->eraseDeck();
     card_manager->clearMiddle();
     card_manager->clearPlayerHand(1);
     Card cardA = Card(RANK_EIGHT, SUIT_CLUBS);
@@ -306,6 +316,7 @@ TEST_F(DurakRoleTest, AttackerAndDefenderPlayerFinish){
 }
 
 TEST_F(DurakRoleTest, AttackerCoattackerAndDefenderFinish){
+    card_manager->eraseDeck();
     card_manager->clearMiddle();
     card_manager->clearPlayerHand(1);
     Card cardA = Card(RANK_EIGHT, SUIT_CLUBS);

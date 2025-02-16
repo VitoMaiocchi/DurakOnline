@@ -18,13 +18,18 @@ if [ -d "$SOCKPP_DIR" ]; then
         git clone https://github.com/fpagliughi/sockpp || { echo "Failed to clone sockpp"; exit 1; }
     else #just pull
         cd "$SOCKPP_DIR" || { echo "Failed to navigate to sockpp"; exit 1;}
-
-        git pull || { echo "Failed to pull from git sockpp"; exit 1;}
+        # redundand code, here used to be a git pull but we do not pull anymore because it breaks evrything
         cd .. #back to networking
     fi
 else #dir doesnt exits
     git clone https://github.com/fpagliughi/sockpp "$SOCKPP_DIR" || { echo "Failed to clone sockpp"; exit 1; }
 fi
+
+# navigate again to sockpp
+cd "$SOCKPP_DIR" || { echo "Failed to navigate to sockpp"; exit 1; }
+# switch branch to the older version of sockpp to be compatible with the project
+git checkout 36af577f73276b5246423168edfef536b4d64079
+# git checkout 36af577f73276b5246423168edfef536b4d64079
 
 # Clone the rapidjson repository if not already cloned
 RAPIDJSON_DIR="$SCRIPT_DIR/Networking/rapidjson"

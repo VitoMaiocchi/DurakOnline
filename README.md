@@ -27,7 +27,7 @@
 - clone repo: `git clone https://gitlab.ethz.ch/durak/durak.git` 
 
 - run: 
-`source setup.sh` \
+`source setup.sh` 
 - in the build directory run: \
  `./Server/DurakServer` \
  to start the server 

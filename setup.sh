@@ -36,7 +36,7 @@ RAPIDJSON_DIR="$SCRIPT_DIR/Networking/rapidjson"
 # Clone the sockpp repository if not already cloned
 if [ -d "$RAPIDJSON_DIR" ]; then
     if [ -z "$(ls -A "$RAPIDJSON_DIR")" ]; then #if empty clone
-        git clone https://github.com/Tencent/rapidjson || { echo "Failed to clone rapidjson"; exit 1; }
+        git clone https://github.com/Tencent/rapidjson "$RAPIDJSON_DIR" || { echo "Failed to clone rapidjson"; exit 1; }
     else #just pull
         cd "$RAPIDJSON_DIR" || { echo "Failed to navigate to rapidjson"; exit 1;}
 

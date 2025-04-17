@@ -327,6 +327,7 @@ TEST_F(DurakRoleTest, AttackerCoattackerAndDefenderFinish){
     Card cardD1 = Card(RANK_NINE, SUIT_CLUBS);
     Card cardD2 = Card(RANK_TEN, SUIT_HEARTS);
     card_manager->addCardToPlayerHand(2, cardD1);
+    card_manager->addCardToPlayerHand(2, cardD2);
     std::vector<Card> cardsD = {cardD1};
     std::vector<Card> cardsD2 = {cardD2};
 
@@ -334,6 +335,29 @@ TEST_F(DurakRoleTest, AttackerCoattackerAndDefenderFinish){
     Card cardC = Card(RANK_NINE, SUIT_HEARTS);
     card_manager->addCardToPlayerHand(3,cardC);
     std::vector<Card> cardsC = {cardC};
+
+    card_manager->clearPlayerHand(4);
+    Card cardE1 = Card(RANK_TWO, SUIT_CLUBS);
+    Card cardE2 = Card(RANK_TWO, SUIT_HEARTS);
+    std::vector<Card> cardsE = {cardE1, cardE2};
+    card_manager->addCardToPlayerHand(4, cardE1);
+    card_manager->addCardToPlayerHand(4, cardE2);  
+
+    card_manager->clearPlayerHand(5);
+    Card cardF1 = Card(RANK_THREE, SUIT_CLUBS);
+    Card cardF2 = Card(RANK_THREE, SUIT_HEARTS);
+    std::vector<Card> cardsF = {cardF1, cardF2};
+    card_manager->addCardToPlayerHand(5, cardF1);
+    card_manager->addCardToPlayerHand(5, cardF2); 
+
+    card_manager->clearPlayerHand(6);
+    Card cardG1 = Card(RANK_FOUR, SUIT_CLUBS);
+    Card cardG2 = Card(RANK_FOUR, SUIT_HEARTS);
+    std::vector<Card> cardsG = {cardG1, cardG2};
+    card_manager->addCardToPlayerHand(6, cardG1);
+    card_manager->addCardToPlayerHand(6, cardG2); 
+    
+    std::cout << "\n# active players: " << card_manager->getNumberActivePlayers() << std::endl;
 
     // message of handleCardEvent for the attacker
     // message of handleCardEvent for defender
@@ -353,8 +377,10 @@ TEST_F(DurakRoleTest, AttackerCoattackerAndDefenderFinish){
     5 -> IDLE                   -> new COATTACKER              
     6 -> IDLE                   -> IDLE                        
      */
-
+    std::cout << "\n# active players: " << card_manager->getNumberActivePlayers() << std::endl;
+    
     auto roles = battle->getPlayerRolesMap();
+
 
     // Validate role updates
     EXPECT_EQ(roles.size(), 3);

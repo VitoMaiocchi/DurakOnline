@@ -18,7 +18,7 @@ int main() {
     c.set_message_handler(bind(&on_message, &c, std::placeholders::_1, std::placeholders::_2));
 
     websocketpp::lib::error_code ec;
-    auto con = c.get_connection("ws://localhost:9002", ec);
+    auto con = c.get_connection("ws://localhost:42069", ec);
     if (ec) {
         std::cout << "Connection error: " << ec.message() << std::endl;
         return 1;

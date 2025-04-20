@@ -2,36 +2,30 @@
 
 /*
     DURAK ONLINE NETWORK PROTOCOL
+    Version 2.0
 
     das nur ändere wenns abgsproche isch
     das isch s most upstream stück code
-
-    momentant muss es aber no überarbeitet werde
 */
 
 #define uint unsigned int
 
 #include <string>
+#include <memory>
+#include <map>
+#include <list>
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
-#include <memory>
-#include <set>
-#include <map>
-#include <list>
-#include <unordered_set>
 
-//  BASIC TYPES
-
-//das sött mer no ändere
-#define ClientID uint
+namespace Protocol {
 
 enum Suit {
     SUIT_CLUBS,
     SUIT_SPADES,
     SUIT_DIAMONDS,
     SUIT_HEARTS,
-    SUIT_count,
+    SUIT_count
 };
 
 enum Rank {
@@ -48,7 +42,7 @@ enum Rank {
     RANK_QUEEN,
     RANK_KING,
     RANK_ACE,
-    RANK_count,
+    RANK_count
 };
 
 enum CardSlot {
@@ -67,21 +61,15 @@ enum CardSlot {
     CARDSLOT_NONE
 };
 
-enum GameState {
-    GAMESTATE_LOBBY,
-    GAMESTATE_GAME,
-    GAMESTATE_SPECTATOR,
-    GAMESTATE_GAME_OVER,
-    GAMESTATE_DURAK_SCREEN,
-    GAMESTATE_LOGIN_SCREEN //only for client use
+enum GameAction {
+    GAMEACTION_READY,
+    GAMEACTION_PASS_ON,
+    GAMEACTION_PICK_UP,
 };
 
-enum ClientAction {
-    CLIENTACTION_OK,
-    CLIENTACTION_PASS_ON,
-    CLIENTACTION_PICK_UP,
-    CLIENTACTION_READY,
-    CLIENTACTION_LOBBY
+enum LobbyAction {
+    LOBBYACTION_BACK_TO_LOBBY,
+    LOBBYACTION_READY,
 };
 
 enum PlayerRole {
@@ -90,7 +78,11 @@ enum PlayerRole {
     CO_ATTACKER,
     IDLE,
     FINISHED
-}; //max 6 players
+};
+
+enum GameStage {
+    // da so first attack, post pick up etc
+};
 
 struct Card {
     Suit suit;
@@ -115,41 +107,36 @@ struct Card {
     }
 };
 
-namespace std {
-    template <>
-    struct hash<Card> {
-        size_t operator()(const Card& card) const {
-            return hash<int>()(static_cast<int>(card.toInt()));
-        }
-    };
-}
-
+#define PlayerUUID uint64_t
 
 // MESSAGES
 
 
-//DIE SIND DEPRECATED DI MUSS MER UMSTRUKTURIERE
 enum MessageType { 
-    MESSAGETYPE_TEST,
-    // Server:* to Client:MasterNode
-    MESSAGETYPE_SEND_POPUP, // Server:Battle to Client:MasterNode, notifies the client that the move was illegal
-    MESSAGETYPE_CARD_UPDATE, // Server:CardManager to Client:MasterNode, communicates the current status of the cards in play
-    MESSAGETYPE_PLAYER_UPDATE, // Server:Game to Client:MasterNode, provides an update on the players in the game
-    MESSAGETYPE_BATTLE_STATE_UPDATE, // Server:Battle to Client:MasterNode, contains info on player roles (attackers, defender, idle)
-    MESSAGETYPE_AVAILABLE_ACTION_UPDATE, // Server:Battle to Client:MasterNode, tells the client what actions are available
-    MESSAGETYPE_GAME_STATE_UPDATE, // Server:* to Client:MasterNode, update game screen (lobby, game, spectator, game over, Durak screen)
-    MESSAGETYPE_READY_UPDATE,
-    // Client:MasterNode to Server:*
-    MESSAGETYPE_PLAYCARD_EVENT, // Client:MasterNode to Server:Server->Game->Battle, informs server that a player is trying to play a card
-    MESSAGETYPE_CLIENT_ACTION_EVENT, // Client:MasterNode to Server:Server->Game->Battle, info about which client action was performed
-    MESSAGETYPE_CLIENT_CONNECT_EVENT, // Client:MasterNode to Server:Server->Game, info about the player
-    MESSAGETYPE_REMOTE_DISCONNECT_EVENT // Client:MasterNode to Server:Server->Game, informs server that a player has disconnected
+    //Layer 1 (da burchts no paar)
+    SERVERMESSAGE_GAMESELECTION,         //example. da chammer no me lobby stuff adde
+    CLIENTMESSAGE_REQUEST_USER_DATA,     //user data über e uuid requeste
+    SERVERMESSAGE_USER_DATA,             //returns user data (name, stats, bild, etc)
+
+    //Layer 2 
+    SERVERMESSAGE_LOBBY_UPDATE,          //lobby state (includes players and ready state)
+    SERVERMESSAGE_GAMEOVER_UPDATE,       //game over state mit durak
+    CLIENTMESSAGE_LOBBY_ACTION_EVENT,     //ready in lobby (obviously)
+
+    //Layer 3
+    SERVERMESSAGE_GAME_UPDATE_PUBLIC,    //publicly visible game screen (broadcasted to everyone including spectators)
+    SERVERMESSAGE_GAME_UPDATE_PRIVATE,   //privatly visible game screen (cards and available actions)
+    SERVERMESSAGE_TIME_RUPDATE,          //timer applies to lobby and game
+
+    //Layer 4
+    CLIENTMESSAGE_GAME_ACTION_EVENT,     //player action (ready, reflect, etc)
+    CLIENTMESSAGE_PLAY_CARD_EVENT,       //player playing card
 };
 
 typedef rapidjson::MemoryPoolAllocator<rapidjson::CrtAllocator> Allocator;
 
 struct Message {
-    virtual ~Message() = default; // i dont know if this is needed but like this i dont get errors on Mac
+    virtual ~Message() = default;
     MessageType messageType;
     std::string toJson() const;
     virtual void fromJson(const rapidjson::Value& obj) = 0;
@@ -162,128 +149,113 @@ typedef std::unique_ptr<Message> MessagePtr;
 
 std::unique_ptr<Message> deserialiseMessage(std::string string);
 
-struct TestMessage : public Message {
-    TestMessage();
+
+
+//LAYER 1
+
+struct ClientMessageRequestUserData : public Message {
+    ClientMessageRequestUserData();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    int x;
-    int y;
-    std::string string;
+    std::list<PlayerUUID> players;
 };
 
-struct ReadyUpdate : public Message {
-    ReadyUpdate();
+struct ServerMessageUserData : public Message {
+    ServerMessageUserData();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::set<ClientID> players;
+    PlayerUUID player;
+    std::string user_name;
+    //da chammer denn no meh sache adde
 };
 
-struct RemoteDisconnectEvent : public Message {
-    RemoteDisconnectEvent();
-    void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
-};
 
-// send an error message to the player that the move was illegal
-struct PopupNotify : public Message {
-    PopupNotify();
-    void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+//LAYER 2
 
-    std::string message;
-};
-
-// tcard updates to the server and from the server to the client
-struct CardUpdate : public Message{
-    CardUpdate();
-    void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
-    
-    std::map<ClientID, unsigned int> opponent_cards; //Map ClientID to card count 
-    unsigned int draw_pile_cards; 
-    Card trump_card; //the one that is on the bottom of the pile, can also be NULL
-    Suit trump_suit;
-    std::map<CardSlot, Card> middle_cards; //map of slot to card
-    std::list<Card> hand; //list of cards in hand
-};
-
-// provides an update on the players in the game
-struct PlayerUpdate : public Message {
-    PlayerUpdate();
+struct ServerMessageLobbyUpdate : public Message {
+    ServerMessageLobbyUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::map<ClientID, std::string> player_names;
-    unsigned int player_count; 
-    ClientID durak; // the playerid of the loser/durak
+    std::list<PlayerUUID> players;
+    std::list<PlayerUUID> ready;
 };
 
-// contains the meta battle state info
-struct BattleStateUpdate : public Message {
-    BattleStateUpdate();
+
+struct ServerMessageGameoverUpdate : public Message {
+    ServerMessageGameoverUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    ClientID defender; //there is only one defender
-    std::list<ClientID> attackers; //list of attackers
-    std::list<ClientID> idle; //list of observers/spectators
+    std::list<PlayerUUID> players;
+    PlayerUUID durak;
 };
 
-
-// tells the client what actions are available, in order to render the appropriate buttons
-struct AvailableActionUpdate : public Message{
-    AvailableActionUpdate();
+struct ClientMessageLobbyActionEvent : public Message {
+    ClientMessageLobbyActionEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    bool pass_on;
-    bool ok;
-    bool pick_up;
+    LobbyAction action;
 };
 
+//LAYER 3
 
-// update about the meta game state
-// lobby, game, spectator, game over, Durak screen
-
-struct GameStateUpdate : public Message {
-    GameStateUpdate();
+struct ServerMessageGameUpdatePublic : public Message {
+    ServerMessageGameUpdatePublic();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    GameState state; 
+    GameStage stage;
+    uint draw_pile_cards;
+    Card trump_card; //wenn draw pile cards 0 isch rendered eifach nur de suit
+    std::map<CardSlot, Card> middle_cards;
+    std::map<PlayerUUID, uint> player_card_count;
+    std::map<PlayerUUID, PlayerRole> player_roles;
 };
 
-//informs server that a player is trying to play a card -> specific slot?
-struct PlayCardEvent : public Message {
-    PlayCardEvent();
+struct ServerMessageGameUpdatePrivate : public Message {
+    ServerMessageGameUpdatePrivate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::unordered_set<Card> cards; // can be multiple if multiple cards are played at once, max 4
-    CardSlot slot; //place of the card
+    std::list<GameAction> available_actions;
+    std::list<Card> cards;
 };
 
-//info about which client action was performed
-// buttonclickDone, buttonclickPassOn, buttonclickPickUp
-// cardclick, battlefieldclick bruchts nöd das isch client side
-struct ClientActionEvent : public Message {
-    ClientActionEvent();
+struct ServerMessageTimerUpdate : public Message {
+    ServerMessageTimerUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    ClientAction action;
+    uint time_left; //in ms
 };
 
-//info about the player
-struct ClientConnectEvent : public Message {
-    ClientConnectEvent();
+//LAYER 4
+
+struct ClientMessageGameActionEvent : public Message {
+    ClientMessageGameActionEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
     void fromJson(const rapidjson::Value& obj);
 
-    std::string username;
+    GameAction action;
 };
+
+struct ClientMessagePlayCardEvent : public Message {
+    ClientMessagePlayCardEvent();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    void fromJson(const rapidjson::Value& obj);
+
+    CardSlot slot;
+    std::list<Card> cards;
+};
+
+
+
+//das isch s alte protocol implementaiton. das muss mer jetz neu mache aber ich lans no für reference
+//TODO: das neu mache
 
 #ifdef DURAK_PROTOCOL_IMPLEMENTATION
 
@@ -689,3 +661,4 @@ void ClientConnectEvent::fromJson(const rapidjson::Value& obj) {
 }
 
 #endif
+}

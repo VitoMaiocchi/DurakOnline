@@ -145,11 +145,7 @@ struct Message {
     virtual void getContent(rapidjson::Value &content, Allocator &allocator) const = 0;
 };
 
-typedef std::unique_ptr<Message> MessagePtr;
-
 std::unique_ptr<Message> deserialiseMessage(std::string string);
-
-
 
 //LAYER 1
 
@@ -262,9 +258,10 @@ struct ClientMessagePlayCardEvent : public Message {
 #include <algorithm> // for std::all_of for debugging purposes
 #include <iostream>
 
-std::unique_ptr<Message> deserialiseMessage(std::string string) {
+//std::unique_ptr<Message> deserialiseMessage(std::string string) {
     //std::cout << "Trying to deserialise Message: \n" << string << std::endl;
     
+    /*
     rapidjson::Document document;
     // assert(!document.Parse(string.c_str()).HasParseError());
     if(document.Parse(string.c_str()).HasParseError()){
@@ -659,6 +656,7 @@ void ClientConnectEvent::getContent(rapidjson::Value &content, Allocator &alloca
 void ClientConnectEvent::fromJson(const rapidjson::Value& obj) {
     username = obj["username"].GetString();
 }
+    */
 
 #endif
 }

@@ -1,13 +1,14 @@
 #pragma once
 
 #include "protocol.hpp"
+#include <vector>
 
 class Instance;
 
 class Game {
     private:
         Instance* parent_instance_m;
-        std::map<unsigned, Protocol::PlayerRole> player_roles_m;
+        std::vector<Protocol::PlayerRole> player_roles_m;
 
     public:
         //wenn player action nöd guet isch den eifach es eigenes mache nöd protocol modifiziere
@@ -21,8 +22,5 @@ class Game {
         void playerCardNotify(Player player, uint slot, std::list<Card> card);
         void disconnectNotify(Player player); //unexpected disconnect mid game;
         
-        // whole game happens here
-        void mainGameLoop();
-
         void findFirstAttacker();
 };

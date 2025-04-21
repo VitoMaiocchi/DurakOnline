@@ -3,9 +3,7 @@
 #include "card_manager.hpp"
 
 //ctor
-Game::Game(Player player_count, Instance* parent_instance_m) {
-
-    card_manager_m = new CardManager(player_count); //create a new cardmanager for the game
+Game::Game(GameLogic::Player player_count, Instance* parent_instance_m) : card_manager_m(player_count){
 
     player_roles_m.reserve(player_count); //preallocate enough space
 
@@ -16,5 +14,5 @@ Game::Game(Player player_count, Instance* parent_instance_m) {
 }
 
 void Game::findFirstAttacker(){
-
+    
 }

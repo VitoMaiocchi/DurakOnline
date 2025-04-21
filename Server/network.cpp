@@ -36,7 +36,12 @@ namespace Network {
         durak_server.init_asio();
         durak_server.listen(42069);
         durak_server.start_accept();
-        durak_server.run();
+
+        auto& io_context = durak_server.get_io_context();
+        while (true) {
+            io_context.poll();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
     }
 
     void sendMessage(std::list<ConnectionID> clients, MessagePtr message) {

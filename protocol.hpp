@@ -89,11 +89,6 @@ enum GameStage {
     GAMESTAGE_POST_PICKUP,  // waiting for ready or post pickup throw ins
     GAMESTAGE_DONE          // battle is ready to be destroyed by game (no cards in middle)
 };
-// enum BattleType { 
-//     BATTLETYPE_FIRST,  // First battle of the game
-//     BATTLETYPE_NORMAL, // Normal battle
-//     BATTLETYPE_ENDGAME // Endgame battle (only two players left)
-// };
 
 struct Card {
     Rank rank;

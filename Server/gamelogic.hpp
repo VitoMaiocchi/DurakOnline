@@ -33,4 +33,11 @@ namespace GameLogic {
         PlayerHands player_hands;
         AvailableActions available_actions;
     };
+
+    enum BattleType { 
+        BATTLETYPE_FIRST,  // First battle of the game
+        BATTLETYPE_NORMAL, // Normal battle
+        BATTLETYPE_ENDGAME // Endgame battle (only two players left)
+    };
+
 }

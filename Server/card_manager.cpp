@@ -3,7 +3,7 @@
 
 
 CardManager::CardManager(GameLogic::Player player_count) {
-    fillDeck();
+    fillDeck(); //initialize the deck with 52 cards
 }
 
 

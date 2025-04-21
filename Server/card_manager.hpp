@@ -7,15 +7,13 @@
 #include <deque>
 class CardManager{
     private:
-        Protocol::Suit trump_suit_m;
-        Protocol::Card trump_card_m = 0; //default value
+        GameLogic::Suit trump_suit_m;
+        GameLogic::Card trump_card_m = 0; //default value
 
-        std::deque<Protocol::Card> deck_m;
+        std::deque<GameLogic::Card> deck_m;
 
     public:
-        typedef Protocol::Card Card;
         
-
         CardManager(GameLogic::Player player_count);
 
         void determineTrump();

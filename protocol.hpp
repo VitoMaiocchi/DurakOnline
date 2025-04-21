@@ -83,10 +83,17 @@ enum PlayerRole {
 
 enum GameStage {
     // da so first attack, post pick up etc
-    GAMESTAGE_FIRST_ATTACK,
-    GAMESTAGE_DEFEND,
-    GAMESTAGE_POST_PICKUP,
+    GAMESTAGE_FIRST_ATTACK, // waiting for first attack (no cards in middle)
+    GAMESTAGE_OPEN,         // undefended, waiting for pick up, more attacks, or defend
+    GAMESTAGE_DEFEND,       // defended waiting for ready or more attacks
+    GAMESTAGE_POST_PICKUP,  // waiting for ready or post pickup throw ins
+    GAMESTAGE_DONE          // battle is ready to be destroyed by game (no cards in middle)
 };
+// enum BattleType { 
+//     BATTLETYPE_FIRST,  // First battle of the game
+//     BATTLETYPE_NORMAL, // Normal battle
+//     BATTLETYPE_ENDGAME // Endgame battle (only two players left)
+// };
 
 struct Card {
     Rank rank;

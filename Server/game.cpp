@@ -11,7 +11,7 @@ void findFirstAttacker(State &game_state_m){
 }
 
 //ctor
-Game::Game(GameLogic::Player player_count, Instance* parent_instance_m) {
+Game::Game(Player player_count, Instance* parent_instance_m) {
 
     
     pr.reserve(player_count); //preallocate enough space
@@ -23,7 +23,24 @@ Game::Game(GameLogic::Player player_count, Instance* parent_instance_m) {
 
 }
 
-void playerActionNotify(GameLogic::Player player, GameLogic::PlayerAction action) {
+void handlePlayerAction(Player player, PlayerAction action) {
+    switch(action){
+        case PlayerAction::GAMEACTION_PASS_ON : {
+            
+            break;
+        }
+
+        case GameLogic::PlayerAction::GAMEACTION_PICK_UP : {
+
+            break;
+        }
+
+        case GameLogic::PlayerAction::GAMEACTION_READY : {
+
+            break;
+        }
+    }
+    
     // helper helper(staet)
     // helper(state)
 

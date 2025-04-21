@@ -14,7 +14,7 @@ class Game {
     public:
         //die signatures chasch au mache wie du willsch
         Game(GameLogic::Player player_count, Instance* parent_instance_m);
-        void playerActionNotify(GameLogic::Player player, GameLogic::PlayerAction action);
+        void handlePlayerAction(GameLogic::Player player, GameLogic::PlayerAction action);
         void playerCardNotify(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card);
         void disconnectNotify(GameLogic::Player player); //unexpected disconnect mid game;
 };

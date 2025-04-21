@@ -359,39 +359,39 @@ bool ClientMessageRequestUserData::fromJson(const rapidjson::Value& obj) {
 
 ServerMessageUserData::ServerMessageUserData() { messageType = SERVERMESSAGE_USER_DATA; }
 void ServerMessageUserData::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageUserData::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageUserData::fromJson(const rapidjson::Value& obj) {  return false; /*TODO*/ }
 
 ServerMessageLobbyUpdate::ServerMessageLobbyUpdate() { messageType = SERVERMESSAGE_LOBBY_UPDATE; }
 void ServerMessageLobbyUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageLobbyUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageLobbyUpdate::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ServerMessageGameoverUpdate::ServerMessageGameoverUpdate() { messageType = SERVERMESSAGE_GAMEOVER_UPDATE; }
 void ServerMessageGameoverUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageGameoverUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageGameoverUpdate::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ClientMessageLobbyActionEvent::ClientMessageLobbyActionEvent() { messageType = CLIENTMESSAGE_LOBBY_ACTION_EVENT; }
 void ClientMessageLobbyActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ClientMessageLobbyActionEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ClientMessageLobbyActionEvent::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ServerMessageGameUpdatePublic::ServerMessageGameUpdatePublic() : trump_card(0) { messageType = SERVERMESSAGE_GAME_UPDATE_PUBLIC; }
 void ServerMessageGameUpdatePublic::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageGameUpdatePublic::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageGameUpdatePublic::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ServerMessageGameUpdatePrivate::ServerMessageGameUpdatePrivate() { messageType = SERVERMESSAGE_GAME_UPDATE_PRIVATE; }
 void ServerMessageGameUpdatePrivate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageGameUpdatePrivate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageGameUpdatePrivate::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ServerMessageTimerUpdate::ServerMessageTimerUpdate() { messageType = SERVERMESSAGE_TIMER_UPDATE; }
 void ServerMessageTimerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageTimerUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageTimerUpdate::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ClientMessageGameActionEvent::ClientMessageGameActionEvent() { messageType = CLIENTMESSAGE_GAME_ACTION_EVENT; }
 void ClientMessageGameActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ClientMessageGameActionEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ClientMessageGameActionEvent::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 ClientMessagePlayCardEvent::ClientMessagePlayCardEvent() { messageType = CLIENTMESSAGE_PLAY_CARD_EVENT; }
 void ClientMessagePlayCardEvent::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ClientMessagePlayCardEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ClientMessagePlayCardEvent::fromJson(const rapidjson::Value& obj) {  return false;/*TODO*/ }
 
 #endif
 }

@@ -3,11 +3,10 @@
 #include "protocol.hpp"
 #include <set>
 
-#define ConnectionID unsigned int
-
 typedef std::unique_ptr<Protocol::Message> MessagePtr;
+typedef std::weak_ptr<void> ConnectionID;
 
 namespace Network {
     void openConnection();
-    void sendMessage(std::set<ConnectionID> clients, MessagePtr message);
+    void sendMessage(std::list<ConnectionID> clients, MessagePtr message);
 }

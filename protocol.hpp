@@ -143,7 +143,7 @@ struct Message {
     virtual ~Message() = default;
     MessageType messageType;
     std::string toJson() const;
-    virtual void fromJson(const rapidjson::Value& obj) = 0;
+    virtual bool fromJson(const rapidjson::Value& obj) = 0;
 
     protected:
     virtual void getContent(rapidjson::Value &content, Allocator &allocator) const = 0;
@@ -156,7 +156,7 @@ std::unique_ptr<Message> deserialiseMessage(std::string string);
 struct ClientMessageRequestUserData : public Message {
     ClientMessageRequestUserData();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     std::list<PlayerUUID> players;
 };
@@ -164,7 +164,7 @@ struct ClientMessageRequestUserData : public Message {
 struct ServerMessageUserData : public Message {
     ServerMessageUserData();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     PlayerUUID player;
     std::string user_name;
@@ -176,7 +176,7 @@ struct ServerMessageUserData : public Message {
 struct ServerMessageLobbyUpdate : public Message {
     ServerMessageLobbyUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     std::list<PlayerUUID> players;
     std::list<PlayerUUID> ready;
@@ -186,7 +186,7 @@ struct ServerMessageLobbyUpdate : public Message {
 struct ServerMessageGameoverUpdate : public Message {
     ServerMessageGameoverUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     std::list<PlayerUUID> players;
     PlayerUUID durak;
@@ -195,7 +195,7 @@ struct ServerMessageGameoverUpdate : public Message {
 struct ClientMessageLobbyActionEvent : public Message {
     ClientMessageLobbyActionEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     LobbyAction action;
 };
@@ -205,7 +205,7 @@ struct ClientMessageLobbyActionEvent : public Message {
 struct ServerMessageGameUpdatePublic : public Message {
     ServerMessageGameUpdatePublic();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     GameStage stage;
     uint draw_pile_cards;
@@ -218,7 +218,7 @@ struct ServerMessageGameUpdatePublic : public Message {
 struct ServerMessageGameUpdatePrivate : public Message {
     ServerMessageGameUpdatePrivate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     std::list<GameAction> available_actions;
     std::list<Card> cards;
@@ -227,7 +227,7 @@ struct ServerMessageGameUpdatePrivate : public Message {
 struct ServerMessageTimerUpdate : public Message {
     ServerMessageTimerUpdate();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     uint time_left; //in ms
 };
@@ -237,7 +237,7 @@ struct ServerMessageTimerUpdate : public Message {
 struct ClientMessageGameActionEvent : public Message {
     ClientMessageGameActionEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     GameAction action;
 };
@@ -245,7 +245,7 @@ struct ClientMessageGameActionEvent : public Message {
 struct ClientMessagePlayCardEvent : public Message {
     ClientMessagePlayCardEvent();
     void getContent(rapidjson::Value &content, Allocator &allocator) const;
-    void fromJson(const rapidjson::Value& obj);
+    bool fromJson(const rapidjson::Value& obj);
 
     CardSlot slot;
     std::list<Card> cards;
@@ -310,13 +310,13 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
         break;
         default:
             std::cout << "ahhh irgend en messagetype fehlt no in message.cpp" << std::endl;
+            return nullptr;
         break;
     }
 
-    if(message){
-        message->fromJson(content);
-    } else{
+    if(!message->fromJson(content)) {
         std::cerr << "Error: message creation failed" << std::endl;
+        return nullptr;
     }
 
     return message;
@@ -349,47 +349,49 @@ void ClientMessageRequestUserData::getContent(rapidjson::Value &content, Allocat
     }
     content.AddMember("players", player_array, allocator);
 }
-void ClientMessageRequestUserData::fromJson(const rapidjson::Value& obj) {
+bool ClientMessageRequestUserData::fromJson(const rapidjson::Value& obj) {
+    if(!obj.HasMember("players") || !obj["players"].IsArray()) return false; //invalid message
     for (const auto& player : obj["players"].GetArray()) {
         players.push_back(player.GetUint64());
     }
+    return true;
 }
 
 ServerMessageUserData::ServerMessageUserData() { messageType = SERVERMESSAGE_USER_DATA; }
 void ServerMessageUserData::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ServerMessageUserData::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageUserData::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ServerMessageLobbyUpdate::ServerMessageLobbyUpdate() { messageType = SERVERMESSAGE_LOBBY_UPDATE; }
 void ServerMessageLobbyUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ServerMessageLobbyUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageLobbyUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ServerMessageGameoverUpdate::ServerMessageGameoverUpdate() { messageType = SERVERMESSAGE_GAMEOVER_UPDATE; }
 void ServerMessageGameoverUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ServerMessageGameoverUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageGameoverUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ClientMessageLobbyActionEvent::ClientMessageLobbyActionEvent() { messageType = CLIENTMESSAGE_LOBBY_ACTION_EVENT; }
 void ClientMessageLobbyActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ClientMessageLobbyActionEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ClientMessageLobbyActionEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ServerMessageGameUpdatePublic::ServerMessageGameUpdatePublic() : trump_card(0) { messageType = SERVERMESSAGE_GAME_UPDATE_PUBLIC; }
 void ServerMessageGameUpdatePublic::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ServerMessageGameUpdatePublic::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageGameUpdatePublic::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ServerMessageGameUpdatePrivate::ServerMessageGameUpdatePrivate() { messageType = SERVERMESSAGE_GAME_UPDATE_PRIVATE; }
 void ServerMessageGameUpdatePrivate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ServerMessageGameUpdatePrivate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageGameUpdatePrivate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ServerMessageTimerUpdate::ServerMessageTimerUpdate() { messageType = SERVERMESSAGE_TIMER_UPDATE; }
 void ServerMessageTimerUpdate::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ServerMessageTimerUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ServerMessageTimerUpdate::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ClientMessageGameActionEvent::ClientMessageGameActionEvent() { messageType = CLIENTMESSAGE_GAME_ACTION_EVENT; }
 void ClientMessageGameActionEvent::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ClientMessageGameActionEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ClientMessageGameActionEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 ClientMessagePlayCardEvent::ClientMessagePlayCardEvent() { messageType = CLIENTMESSAGE_PLAY_CARD_EVENT; }
 void ClientMessagePlayCardEvent::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-void ClientMessagePlayCardEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
+bool ClientMessagePlayCardEvent::fromJson(const rapidjson::Value& obj) { /*TODO*/ }
 
 #endif
 }

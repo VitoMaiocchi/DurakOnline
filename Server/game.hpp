@@ -3,12 +3,15 @@
 #include "protocol.hpp"
 #include <vector>
 
+//forward declarations
+class CardManager;
 class Instance;
 
 class Game {
     private:
         Instance* parent_instance_m;
         std::vector<Protocol::PlayerRole> player_roles_m;
+        CardManager* card_manager_m;
 
     public:
         //wenn player action nöd guet isch den eifach es eigenes mache nöd protocol modifiziere

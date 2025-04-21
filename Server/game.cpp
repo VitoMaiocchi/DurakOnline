@@ -1,18 +1,44 @@
 #include "instance.hpp"
 #include "game.hpp"
-#include "card_manager.hpp"
+#include "gamelogic.hpp"
+
+using namespace GameLogic;
+
+#define pr game_state_m.player_roles
+
+void findFirstAttacker(State &game_state_m){
+    
+}
 
 //ctor
-Game::Game(GameLogic::Player player_count, Instance* parent_instance_m) : card_manager_m(player_count){
+Game::Game(GameLogic::Player player_count, Instance* parent_instance_m) {
 
-    player_roles_m.reserve(player_count); //preallocate enough space
+    
+    pr.reserve(player_count); //preallocate enough space
 
-    findFirstAttacker(); //find first attacker
+    findFirstAttacker(game_state_m); //find first attacker
 
     // needs to give out the roles 
 
+
 }
 
-void Game::findFirstAttacker(){
-    
+void playerActionNotify(GameLogic::Player player, GameLogic::PlayerAction action) {
+    // helper helper(staet)
+    // helper(state)
+
+    // computeAvailableActions()
+
+    // broadcastState()
+    // senndStaet()
+}
+
+void playerCardNotify(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card) {
+    // helper helper(staet)
+    // helper(state)
+
+    // computeAvailableActions()
+
+    // broadcastState()
+    // senndStaet()
 }

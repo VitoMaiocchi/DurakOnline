@@ -33,6 +33,7 @@ namespace GameLogic {
         PlayerHands player_hands;
         AvailableActions available_actions;
         Card trump_card;
+        BattleType battle_type;
 
         //ctor to initialize default values for State
         State(Player count) : player_count(count), 

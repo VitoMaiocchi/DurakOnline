@@ -7,21 +7,22 @@ using namespace GameLogic;
 
 namespace GameHelpers {
 
-//die münd nöd i dem file si. es chan den zb eifach en battle helper und card helper file ge.
-void cardSetup(State &state);
-void determineTrump(State &state);
-void shuffleCards(State &state);
-void fillDeck(State &state);
+void cardSetup(State &state); //sets up the cards at the beginning of the game
 
-void distributeCardsBeginOfGame(State &state);
-void distributeNewCards(State &state);
+void distributeNewCards(State &state); //after every battle
 
 //natürlich da nur die functions deklariere wo vo game called werded nöd di lowlevel functions 
 //wo nur in gamelogic.cpp sind
 
 //da au alli battle helper functions
+void createBattle(State &state);
 void movePlayerRoles(State &state); 
 // ...
+
+//handlePlayerAction Event helper functions
+void doneEvent(State &state);
+void reflectEvent(State &state);
+void pickUpEvent(State &state);
 
 void updateAvailableActions(State &state); 
 //die werded verschickt und chönd au grad benuzt werde zum luege ob en action wo öpper macht legal isch

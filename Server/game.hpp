@@ -2,6 +2,7 @@
 
 #include "protocol.hpp"
 #include "gamelogic.hpp"
+#include "gamehelper.hpp"
 #include <vector>
 #include <ranges>
 #include <algorithm>

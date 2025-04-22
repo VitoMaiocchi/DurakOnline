@@ -34,6 +34,9 @@ void findFirstAttacker(State &game_state_m){
             }
         }
     }
+    if(first_attacker == -1){
+        first_attacker = rand() % Pcount; //sets a random player as the first attacker
+    }
     if(first_attacker != -1){ //set all the player roles
         int idx = first_attacker;
         Proles[idx] = PlayerRole::ATTACKER;
@@ -45,23 +48,19 @@ void findFirstAttacker(State &game_state_m){
         for(int i = 0; i < idleCount; ++i){
             idx = assignNextRole(idx, PlayerRole::IDLE, game_state_m);
         }
+        return;
     }
+
 }
 
 //ctor
 Game::Game(Player player_count, Instance* parent_instance_m) : game_state_m(player_count){
 
-    
-    Proles.reserve(player_count); //preallocate enough space
-
     findFirstAttacker(game_state_m); //find first attacker
-
-    // needs to give out the roles 
-
 
 }
 
-void handlePlayerAction(Player player, PlayerAction action) {
+void Game::handlePlayerAction(Player player, PlayerAction action) {
     switch(action){
         case PlayerAction::GAMEACTION_PASS_ON : {
             //reflectevent
@@ -88,7 +87,7 @@ void handlePlayerAction(Player player, PlayerAction action) {
     // senndStaet()
 }
 
-void playerCardNotify(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card) {
+void Game::playerCardNotify(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card) {
     // helper helper(staet)
     // helper(state)
 

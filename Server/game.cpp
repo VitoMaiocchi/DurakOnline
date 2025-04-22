@@ -11,7 +11,7 @@ void findFirstAttacker(State &game_state_m){
 }
 
 //ctor
-Game::Game(Player player_count, Instance* parent_instance_m) {
+Game::Game(Player player_count, Instance* parent_instance_m) : game_state_m(player_count){
 
     
     pr.reserve(player_count); //preallocate enough space

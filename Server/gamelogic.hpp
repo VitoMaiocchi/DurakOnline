@@ -33,6 +33,14 @@ namespace GameLogic {
         PlayerHands player_hands;
         AvailableActions available_actions;
         Card trump_card;
+
+        //ctor to initialize default values for State
+        State(Player count) : player_count(count), 
+                                    trump_card(0){ //default initialization for trump_card
+            player_roles.resize(count);
+            player_hands.resize(count);
+            available_actions.resize(count);
+        }
     };
 
     enum BattleType { 

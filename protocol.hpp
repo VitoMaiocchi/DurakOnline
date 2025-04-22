@@ -59,7 +59,7 @@ enum CardSlot {
     CARDSLOT_4_TOP,
     CARDSLOT_5_TOP,
     CARDSLOT_6_TOP,
-    CARDSLOT_NONE
+    CARDSLOT_COUNT // == total number of real slots
 };
 
 enum GameAction {

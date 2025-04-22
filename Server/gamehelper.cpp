@@ -42,6 +42,38 @@ void determineTrump(State &state){
     state.trump_card = state.draw_pile.back();
 }   
 
+void clearMiddle(State &state){
+    for(auto &opt : state.middle_cards){
+        opt.reset();
+    }
+}
+
+void drawFromMiddle(Player player){
+
+}
+
+void distributeNewCards(State &state){
+    using namespace Protocol;
+    std::vector<PlayerRole> role_seq;
+    role_seq.reserve(state.player_count);
+    role_seq.push_back(ATTACKER);
+    role_seq.push_back(CO_ATTACKER);
+    role_seq.insert(role_seq.end(), state.player_count - 3, IDLE);
+    role_seq.push_back(DEFENDER);
+
+    // for(int i = 0; i < state.player_count; ++i){
+    //     std::find_if(state.player_roles.begin(), state.player_roles.end(), 
+    //                 [](){});
+    //     drawFromMiddle(i);
+    // }
+}
+void deleteOldBattle(State &state){
+    //clear middle
+    clearMiddle(state);
+    //distribute cards
+    distributeNewCards(state);
+
+}
 namespace GameHelpers {
     
         void cardSetup(State &state){
@@ -54,7 +86,22 @@ namespace GameHelpers {
         }
 
         //attacker or coattacker can trigger
-        void doneEvent(Player player, State &state){/*TODO*/}
+        void doneEvent(Player player, State &state){
+            using namespace Protocol;
+            if(state.player_roles[player] == ATTACKER) state.ok_msg[ATTACKER] = true;
+            if(state.player_roles[player] == CO_ATTACKER) state.ok_msg[CO_ATTACKER] = true;
+
+            switch(state.stage){
+                case GAMESTAGE_DEFEND : {
+                    if(BATTLETYPE_ENDGAME) state.ok_msg[CO_ATTACKER] = true;
+                    //clearmiddle
+                    //deleteoldbattle
+                    deleteOldBattle(state);
+                    //startnewbattle
+                }
+            }
+            
+        }
 
         //only defender can trigger
         void reflectEvent(State &state){/*TODO*/}

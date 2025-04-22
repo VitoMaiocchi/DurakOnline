@@ -9,8 +9,6 @@ namespace GameHelpers {
 
 void cardSetup(State &state); //sets up the cards at the beginning of the game
 
-void distributeNewCards(State &state); //after every battle
-
 //natürlich da nur die functions deklariere wo vo game called werded nöd di lowlevel functions 
 //wo nur in gamelogic.cpp sind
 

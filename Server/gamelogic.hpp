@@ -4,6 +4,10 @@
 #include <vector>
 #include <unordered_set>
 #include <deque>
+#include <array>
+#include <algorithm>
+#include <optional>
+
 
 namespace std {
     template <>
@@ -28,19 +32,24 @@ namespace GameLogic {
         Player player_count;
         Protocol::GameStage stage;
         std::deque<GameLogic::Card> draw_pile;
-        std::map<Protocol::CardSlot, Card> middle_cards;
+        std::array<std::optional<Card>, Protocol::CARDSLOT_COUNT> middle_cards;
         std::vector<Protocol::PlayerRole> player_roles;
         PlayerHands player_hands;
         AvailableActions available_actions;
         Card trump_card;
         BattleType battle_type;
+        // need two ok messages, one from attacker and one from coattacker
+        std::map<Protocol::PlayerRole, bool> ok_msg;
 
         //ctor to initialize default values for State
-        State(Player count) : player_count(count), 
-                                    trump_card(0){ //default initialization for trump_card
+        State(Player count) : 
+                player_count(count) 
+                ,trump_card(0) //default initialization for trump_card
+                ,middle_cards{}{ //nullopt for all slots in the array
             player_roles.resize(count);
             player_hands.resize(count);
             available_actions.resize(count);
+            ok_msg = {{Protocol::PlayerRole::ATTACKER, false}, {Protocol::PlayerRole::CO_ATTACKER, false}}; //initialize both attacker with not pressed
         }
     };
 

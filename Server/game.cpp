@@ -37,7 +37,7 @@ void findFirstAttacker(State &game_state_m){
     if(first_attacker == -1){
         first_attacker = rand() % Pcount; //sets a random player as the first attacker
     }
-    if(first_attacker != -1){ //set all the player roles
+    //set all the player roles
         int idx = first_attacker;
         Proles[idx] = PlayerRole::ATTACKER;
 
@@ -47,10 +47,7 @@ void findFirstAttacker(State &game_state_m){
         int idleCount = Pcount - 3;
         for(int i = 0; i < idleCount; ++i){
             idx = assignNextRole(idx, PlayerRole::IDLE, game_state_m);
-        }
-        return;
-    }
-
+        }    
 }
 
 //ctor

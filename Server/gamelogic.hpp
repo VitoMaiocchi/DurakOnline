@@ -32,6 +32,7 @@ namespace GameLogic {
         std::vector<Protocol::PlayerRole> player_roles;
         PlayerHands player_hands;
         AvailableActions available_actions;
+        Card trump_card;
     };
 
     enum BattleType { 

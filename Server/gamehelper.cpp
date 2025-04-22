@@ -1,70 +1,57 @@
 #include "gamehelper.hpp"
 
-namespace GameHelper {
-    // die fuktionieret glich eifach jetzt mit state
 
-//  CardManager::CardManager(GameLogic::Player player_count) {
-//     //initialize each player with an empty hand
-//     for (GameLogic::Player i = 0; i < player_count; ++i) {
-//         player_hands_m[i] = {};
-//     }
+namespace GameHelpers {
+    
+void cardSetup(State &state){
+    state.player_hands.resize(state.player_count); //initializes empty hands
 
-//     fillDeck(); //initialize the deck with 52 cards
+    fillDeck(state);
+    shuffleCards(state);
+    distributeCardsBeginOfGame(state);
+    determineTrump(state);
+}
 
-//     shuffleCards(); //shufflecards
+void fillDeck(State &state){
 
-//     distributeCardsBeginOfGame(); //distribute 6 cards to each player
+    using namespace Protocol;
 
-//     determineTrump();
+    for(Suit suit : {SUIT_CLUBS,SUIT_SPADES,SUIT_DIAMONDS,SUIT_HEARTS}){
+        for(Rank rank : {RANK_TWO,RANK_THREE,RANK_FOUR,RANK_FIVE,RANK_SIX,RANK_SEVEN,RANK_EIGHT,
+                        RANK_NINE,RANK_TEN,RANK_JACK,RANK_QUEEN,RANK_KING,RANK_ACE}){
+            state.draw_pile.emplace_back(rank, suit);
+        }
+    }
+    if(state.draw_pile.size() != 52) {std::cerr << "Failed filling up the deck." << std::endl; return;}
+}
 
-//     //card update?
-// }
+void shuffleCards(State &state){
+        // Check if deck has been initialized properly
+        assert(state.draw_pile.size() == 52 && "Deck must contain exactly 52 cards before shuffling");
+        // Define pseudo random number generator
+        std::random_device rd;
+        std::mt19937 g(rd());
+        // shuffle the deck
+        std::shuffle(state.draw_pile.begin(), state.draw_pile.end(), g);
+}
 
+void distributeCardsBeginOfGame(State &state){
+    // distribute cards to player
+    for (auto hand : state.player_hands){
+        // Check if players hands are empty
+        assert(hand.empty() && "Player's hand should be empty before dealing");
 
-// void CardManager::fillDeck(){
+        // distribute the top 6 cards to the player
+        hand.insert(state.draw_pile.begin(), state.draw_pile.begin()+6);
 
-//     using namespace Protocol;
+        // remove cards from deck
+        state.draw_pile.erase(state.draw_pile.begin(), state.draw_pile.begin()+6);
+    }
+}
 
-//     for(Suit suit : {SUIT_CLUBS,SUIT_SPADES,SUIT_DIAMONDS,SUIT_HEARTS}){
-//         for(Rank rank : {RANK_TWO,RANK_THREE,RANK_FOUR,RANK_FIVE,RANK_SIX,RANK_SEVEN,RANK_EIGHT,
-//                         RANK_NINE,RANK_TEN,RANK_JACK,RANK_QUEEN,RANK_KING,RANK_ACE}){
-//             deck_m.emplace_back(rank, suit);
-//         }
-//     }
-//     if(deck_m.size() != 52) {std::cerr << "Failed filling up the deck." << std::endl; return;}
-// }
+void determineTrump(State &state){
+    assert(state.draw_pile.size() == 52 - (6 * state.player_hands.size()) && "Deck must contain exactly 52 cards before determining trump");
 
-// void CardManager::shuffleCards(){
-//         // Check if deck has been initialized properly
-//         assert(deck_m.size() == 52 && "Deck must contain exactly 52 cards before shuffling");
-//         // Define pseudo random number generator
-//         std::random_device rd;
-//         std::mt19937 g(rd());
-//         // shuffle the deck
-//         std::shuffle(deck_m.begin(), deck_m.end(), g);
-// }
-
-// void CardManager::distributeCardsBeginOfGame(){
-//     // distribute cards to player
-//     for (auto hand : player_hands_m){
-//         // Check if players hands are empty
-//         assert(hand.second.empty() && "Player's hand should be empty before dealing");
-
-//         // distribute the top 6 cards to the player
-//         hand.second.insert(hand.second.begin(), deck_m.begin(), deck_m.begin()+6);
-
-//         // remove cards from deck
-//         deck_m.erase(deck_m.begin(), deck_m.begin()+6);
-//     }
-// }
-
-// void CardManager::determineTrump(){
-//     assert(deck_m.size() == 52 - (6 * player_hands_m.size()) && "Deck must contain exactly 52 cards before determining trump");
-
-//     // Assign pointer
-//     last_card_m = std::make_shared<GameLogic::Card>(deck_m.back());
-
-//     trump_card_m = *last_card_m;
-//     trump_suit_m = trump_card_m.suit;
-// }   
+    state.trump_card = state.draw_pile.back();
+}   
 }

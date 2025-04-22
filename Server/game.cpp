@@ -26,17 +26,17 @@ Game::Game(Player player_count, Instance* parent_instance_m) {
 void handlePlayerAction(Player player, PlayerAction action) {
     switch(action){
         case PlayerAction::GAMEACTION_PASS_ON : {
-            
+            //reflectevent
             break;
         }
 
         case GameLogic::PlayerAction::GAMEACTION_PICK_UP : {
-
+            //doneevent
             break;
         }
 
         case GameLogic::PlayerAction::GAMEACTION_READY : {
-
+            //pickupevent
             break;
         }
     }

@@ -1,4 +1,7 @@
 #include "gamelogic.hpp"
+#include <random>
+#include <algorithm>
+#include <cassert>
 
 using namespace GameLogic;
 

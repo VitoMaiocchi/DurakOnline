@@ -3,6 +3,8 @@
 #include "protocol.hpp"
 #include "gamelogic.hpp"
 #include <vector>
+#include <ranges>
+#include <algorithm>
 
 class Instance;
 

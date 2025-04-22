@@ -79,9 +79,12 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
         
         case GameLogic::PlayerAction::GAMEACTION_READY : {
             //doneevent
-            GameHelpers::doneEvent(game_state_m);
+            GameHelpers::doneEvent(player, game_state_m);
             break;
         }
+        default :
+            /*do nothing*/
+            break;
     }
     
     // helper helper(staet)
@@ -94,6 +97,24 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
 }
 
 void Game::playerCardNotify(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card) {
+    switch(Proles[player]){
+        case Protocol::PlayerRole::ATTACKER : {
+            //attackerCardEvent
+            break;
+        }
+        case Protocol::PlayerRole::DEFENDER : {
+            //defenderCardEvent
+            break;
+        }
+        case Protocol::PlayerRole::CO_ATTACKER : {
+            //coattackerCardEvent
+            break;
+        }
+        default :
+            break;
+    }
+    
+    
     // helper helper(staet)
     // helper(state)
 

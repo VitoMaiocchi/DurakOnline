@@ -53,11 +53,11 @@ namespace GameHelpers {
             determineTrump(state);
         }
 
+        //attacker or coattacker can trigger
+        void doneEvent(Player player, State &state){/*TODO*/}
 
-        void doneEvent(State &state){/*TODO*/}
-
+        //only defender can trigger
         void reflectEvent(State &state){/*TODO*/}
-
         void pickUpEvent(State &state){/*TODO*/}
 
         void updateAvailableActions(State &state){

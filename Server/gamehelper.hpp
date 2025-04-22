@@ -20,7 +20,7 @@ void movePlayerRoles(State &state);
 // ...
 
 //handlePlayerAction Event helper functions
-void doneEvent(State &state);
+void doneEvent(Player player, State &state);
 void reflectEvent(State &state);
 void pickUpEvent(State &state);
 

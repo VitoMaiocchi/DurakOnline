@@ -82,15 +82,108 @@ void distributeNewCards(State &state){
     for(int p : drawOrder) drawFromMiddle(p, state);
 }
 
-void deleteOldBattle(State &state){
-    //clear middle
-    clearMiddle(state);
-    //distribute cards
-    distributeNewCards(state);
+void movePlayerRoles(State &state){
+    //rotate to the right. 
+    // e.g. [A, D, C, I, I] → [I, A, D, C, I]
+    std::rotate(state.player_roles.begin(), state.player_roles.end() - 1, state.player_roles.end());
+}
 
-    //set battle type to normal after first battle is finished
-    if(state.battle_type == BATTLETYPE_FIRST){
-        state.battle_type = BATTLETYPE_NORMAL;
+std::vector<Player> findFinishedPlayers(State &state){
+    assert(state.player_count == state.player_hands.size() && state.player_count == state.player_roles.size() && "The sizes and the count must match");
+    std::vector<Player> finished_players;
+    for(std::size_t i = 0; i < state.player_count; ++i){
+        if(state.player_hands[i].empty()){
+            finished_players.push_back(static_cast<Player>(i));
+        }
+    }
+    std::sort(finished_players.rbegin(), finished_players.rend()); //descending order for easy erasing
+    return finished_players;
+}
+
+void eraseFromRolesAndHands(Player player_idx, State &state){
+    auto it_roles = state.player_roles.begin() + player_idx;
+    auto it_hands = state.player_hands.begin() + player_idx;
+
+    state.player_roles.erase(it_roles);
+    state.player_hands.erase(it_hands);
+    state.player_count--;
+}
+
+void eraseFinishedPlayer(Player player_idx, State &state){
+    using namespace Protocol;
+    switch(state.player_roles[player_idx]){
+        case ATTACKER : {
+            movePlayerRoles(state); //attacker becomes idle
+            eraseFromRolesAndHands(player_idx, state);
+            break;
+        }
+        case DEFENDER : {
+            movePlayerRoles(state); //defender becomes attacker
+            movePlayerRoles(state); //defender becomes idle
+            eraseFromRolesAndHands(player_idx, state);
+            break;
+        }
+        case CO_ATTACKER : {
+            if(state.player_count == 3) {
+                eraseFromRolesAndHands(player_idx, state);
+                movePlayerRoles(state); //update turn order for next battle
+                break;
+            }
+            movePlayerRoles(state); //coattacker becomes defender
+            movePlayerRoles(state); //coattacker becomes attacker
+            movePlayerRoles(state); //coattacker becomes idle
+            eraseFromRolesAndHands(player_idx, state);
+
+            break;
+        }
+        case IDLE : {
+            eraseFromRolesAndHands(player_idx, state); 
+            movePlayerRoles(state); //update turn order for next battle
+            break;
+        }
+    }
+}
+
+void removeFinishedPlayers(State &state){
+    std::vector<Player> setOfFinishedPlayers = findFinishedPlayers(state); //loop over all 
+    
+    if(setOfFinishedPlayers.empty()) {
+        movePlayerRoles(state); 
+        return;
+    }
+
+    for(Player& p : setOfFinishedPlayers){
+        eraseFinishedPlayer(p, state);
+    }
+    
+}
+
+
+void deleteOldBattle(State &state){
+    clearMiddle(state);
+
+    switch(state.battle_type){
+        case BATTLETYPE_FIRST : {
+            state.battle_type = BATTLETYPE_NORMAL; //start normal game
+            distributeNewCards(state);
+            movePlayerRoles(state);
+            break;
+        }
+        case BATTLETYPE_NORMAL : {
+            distributeNewCards(state);
+
+            if (state.draw_pile.empty()) {
+                state.battle_type = BATTLETYPE_ENDGAME; //start the endgame
+                removeFinishedPlayers(state);
+                break;
+            }
+            movePlayerRoles(state);
+            break;
+        }
+        case BATTLETYPE_ENDGAME : {
+            removeFinishedPlayers(state);
+            break;
+        }
     }
 
 }
@@ -118,16 +211,17 @@ namespace GameHelpers {
 
             switch(state.stage){
                 case GAMESTAGE_DEFEND : {
-                    if(BATTLETYPE_ENDGAME) state.ok_msg[CO_ATTACKER] = true; 
+                    if(state.player_count == 2) state.ok_msg[CO_ATTACKER] = true; 
                     
                     if(state.ok_msg[ATTACKER] && state.ok_msg[CO_ATTACKER]){
                         deleteOldBattle(state);
+                        //moveplayerroles
                         startNewBattle(state);
                     }
                     break;
                 }
                 case GAMESTAGE_POST_PICKUP : {
-
+                    break;
                 }
             }
             

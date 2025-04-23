@@ -56,7 +56,7 @@ namespace GameLogic {
     enum BattleType { 
         BATTLETYPE_FIRST,  // First battle of the game
         BATTLETYPE_NORMAL, // Normal battle
-        BATTLETYPE_ENDGAME // Endgame battle (only two players left)
+        BATTLETYPE_ENDGAME // Endgame battle (no more cards in the deck)
     };
 
 }

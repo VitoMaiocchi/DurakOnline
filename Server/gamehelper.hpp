@@ -2,6 +2,7 @@
 #include <random>
 #include <algorithm>
 #include <cassert>
+#include <ranges>
 
 using namespace GameLogic;
 

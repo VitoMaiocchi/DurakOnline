@@ -27,7 +27,13 @@ namespace GameLogic {
 
     typedef std::vector<std::unordered_set<Card>> PlayerHands;
     typedef std::vector<std::unordered_set<PlayerAction>> AvailableActions;
-
+    
+    enum BattleType { 
+        BATTLETYPE_FIRST,  // First battle of the game
+        BATTLETYPE_NORMAL, // Normal battle
+        BATTLETYPE_ENDGAME // Endgame battle (no more cards in the deck)
+    };
+    
     struct State {
         Player player_count;
         Protocol::GameStage stage;
@@ -53,10 +59,5 @@ namespace GameLogic {
         }
     };
 
-    enum BattleType { 
-        BATTLETYPE_FIRST,  // First battle of the game
-        BATTLETYPE_NORMAL, // Normal battle
-        BATTLETYPE_ENDGAME // Endgame battle (no more cards in the deck)
-    };
 
 }

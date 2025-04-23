@@ -48,31 +48,55 @@ void clearMiddle(State &state){
     }
 }
 
-void drawFromMiddle(Player player){
-
+void drawFromMiddle(Player player, State &state){
+    while(state.player_hands[player].size() < 6 && !state.draw_pile.empty()){ 
+        state.player_hands[player].insert(state.draw_pile.front());
+        state.draw_pile.pop_front();
+    }
 }
 
 void distributeNewCards(State &state){
     using namespace Protocol;
-    std::vector<PlayerRole> role_seq;
-    role_seq.reserve(state.player_count);
-    role_seq.push_back(ATTACKER);
-    role_seq.push_back(CO_ATTACKER);
-    role_seq.insert(role_seq.end(), state.player_count - 3, IDLE);
-    role_seq.push_back(DEFENDER);
+    auto& roles = state.player_roles;
+    auto& count = state.player_count;
 
-    // for(int i = 0; i < state.player_count; ++i){
-    //     std::find_if(state.player_roles.begin(), state.player_roles.end(), 
-    //                 [](){});
-    //     drawFromMiddle(i);
-    // }
+    std::vector<int> drawOrder;
+    drawOrder.reserve(count);
+
+    /*find the first to draw*/
+    int first_idx = 0; // first is currently just the attacker
+    auto it = std::find_if(roles.begin(), roles.end(), [](const PlayerRole role){return role == ATTACKER;});
+    if(it != roles.end()){
+        first_idx = std::distance(roles.begin(), it);
+    }
+    
+    std::iota(drawOrder.begin(), drawOrder.end(), 0);
+    std::rotate(drawOrder.begin(), drawOrder.begin() + first_idx, drawOrder.end());
+
+    //move defender to the end
+    int def = drawOrder[1];
+    drawOrder.erase(drawOrder.begin() + 1);
+    drawOrder.push_back(def);
+
+    //for each player draw six cards
+    for(int p : drawOrder) drawFromMiddle(p, state);
 }
+
 void deleteOldBattle(State &state){
     //clear middle
     clearMiddle(state);
     //distribute cards
     distributeNewCards(state);
 
+    //set battle type to normal after first battle is finished
+    if(state.battle_type == BATTLETYPE_FIRST){
+        state.battle_type = BATTLETYPE_NORMAL;
+    }
+
+}
+
+void startNewBattle(State &state){
+    state.stage = Protocol::GameStage::GAMESTAGE_FIRST_ATTACK;
 }
 namespace GameHelpers {
     
@@ -88,16 +112,22 @@ namespace GameHelpers {
         //attacker or coattacker can trigger
         void doneEvent(Player player, State &state){
             using namespace Protocol;
-            if(state.player_roles[player] == ATTACKER) state.ok_msg[ATTACKER] = true;
+            
+            if(state.player_roles[player] == ATTACKER) state.ok_msg[ATTACKER] = true; 
             if(state.player_roles[player] == CO_ATTACKER) state.ok_msg[CO_ATTACKER] = true;
 
             switch(state.stage){
                 case GAMESTAGE_DEFEND : {
-                    if(BATTLETYPE_ENDGAME) state.ok_msg[CO_ATTACKER] = true;
-                    //clearmiddle
-                    //deleteoldbattle
-                    deleteOldBattle(state);
-                    //startnewbattle
+                    if(BATTLETYPE_ENDGAME) state.ok_msg[CO_ATTACKER] = true; 
+                    
+                    if(state.ok_msg[ATTACKER] && state.ok_msg[CO_ATTACKER]){
+                        deleteOldBattle(state);
+                        startNewBattle(state);
+                    }
+                    break;
+                }
+                case GAMESTAGE_POST_PICKUP : {
+
                 }
             }
             

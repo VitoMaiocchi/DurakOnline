@@ -80,6 +80,8 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
         case GameLogic::PlayerAction::GAMEACTION_READY : {
             //doneevent
             GameHelpers::doneEvent(player, game_state_m);
+            //sendprivateState
+            //broadcastState
             break;
         }
         default :

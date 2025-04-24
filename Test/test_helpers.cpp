@@ -153,7 +153,6 @@ TEST(PlayerRoles, MoveTheRoles){
 }
 
 //remove finished players one by one
-
 TEST(RemoveFinishedPlayer, RemoveAttacker2p){
     State s{3};
     GameHelpers::cardSetup(s);
@@ -639,4 +638,43 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker6p){
     int coattacker_idx = (findAttacker_TESTHELPER(s) + 2) % s.player_count;
     EXPECT_EQ(5, s.player_count);
     if(check_flag) EXPECT_EQ(s.player_roles[attacker_idx], IDLE);
+}
+
+//remove multiple players at once
+TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender6p){
+    State s{6};
+    GameHelpers::cardSetup(s);
+    GameHelpers::findFirstAttacker(s);
+
+    setupHandsOfPlayers_TESTHELPER(s);
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+
+    s.player_hands[attacker_idx].clear();
+    s.player_hands[defender_idx].clear();
+
+    //more rigorous check
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    bool check_flag = false;
+    if(coattacker_idx < attacker_idx){
+        check_flag = true;
+    }
+    std::cout << "roles before removal" << std::endl;
+    printRoles_TEST_HELPER(s);
+
+    removeFinishedPlayers(s); //should remove finished player and setup new roles
+
+    std::cout << "roles after removal" << std::endl;
+    printRoles_TEST_HELPER(s);
+
+    int new_att_idx = findAttacker_TESTHELPER(s);
+    int new_def_idx = (new_att_idx + 1) % s.player_count;
+
+    EXPECT_EQ(4, s.player_count);
+    EXPECT_EQ(ATTACKER, s.player_roles[new_att_idx]);
+    EXPECT_EQ(DEFENDER, s.player_roles[new_def_idx]);
+    if(check_flag) EXPECT_EQ(ATTACKER, s.player_roles[coattacker_idx]);
+
+
 }

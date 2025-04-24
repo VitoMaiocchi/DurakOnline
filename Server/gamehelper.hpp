@@ -10,13 +10,7 @@ namespace GameHelpers {
 
 void cardSetup(State &state); //sets up the cards at the beginning of the game
 
-//natürlich da nur die functions deklariere wo vo game called werded nöd di lowlevel functions 
-//wo nur in gamelogic.cpp sind
-
-//da au alli battle helper functions
-void createBattle(State &state);
-void movePlayerRoles(State &state); 
-// ...
+void findFirstAttacker(State &game_state_m); //finds first attacker
 
 //handlePlayerAction Event helper functions
 void doneEvent(Player player, State &state);

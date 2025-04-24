@@ -13,51 +13,14 @@ using namespace GameLogic;
 #define Tcard game_state_m.trump_card
 #define Btype game_state_m.battle_type
 
-//finds the first attacker based on the lowest trump, then sets all the other roles
-void findFirstAttacker(State &game_state_m){
-    using namespace Protocol;
-    /*find attacker*/
-    auto isTrump = [&game_state_m](const Card& c){
-        return c.suit == game_state_m.trump_card.suit;
-    };
-    Rank lowest = Rank::RANK_ACE; //lowest trump card
-    int first_attacker = -1;
-
-    for(Player i = 0; i < Pcount; ++i){
-        auto trump_cards_on_hand = Phand[i] | std::views::filter(isTrump);
-
-        for(auto const &card : trump_cards_on_hand){
-            if(card.rank < lowest){
-                lowest = card.rank;
-                first_attacker = i;
-            }
-        }
-    }
-    if(first_attacker == -1){
-        first_attacker = rand() % Pcount; //sets a random player as the first attacker
-    }
-    
-    /*build role order*/
-        std::vector<PlayerRole> roles_seq; //sequence of the roles
-        roles_seq.reserve(Pcount);
-        roles_seq.push_back(PlayerRole::ATTACKER);
-        roles_seq.push_back(PlayerRole::DEFENDER);
-        roles_seq.push_back(PlayerRole::CO_ATTACKER);
-        roles_seq.insert(roles_seq.end(), Pcount - 3, PlayerRole::IDLE);
-    /*assign roles*/
-        for(int i = 0; i < Pcount; ++i){
-            int who = (first_attacker + i) % Pcount;
-            Proles[who] = roles_seq[i];
-        }
-}
 
 //ctor
 Game::Game(Player player_count, Instance* parent_instance_m) : game_state_m(player_count){
     
     GameHelpers::cardSetup(game_state_m); //setup deck, distribute cards, etc..
 
-    findFirstAttacker(game_state_m); //find first attacker
-
+    GameHelpers::findFirstAttacker(game_state_m); //find first attacker
+    
     //start first battle
     Btype = BattleType::BATTLETYPE_FIRST;
 

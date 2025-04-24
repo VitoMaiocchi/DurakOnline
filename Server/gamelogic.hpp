@@ -1,6 +1,6 @@
 #pragma once
 
-#include "protocol.hpp"
+#include "../protocol.hpp"
 #include <vector>
 #include <unordered_set>
 #include <deque>

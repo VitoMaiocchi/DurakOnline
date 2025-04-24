@@ -124,19 +124,21 @@ void eraseFinishedPlayer(Player player_idx, State &state){
             break;
         }
         case CO_ATTACKER : {
+            assert(state.player_count >= 3 && "there cannot be a coattacker with less than 3 players");
             if(state.player_count == 3) {
                 eraseFromRolesAndHands(player_idx, state);
                 movePlayerRoles(state); //update turn order for next battle
                 break;
             }
-            movePlayerRoles(state); //coattacker becomes defender
-            movePlayerRoles(state); //coattacker becomes attacker
-            movePlayerRoles(state); //coattacker becomes idle
+            Player next_player_idx = (player_idx + 1) % state.player_count; //index of the idle player
+            state.player_roles[next_player_idx] = CO_ATTACKER; //swap the values
+            state.player_roles[player_idx] = IDLE; //maybe even use std::swap?
             eraseFromRolesAndHands(player_idx, state);
-
+            movePlayerRoles(state);
             break;
         }
         case IDLE : {
+            assert(state.player_count >= 4 && "there cannot be an idle with less than 4 players");
             eraseFromRolesAndHands(player_idx, state); 
             movePlayerRoles(state); //update turn order for next battle
             break;

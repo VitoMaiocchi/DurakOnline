@@ -137,10 +137,9 @@ void eraseFinishedPlayer(Player player_idx, State &state){
             movePlayerRoles(state);
             break;
         }
-        case IDLE : {
+        case IDLE : { //this only is called when multiple people finish
             assert(state.player_count >= 4 && "there cannot be an idle with less than 4 players");
             eraseFromRolesAndHands(player_idx, state); 
-            movePlayerRoles(state); //update turn order for next battle
             break;
         }
     }

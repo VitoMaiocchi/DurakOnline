@@ -148,12 +148,12 @@ void removeFinishedPlayers(State &state){
     std::vector<Player> setOfFinishedPlayers = findFinishedPlayers(state); //loop over all 
     
     if(setOfFinishedPlayers.empty()) {
-        movePlayerRoles(state); 
+        movePlayerRoles(state); //doesnt erase, so we have to moveplayer roles here
         return;
     }
 
     for(Player& p : setOfFinishedPlayers){
-        eraseFinishedPlayer(p, state);
+        eraseFinishedPlayer(p, state); //erases the player but also moves the player roles to the according positions
     }
     
 }
@@ -189,6 +189,16 @@ void deleteOldBattle(State &state){
 }
 
 void startNewBattle(State &state){
+    using namespace Protocol;
+    switch(state.stage){
+        case GAMESTAGE_DEFEND : {
+            break;
+        }
+        case GAMESTAGE_POST_PICKUP : {
+            movePlayerRoles(state);
+            break;
+        }
+    }
     state.stage = Protocol::GameStage::GAMESTAGE_FIRST_ATTACK;
 }
 namespace GameHelpers {
@@ -215,12 +225,17 @@ namespace GameHelpers {
                     
                     if(state.ok_msg[ATTACKER] && state.ok_msg[CO_ATTACKER]){
                         deleteOldBattle(state);
-                        //moveplayerroles
                         startNewBattle(state);
                     }
                     break;
                 }
                 case GAMESTAGE_POST_PICKUP : {
+                    if(state.player_count == 2) state.ok_msg[CO_ATTACKER] = true;
+
+                    if(state.ok_msg[ATTACKER] && state.ok_msg[CO_ATTACKER]){
+                        deleteOldBattle(state);
+                        startNewBattle(state);
+                    }
                     break;
                 }
             }

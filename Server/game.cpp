@@ -98,7 +98,7 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
     // senndStaet()
 }
 
-void Game::playerCardNotify(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card) {
+void Game::playerCardEvent(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card) {
     switch(Proles[player]){
         case Protocol::PlayerRole::ATTACKER : {
             //attackerCardEvent

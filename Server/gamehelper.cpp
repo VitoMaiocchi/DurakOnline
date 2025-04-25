@@ -88,6 +88,11 @@ void movePlayerRoles(State &state){
     std::rotate(state.player_roles.begin(), state.player_roles.end() - 1, state.player_roles.end());
 }
 
+void movePlayerRolesOneBack(State &state){
+    //rotate to the left. 
+    // e.g. [I, A, D, C, I] → [A, D, C, I, I]
+    std::rotate(state.player_roles.begin(), state.player_roles.begin() + 1, state.player_roles.end());
+}
 std::vector<Player> findFinishedPlayers(State &state){
     assert(state.player_count == state.player_hands.size() && state.player_count == state.player_roles.size() && "The sizes and the count must match");
     std::vector<Player> finished_players;
@@ -111,30 +116,38 @@ void eraseFromRolesAndHands(Player player_idx, State &state){
 
 void eraseFinishedPlayer(Player player_idx, State &state){
     using namespace Protocol;
+
+    std::vector<PlayerRole> role_seq;
+    role_seq.push_back(ATTACKER); role_seq.push_back(DEFENDER);
+    if(state.player_count >= 3) {
+        role_seq.push_back(CO_ATTACKER);
+        
+    }
+
     switch(state.player_roles[player_idx]){
         case ATTACKER : {
             movePlayerRoles(state); //attacker becomes idle
             eraseFromRolesAndHands(player_idx, state);
+            movePlayerRolesOneBack(state);
             break;
         }
         case DEFENDER : {
             movePlayerRoles(state); //defender becomes attacker
             movePlayerRoles(state); //defender becomes idle
             eraseFromRolesAndHands(player_idx, state);
+            movePlayerRolesOneBack(state);
             break;
         }
         case CO_ATTACKER : {
             assert(state.player_count >= 3 && "there cannot be a coattacker with less than 3 players");
             if(state.player_count == 3) {
                 eraseFromRolesAndHands(player_idx, state);
-                movePlayerRoles(state); //update turn order for next battle
                 break;
             }
             Player next_player_idx = (player_idx + 1) % state.player_count; //index of the idle player
             state.player_roles[next_player_idx] = CO_ATTACKER; //swap the values
             state.player_roles[player_idx] = IDLE; //maybe even use std::swap?
             eraseFromRolesAndHands(player_idx, state);
-            movePlayerRoles(state);
             break;
         }
         case IDLE : { //this only is called when multiple people finish
@@ -156,7 +169,7 @@ void removeFinishedPlayers(State &state){
     for(Player& p : setOfFinishedPlayers){
         eraseFinishedPlayer(p, state); //erases the player but also moves the player roles to the according positions
     }
-    
+    movePlayerRoles(state);
 }
 
 

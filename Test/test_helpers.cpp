@@ -657,7 +657,7 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
     //more rigorous check
     int coattacker_idx = (defender_idx + 1) % s.player_count;
     bool check_flag = false;
-    if(coattacker_idx < attacker_idx){
+    if(coattacker_idx < attacker_idx && coattacker_idx < defender_idx){
         check_flag = true;
     }
     std::cout << "roles before removal" << std::endl;
@@ -671,13 +671,12 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
     int new_att_idx = findAttacker_TESTHELPER(s);
     int new_def_idx = (new_att_idx + 1) % s.player_count;
 
-    EXPECT_EQ(3, s.player_count);
+    EXPECT_EQ(2, s.player_count);
     EXPECT_EQ(ATTACKER, s.player_roles[new_att_idx]);
     EXPECT_EQ(DEFENDER, s.player_roles[new_def_idx]);
     if(check_flag) EXPECT_EQ(ATTACKER, s.player_roles[coattacker_idx]);
     // A, D, C, I -> A, D
     // A, D, C, I -> I, A, D, C -> C, I, A, D
-
 
 }
 
@@ -697,7 +696,7 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender5p){
     //more rigorous check
     int coattacker_idx = (defender_idx + 1) % s.player_count;
     bool check_flag = false;
-    if(coattacker_idx < attacker_idx){
+    if(coattacker_idx < attacker_idx && coattacker_idx < defender_idx){
         check_flag = true;
     }
     std::cout << "roles before removal" << std::endl;
@@ -735,7 +734,7 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender6p){
     //more rigorous check
     int coattacker_idx = (defender_idx + 1) % s.player_count;
     bool check_flag = false;
-    if(coattacker_idx < attacker_idx){
+    if(coattacker_idx < attacker_idx && coattacker_idx < defender_idx){
         check_flag = true;
     }
     std::cout << "roles before removal" << std::endl;

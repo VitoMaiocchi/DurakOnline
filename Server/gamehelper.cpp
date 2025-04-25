@@ -191,6 +191,24 @@ void eraseFinishedPlayer(Player player_idx, State &state){
     }
 }
 
+bool onlyOnePlayerLeft(State &state){
+    int count = 0;
+    for(Player i = 0; i < state.player_count; ++i){
+        if(state.player_roles[i] != Protocol::PlayerRole::FINISHED) count++;
+    }
+    return count == 1;
+}
+
+Player findLastPlayer(State &state){
+    auto it = std::find_if(state.player_roles.begin(), state.player_roles.end(), 
+        [](Protocol::PlayerRole role){return role != Protocol::PlayerRole::FINISHED;});
+    Player idx = -1;
+    if(it != state.player_roles.end()){
+        idx = std::distance(state.player_roles.begin(), it);
+    }
+    return idx;
+}
+
 void removeFinishedPlayers(State &state){
     std::vector<Player> setOfFinishedPlayers = findFinishedPlayers(state); //loop over all 
     
@@ -203,8 +221,12 @@ void removeFinishedPlayers(State &state){
         eraseFinishedPlayer(p, state); //erases the player but also moves the player roles to the according positions
     }
     movePlayerRoles(state);
-}
 
+    if(onlyOnePlayerLeft(state)){
+        Player durak = findLastPlayer(state);
+        state.durak = durak;
+    }
+}
 
 void deleteOldBattle(State &state){
     clearMiddle(state);

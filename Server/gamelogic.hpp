@@ -20,6 +20,7 @@ namespace std {
 
 namespace GameLogic {
     using Player = uint;
+    using Durak = int;
     using PlayerAction = Protocol::GameAction;
     using Card = Protocol::Card;
     using Suit = Protocol::Suit;
@@ -46,16 +47,19 @@ namespace GameLogic {
         BattleType battle_type;
         // need two ok messages, one from attacker and one from coattacker
         std::map<Protocol::PlayerRole, bool> ok_msg;
+        Durak durak;
 
         //ctor to initialize default values for State
-        State(Player count) : 
+        State(Player count, Player prev_durak) : 
                 player_count(count) 
                 ,trump_card(0) //default initialization for trump_card
-                ,middle_cards{}{ //nullopt for all slots in the array
+                ,middle_cards{} //nullopt for all slots in the array
+                ,durak(prev_durak){
             player_roles.resize(count);
             player_hands.resize(count);
             available_actions.resize(count);
             ok_msg = {{Protocol::PlayerRole::ATTACKER, false}, {Protocol::PlayerRole::CO_ATTACKER, false}}; //initialize both attacker with not pressed
+            
         }
     };
 

@@ -83,16 +83,61 @@ void distributeNewCards(State &state){
 }
 
 void movePlayerRoles(State &state){
-    //rotate to the right. 
-    // e.g. [A, D, C, I, I] → [I, A, D, C, I]
-    std::rotate(state.player_roles.begin(), state.player_roles.end() - 1, state.player_roles.end());
+    //find finished players and save them in the vector
+    std::vector<bool> is_finished(state.player_count, false); //fixes the finished player roles
+    for(Player i = 0; i < state.player_count; ++i){
+        if(state.player_roles[i] == Protocol::PlayerRole::FINISHED){
+            is_finished[i] = true;
+        }
+    }
+
+    //extract the non finished roles
+    
+    std::vector<Protocol::PlayerRole> roles;
+    roles.reserve(state.player_count);
+    for(Player i = 0; i < state.player_count; ++i){
+        if(!is_finished[i]) roles.push_back(state.player_roles[i]);
+    }
+
+    //rotate the non finished roles
+    std::rotate(roles.begin(), roles.end() - 1, roles.end());
+
+    //put them back into the normal player_roles vector
+    for(Player i = 0, j = 0; i < state.player_count; ++i){
+        if(!is_finished[i]){
+            state.player_roles[i] = roles[j]; //increment j after inserting role
+            ++j;
+        }
+    }
 }
 
 void movePlayerRolesOneBack(State &state){
+    //find finished players and save them in the vector
+    std::vector<bool> is_finished(state.player_count, false); //fixes the finished player roles
+    for(Player i = 0; i < state.player_count; ++i){
+        if(state.player_roles[i] == Protocol::PlayerRole::FINISHED){
+            is_finished[i] = true;
+        }
+    }
+    
+    //extract the non finished roles
+    std::vector<Protocol::PlayerRole> roles;
+    roles.reserve(state.player_count);
+    for(Player i = 0; i < state.player_count; ++i){
+        if(!is_finished[i]) roles.push_back(state.player_roles[i]);
+    }
+
     //rotate to the left. 
-    // e.g. [I, A, D, C, I] → [A, D, C, I, I]
-    std::rotate(state.player_roles.begin(), state.player_roles.begin() + 1, state.player_roles.end());
+    std::rotate(roles.begin(), roles.begin() + 1, roles.end());
+
+    //put them back into the normal player_roles vector
+    for(Player i = 0, j = 0; i < state.player_count; ++i){
+        if(!is_finished[i]){
+            state.player_roles[i] = roles[j++]; //increment j after inserting role
+        }
+    }
 }
+
 std::vector<Player> findFinishedPlayers(State &state){
     assert(state.player_count == state.player_hands.size() && state.player_count == state.player_roles.size() && "The sizes and the count must match");
     std::vector<Player> finished_players;
@@ -105,54 +150,42 @@ std::vector<Player> findFinishedPlayers(State &state){
     return finished_players;
 }
 
-void eraseFromRolesAndHands(Player player_idx, State &state){
-    auto it_roles = state.player_roles.begin() + player_idx;
-    auto it_hands = state.player_hands.begin() + player_idx;
-
-    state.player_roles.erase(it_roles);
-    state.player_hands.erase(it_hands);
-    state.player_count--;
+void setPlayerToFinished(Player player_idx, State &state){
+    state.player_roles[player_idx] = Protocol::PlayerRole::FINISHED;
 }
 
 void eraseFinishedPlayer(Player player_idx, State &state){
     using namespace Protocol;
 
-    std::vector<PlayerRole> role_seq;
-    role_seq.push_back(ATTACKER); role_seq.push_back(DEFENDER);
-    if(state.player_count >= 3) {
-        role_seq.push_back(CO_ATTACKER);
-        
-    }
-
     switch(state.player_roles[player_idx]){
         case ATTACKER : {
             movePlayerRoles(state); //attacker becomes idle
-            eraseFromRolesAndHands(player_idx, state);
+            setPlayerToFinished(player_idx, state);
             movePlayerRolesOneBack(state);
             break;
         }
         case DEFENDER : {
             movePlayerRoles(state); //defender becomes attacker
             movePlayerRoles(state); //defender becomes idle
-            eraseFromRolesAndHands(player_idx, state);
+            setPlayerToFinished(player_idx, state);
             movePlayerRolesOneBack(state);
             break;
         }
         case CO_ATTACKER : {
             assert(state.player_count >= 3 && "there cannot be a coattacker with less than 3 players");
             if(state.player_count == 3) {
-                eraseFromRolesAndHands(player_idx, state);
+                setPlayerToFinished(player_idx, state);
                 break;
             }
             Player next_player_idx = (player_idx + 1) % state.player_count; //index of the idle player
             state.player_roles[next_player_idx] = CO_ATTACKER; //swap the values
             state.player_roles[player_idx] = IDLE; //maybe even use std::swap?
-            eraseFromRolesAndHands(player_idx, state);
+            setPlayerToFinished(player_idx, state);
             break;
         }
         case IDLE : { //this only is called when multiple people finish
             assert(state.player_count >= 4 && "there cannot be an idle with less than 4 players");
-            eraseFromRolesAndHands(player_idx, state); 
+            setPlayerToFinished(player_idx, state); 
             break;
         }
     }

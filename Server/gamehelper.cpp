@@ -243,14 +243,14 @@ void deleteOldBattle(State &state){
 
             if (state.draw_pile.empty()) {
                 state.battle_type = BATTLETYPE_ENDGAME; //start the endgame
-                removeFinishedPlayers(state);
+                removeFinishedPlayers(state); //moves the roles automatically
                 break;
             }
             movePlayerRoles(state);
             break;
         }
         case BATTLETYPE_ENDGAME : {
-            removeFinishedPlayers(state);
+            removeFinishedPlayers(state); //moves the roles automatically
             break;
         }
     }
@@ -259,6 +259,8 @@ void deleteOldBattle(State &state){
 
 void startNewBattle(State &state){
     using namespace Protocol;
+    if(onlyOnePlayerLeft(state)) return; //dont start a new battle
+
     switch(state.stage){
         case GAMESTAGE_DEFEND : {
             break;

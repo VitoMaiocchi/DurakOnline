@@ -82,6 +82,16 @@ void distributeNewCards(State &state){
     for(int p : drawOrder) drawFromMiddle(p, state);
 }
 
+Player findAttacker(State &state){
+    auto it = std::find_if(state.player_roles.begin(), state.player_roles.end(), 
+    [](Protocol::PlayerRole role){return role == Protocol::PlayerRole::ATTACKER;});
+    Player attacker_idx = -1;
+    if(it != state.player_roles.end()){
+        attacker_idx = std::distance(state.player_roles.begin(), it);
+    }
+    return attacker_idx;
+}
+
 void movePlayerRoles(State &state){
     //find finished players and save them in the vector
     std::vector<bool> is_finished(state.player_count, false); //fixes the finished player roles
@@ -271,6 +281,7 @@ void startNewBattle(State &state){
         }
     }
     state.stage = Protocol::GameStage::GAMESTAGE_FIRST_ATTACK;
+    GameHelpers::resetAvailableActions(state);
 }
 namespace GameHelpers {
     
@@ -329,8 +340,14 @@ namespace GameHelpers {
         void doneEvent(Player player, State &state){
             using namespace Protocol;
             
-            if(state.player_roles[player] == ATTACKER) state.ok_msg[ATTACKER] = true; 
-            if(state.player_roles[player] == CO_ATTACKER) state.ok_msg[CO_ATTACKER] = true;
+            if(state.player_roles[player] == ATTACKER) {
+                state.ok_msg[ATTACKER] = true;
+                state.available_actions[player].clear(); //player has no more available actions
+            } 
+            if(state.player_roles[player] == CO_ATTACKER) {
+                state.ok_msg[CO_ATTACKER] = true;
+                state.available_actions[player].clear(); //player has no more available actions
+            }
 
             switch(state.stage){
                 case GAMESTAGE_DEFEND : {
@@ -359,28 +376,15 @@ namespace GameHelpers {
         void reflectEvent(State &state){/*TODO*/}
         void pickUpEvent(State &state){/*TODO*/}
 
-        void updateAvailableActions(State &state){
-            switch(state.stage){
-                case Protocol::GameStage::GAMESTAGE_FIRST_ATTACK : {
-                    /*no available actions*/
-                    break;
-                }
-                case Protocol::GameStage::GAMESTAGE_OPEN : {
-                    /*pick up and/or reflect for defender*/
-                    break;
-                }
-                case Protocol::GameStage::GAMESTAGE_DEFEND : {
-                    /*ready for both attacker*/
-                    break;
-                }
-                case Protocol::GameStage::GAMESTAGE_POST_PICKUP : {
-                    /*ready for both attackers*/
-                    break;
-                }
-                case Protocol::GameStage::GAMESTAGE_DONE : {
-                    /*no available actions, destroy battle, setup new battle*/
-                    break;
-                }
-            }
+        //useless? just how i wrote it
+        void resetAvailableActions(State &state){
+            using namespace Protocol;
+
+            //if card was played and first attack -> defender pick up
+            //if card was played and first attack and d has matching rank -> defender pick  & reflect
+            //if card was played but not defended -> defender pick up 
+
+            //if cards were all defended and not button pressed -> attacker & coattacker ready
+            //if cards all defended and attacker pressed button
         }
 }

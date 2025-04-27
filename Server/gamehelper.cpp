@@ -13,33 +13,39 @@ void fillDeck(State &state){
 }
     
 void shuffleCards(State &state){
+    auto& deck = state.draw_pile;
     // Check if deck has been initialized properly
-    assert(state.draw_pile.size() == 52 && "Deck must contain exactly 52 cards before shuffling");
+    assert(deck.size() == 52 && "Deck must contain exactly 52 cards before shuffling");
     // Define pseudo random number generator
     std::random_device rd;
     std::mt19937 g(rd());
     // shuffle the deck
-    std::shuffle(state.draw_pile.begin(), state.draw_pile.end(), g);
+    std::shuffle(deck.begin(), deck.end(), g);
 }
     
 void distributeCardsBeginOfGame(State &state){
+    auto& deck = state.draw_pile;
     // distribute cards to player
     for (auto& hand : state.player_hands){
         // Check if players hands are empty
         assert(hand.empty() && "Player's hand should be empty before dealing");
         
         // distribute the top 6 cards to the player
-        hand.insert(state.draw_pile.begin(), state.draw_pile.begin()+6);
+        hand.insert(deck.begin(), deck.begin()+6);
         
         // remove cards from deck
-        state.draw_pile.erase(state.draw_pile.begin(), state.draw_pile.begin()+6);
+        deck.erase(deck.begin(), deck.begin()+6);
     }
 }
     
 void determineTrump(State &state){
-    assert(state.draw_pile.size() == 52 - (6 * state.player_hands.size()) && "Deck must contain exactly 52 cards before determining trump");
+    auto& deck = state.draw_pile;
+    auto& hands = state.player_hands;
+
+    assert(deck.size() == 52 - (6 * hands.size()) 
+        && "Deck must contain exactly 52 cards before determining trump");
     
-    state.trump_card = state.draw_pile.back();
+    state.trump_card = deck.back();
 }   
 
 void clearMiddle(State &state){
@@ -49,9 +55,12 @@ void clearMiddle(State &state){
 }
 
 void drawFromMiddle(Player player, State &state){
-    while(state.player_hands[player].size() < 6 && !state.draw_pile.empty()){ 
-        state.player_hands[player].insert(state.draw_pile.front());
-        state.draw_pile.pop_front();
+    auto& deck = state.draw_pile;
+    auto& hands = state.player_hands;
+
+    while(hands[player].size() < 6 && !deck.empty()){ 
+        hands[player].insert(deck.front());
+        deck.pop_front();
     }
 }
 
@@ -83,76 +92,92 @@ void distributeNewCards(State &state){
 }
 
 Player findAttacker(State &state){
-    auto it = std::find_if(state.player_roles.begin(), state.player_roles.end(), 
-    [](Protocol::PlayerRole role){return role == Protocol::PlayerRole::ATTACKER;});
+    using namespace Protocol;
+    auto& roles = state.player_roles;
+
+    auto it = std::find_if(roles.begin(), roles.end(), 
+    [](PlayerRole role){return role == ATTACKER;});
     Player attacker_idx = -1;
-    if(it != state.player_roles.end()){
-        attacker_idx = std::distance(state.player_roles.begin(), it);
+    if(it != roles.end()){
+        attacker_idx = std::distance(roles.begin(), it);
     }
     return attacker_idx;
 }
 
 void movePlayerRoles(State &state){
+    using namespace Protocol;
+    auto& count = state.player_count;
+    auto& roles = state.player_roles;
+
     //find finished players and save them in the vector
-    std::vector<bool> is_finished(state.player_count, false); //fixes the finished player roles
-    for(Player i = 0; i < state.player_count; ++i){
-        if(state.player_roles[i] == Protocol::PlayerRole::FINISHED){
+    std::vector<bool> is_finished(count, false); //fixes the finished player roles
+    for(Player i = 0; i < count; ++i){
+        if(roles[i] == FINISHED){
             is_finished[i] = true;
         }
     }
 
     //extract the non finished roles
     
-    std::vector<Protocol::PlayerRole> roles;
-    roles.reserve(state.player_count);
-    for(Player i = 0; i < state.player_count; ++i){
-        if(!is_finished[i]) roles.push_back(state.player_roles[i]);
+    std::vector<PlayerRole> movable;
+    movable.reserve(count);
+    for(Player i = 0; i < count; ++i){
+        if(!is_finished[i]) movable.push_back(roles[i]);
     }
 
     //rotate the non finished roles
-    std::rotate(roles.begin(), roles.end() - 1, roles.end());
+    std::rotate(movable.begin(), movable.end() - 1, movable.end());
 
     //put them back into the normal player_roles vector
-    for(Player i = 0, j = 0; i < state.player_count; ++i){
+    for(Player i = 0, j = 0; i < count; ++i){
         if(!is_finished[i]){
-            state.player_roles[i] = roles[j]; //increment j after inserting role
-            ++j;
+            roles[i] = movable[j++]; //increment j after inserting role
         }
     }
 }
 
 void movePlayerRolesOneBack(State &state){
+    using namespace Protocol;
+    auto& count = state.player_count;
+    auto& roles = state.player_roles;
+
     //find finished players and save them in the vector
-    std::vector<bool> is_finished(state.player_count, false); //fixes the finished player roles
-    for(Player i = 0; i < state.player_count; ++i){
-        if(state.player_roles[i] == Protocol::PlayerRole::FINISHED){
+    std::vector<bool> is_finished(count, false); //fixes the finished player roles
+    for(Player i = 0; i < count; ++i){
+        if(roles[i] == FINISHED){
             is_finished[i] = true;
         }
     }
-    
+
     //extract the non finished roles
-    std::vector<Protocol::PlayerRole> roles;
-    roles.reserve(state.player_count);
-    for(Player i = 0; i < state.player_count; ++i){
-        if(!is_finished[i]) roles.push_back(state.player_roles[i]);
+    
+    std::vector<PlayerRole> movable;
+    movable.reserve(count);
+    for(Player i = 0; i < count; ++i){
+        if(!is_finished[i]) movable.push_back(roles[i]);
     }
 
-    //rotate to the left. 
-    std::rotate(roles.begin(), roles.begin() + 1, roles.end());
+    //rotate to the left
+    std::rotate(movable.begin(), movable.begin() + 1, movable.end());
 
     //put them back into the normal player_roles vector
-    for(Player i = 0, j = 0; i < state.player_count; ++i){
+    for(Player i = 0, j = 0; i < count; ++i){
         if(!is_finished[i]){
-            state.player_roles[i] = roles[j++]; //increment j after inserting role
+            roles[i] = movable[j++]; //increment j after inserting role
         }
     }
 }
 
 std::vector<Player> findFinishedPlayers(State &state){
-    assert(state.player_count == state.player_hands.size() && state.player_count == state.player_roles.size() && "The sizes and the count must match");
+    auto& count = state.player_count;
+    auto& hands = state.player_hands;
+    auto& roles = state.player_roles;
+
+    assert(count == hands.size() && count == roles.size() && "The sizes and the count must match");
+    
     std::vector<Player> finished_players;
-    for(std::size_t i = 0; i < state.player_count; ++i){
-        if(state.player_hands[i].empty()){
+    for(std::size_t i = 0; i < count; ++i){
+        if(hands[i].empty()){
             finished_players.push_back(static_cast<Player>(i));
         }
     }
@@ -166,8 +191,10 @@ void setPlayerToFinished(Player player_idx, State &state){
 
 void eraseFinishedPlayer(Player player_idx, State &state){
     using namespace Protocol;
+    auto& count = state.player_count;
+    auto& roles = state.player_roles;
 
-    switch(state.player_roles[player_idx]){
+    switch(roles[player_idx]){
         case ATTACKER : {
             movePlayerRoles(state); //attacker becomes idle
             setPlayerToFinished(player_idx, state);
@@ -182,19 +209,19 @@ void eraseFinishedPlayer(Player player_idx, State &state){
             break;
         }
         case CO_ATTACKER : {
-            assert(state.player_count >= 3 && "there cannot be a coattacker with less than 3 players");
-            if(state.player_count == 3) {
+            assert(count >= 3 && "there cannot be a coattacker with less than 3 players");
+            if(count == 3) {
                 setPlayerToFinished(player_idx, state);
                 break;
             }
-            Player next_player_idx = (player_idx + 1) % state.player_count; //index of the idle player
-            state.player_roles[next_player_idx] = CO_ATTACKER; //swap the values
-            state.player_roles[player_idx] = IDLE; //maybe even use std::swap?
+            Player next_player_idx = (player_idx + 1) % count; //index of the idle player
+            roles[next_player_idx] = CO_ATTACKER; //swap the values
+            roles[player_idx] = IDLE; //maybe even use std::swap?
             setPlayerToFinished(player_idx, state);
             break;
         }
         case IDLE : { //this only is called when multiple people finish
-            assert(state.player_count >= 4 && "there cannot be an idle with less than 4 players");
+            assert(count >= 4 && "there cannot be an idle with less than 4 players");
             setPlayerToFinished(player_idx, state); 
             break;
         }
@@ -202,20 +229,23 @@ void eraseFinishedPlayer(Player player_idx, State &state){
 }
 
 bool onlyOnePlayerLeft(State &state){
-    int count = 0;
+    int active_count = 0;
     for(Player i = 0; i < state.player_count; ++i){
-        if(state.player_roles[i] != Protocol::PlayerRole::FINISHED) count++;
+        if(state.player_roles[i] != Protocol::PlayerRole::FINISHED) active_count++;
     }
-    return count == 1;
+    return active_count == 1;
 }
 
 Player findLastPlayer(State &state){
-    auto it = std::find_if(state.player_roles.begin(), state.player_roles.end(), 
-        [](Protocol::PlayerRole role){return role != Protocol::PlayerRole::FINISHED;});
+    using namespace Protocol;
+    auto& roles = state.player_roles;
+
+    auto it = std::find_if(roles.begin(), roles.end(), 
+        [](PlayerRole role){return role != FINISHED;});
     Player idx = -1;
-    if(it != state.player_roles.end()){
-        idx = std::distance(state.player_roles.begin(), it);
-    }
+
+    if(it != roles.end()) idx = std::distance(roles.begin(), it);
+
     return idx;
 }
 
@@ -239,11 +269,13 @@ void removeFinishedPlayers(State &state){
 }
 
 void deleteOldBattle(State &state){
+    auto& btype = state.battle_type;
+
     clearMiddle(state);
 
-    switch(state.battle_type){
+    switch(btype){
         case BATTLETYPE_FIRST : {
-            state.battle_type = BATTLETYPE_NORMAL; //start normal game
+            btype = BATTLETYPE_NORMAL; //start normal game
             distributeNewCards(state);
             movePlayerRoles(state);
             break;
@@ -252,7 +284,7 @@ void deleteOldBattle(State &state){
             distributeNewCards(state);
 
             if (state.draw_pile.empty()) {
-                state.battle_type = BATTLETYPE_ENDGAME; //start the endgame
+                btype = BATTLETYPE_ENDGAME; //start the endgame
                 removeFinishedPlayers(state); //moves the roles automatically
                 break;
             }
@@ -280,7 +312,7 @@ void startNewBattle(State &state){
             break;
         }
     }
-    state.stage = Protocol::GameStage::GAMESTAGE_FIRST_ATTACK;
+    state.stage = GAMESTAGE_FIRST_ATTACK;
     GameHelpers::resetAvailableActions(state);
 }
 
@@ -385,37 +417,40 @@ namespace GameHelpers {
         //attacker or coattacker can trigger
         void doneEvent(Player player, State &state){
             using namespace Protocol;
+            auto& count = state.player_count;
+            auto& roles = state.player_roles;
+            auto& ok = state.ok_msg;
+            auto& avail_act = state.available_actions;
             
-            if(state.player_roles[player] == ATTACKER) {
-                state.ok_msg[ATTACKER] = true;
-                state.available_actions[player].clear(); //player has no more available actions
+            if(roles[player] == ATTACKER) {
+                ok[ATTACKER] = true;
+                avail_act[player].clear(); //player has no more available actions
             } 
-            if(state.player_roles[player] == CO_ATTACKER) {
-                state.ok_msg[CO_ATTACKER] = true;
-                state.available_actions[player].clear(); //player has no more available actions
+            if(roles[player] == CO_ATTACKER) {
+                ok[CO_ATTACKER] = true;
+                avail_act[player].clear(); //player has no more available actions
             }
 
             switch(state.stage){
                 case GAMESTAGE_DEFEND : {
-                    if(state.player_count == 2) state.ok_msg[CO_ATTACKER] = true; 
+                    if(count == 2) ok[CO_ATTACKER] = true; 
                     
-                    if(state.ok_msg[ATTACKER] && state.ok_msg[CO_ATTACKER]){
+                    if(ok[ATTACKER] && ok[CO_ATTACKER]){
                         deleteOldBattle(state);
                         startNewBattle(state);
                     }
                     break;
                 }
                 case GAMESTAGE_POST_PICKUP : {
-                    if(state.player_count == 2) state.ok_msg[CO_ATTACKER] = true;
+                    if(count == 2) ok[CO_ATTACKER] = true;
 
-                    if(state.ok_msg[ATTACKER] && state.ok_msg[CO_ATTACKER]){
+                    if(ok[ATTACKER] && ok[CO_ATTACKER]){
                         deleteOldBattle(state);
                         startNewBattle(state);
                     }
                     break;
                 }
             }
-            
         }
 
         //only defender can trigger, it should only light up when possible to trigger

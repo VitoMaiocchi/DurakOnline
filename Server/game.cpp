@@ -15,7 +15,7 @@ using namespace GameLogic;
 
 
 //ctor
-Game::Game(Player player_count, Instance* parent_instance_m) : game_state_m(player_count){
+Game::Game(Player player_count, Instance* parent_instance_m, Durak previous_durak) : game_state_m(player_count, previous_durak){
     
     GameHelpers::cardSetup(game_state_m); //setup deck, distribute cards, etc..
 
@@ -30,7 +30,7 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
     switch(action){
         case PlayerAction::GAMEACTION_PASS_ON : {
             //reflectevent
-            GameHelpers::reflectEvent(game_state_m);
+            GameHelpers::reflectEvent(player, game_state_m);
             break;
         }
 
@@ -55,7 +55,7 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
     // helper helper(staet)
     // helper(state)
 
-    GameHelpers::updateAvailableActions(game_state_m);
+    // GameHelpers::updateAvailableActions(game_state_m);
 
     // broadcastState()
     // senndStaet()

@@ -283,6 +283,52 @@ void startNewBattle(State &state){
     state.stage = Protocol::GameStage::GAMESTAGE_FIRST_ATTACK;
     GameHelpers::resetAvailableActions(state);
 }
+
+bool topSlotsClear(State &state){
+    for(uint slot = 6; slot < 12; ++slot){
+        if(state.middle_cards[slot].has_value()) return false;
+    }
+    return true;
+}
+
+bool nextPlayerHasEnoughCards(Player next_player, State &state){
+    using namespace Protocol;
+    auto& middle = state.middle_cards;
+    auto& hands = state.player_hands;
+
+    uint cards_in_middle = 0;
+    for(auto& slot : middle) if(slot.has_value()) cards_in_middle++;
+    if(hands[next_player].size() > cards_in_middle) return true;
+
+    return false;
+}
+
+bool ranksMatchToPassOn(Protocol::Rank rank, State &state){
+    using namespace Protocol;
+    auto& middle = state.middle_cards;
+
+    //only loop over the bottom slots
+    for(uint slot = 0; slot < 6; ++slot){
+        if(!middle[slot].has_value()) continue;
+        if(middle[slot].value().rank != rank) return false;
+    }
+    return true;
+}
+
+std::optional<Card> getReflectCard(Player player, State &state){
+    using namespace Protocol;
+    if(state.player_roles[player] != DEFENDER) return std::nullopt;
+    if(!topSlotsClear(state)) return std::nullopt;
+    if(!nextPlayerHasEnoughCards((player + 1) % state.player_count, state)) return std::nullopt;
+
+    Suit trump = state.trump_card.suit;
+    for(Card card : state.player_hands[player]){
+        if(card.suit != trump) continue;
+        if(!ranksMatchToPassOn(card.rank, state)) continue;
+        return card;
+    }
+    return std::nullopt;
+}
 namespace GameHelpers {
     
         void cardSetup(State &state){
@@ -372,11 +418,24 @@ namespace GameHelpers {
             
         }
 
-        //only defender can trigger
-        void reflectEvent(State &state){/*TODO*/}
+        //only defender can trigger, it should only light up when possible to trigger
+        //but we do checks anyways
+        void reflectEvent(Player player, State &state){
+            using namespace Protocol;
+            //it only happens in gamestage open and only defender triggers
+
+            //check if defender has the card with the same rank
+            Player defender_idx = (findAttacker(state) + 1) % state.player_count;
+            auto card = getReflectCard(defender_idx, state);
+            if(!card.has_value()) return;
+
+            movePlayerRoles(state);
+            state.available_actions[defender_idx].clear();
+        }
+        
         void pickUpEvent(State &state){/*TODO*/}
 
-        //useless? just how i wrote it
+        //useless? probably
         void resetAvailableActions(State &state){
             using namespace Protocol;
 

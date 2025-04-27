@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <ranges>
+#include<optional>
 
 using namespace GameLogic;
 
@@ -14,7 +15,7 @@ void findFirstAttacker(State &game_state_m); //finds first attacker
 
 //handlePlayerAction Event helper functions
 void doneEvent(Player player, State &state);
-void reflectEvent(State &state);
+void reflectEvent(Player player, State &state);
 void pickUpEvent(State &state);
 
 void resetAvailableActions(State &state); 

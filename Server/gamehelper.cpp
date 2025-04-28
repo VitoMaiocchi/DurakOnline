@@ -455,7 +455,7 @@ namespace GameHelpers {
 
         //only defender can trigger, it should only light up when possible to trigger
         //but we do checks anyways
-        void reflectEvent(Player player, State &state){
+        void reflectEvent(State &state){
             using namespace Protocol;
             //it only happens in gamestage open and only defender triggers
 

@@ -30,7 +30,7 @@ void Game::handlePlayerAction(Player player, PlayerAction action) {
     switch(action){
         case PlayerAction::GAMEACTION_PASS_ON : {
             //reflectevent
-            GameHelpers::reflectEvent(player, game_state_m);
+            GameHelpers::reflectEvent(game_state_m);
             break;
         }
 

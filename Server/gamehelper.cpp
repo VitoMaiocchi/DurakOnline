@@ -468,7 +468,12 @@ namespace GameHelpers {
             state.available_actions[defender_idx].clear();
         }
         
-        void pickUpEvent(State &state){/*TODO*/}
+        void pickUpEvent(State &state){
+            //trytopickup
+            //only defender can trigger this
+            //it should only be visible when theres undefended cards
+            //i.e. battle stage must be Open
+        }
 
         //useless? probably
         void resetAvailableActions(State &state){

@@ -1,10 +1,16 @@
 #pragma once
 
+#include <optional>
+
 #include "protocol.hpp"
 #include "game.hpp"
 
 class Instance {
+    private:
+    std::optional<Game> current_game;
+
     public:
+    typedef Protocol::PlayerUUID PlayerID;
 
     //das chasch du alles modifiziere. mach das wi du willsch
     void broadcastState(Protocol::GameStage stage,

@@ -120,7 +120,8 @@ typedef uint64_t PlayerUUID;
 
 enum MessageType { 
     //Layer 1 (da burchts no paar)
-    SERVERMESSAGE_GAMESELECTION,         //example. da chammer no me lobby stuff adde
+    SERVERMESSAGE_AVAILABLE_LOBBIES,     //sends list of lobbies
+    CLIENTMESSAGE_JOIN_LOBBY,            //joins existing lobby or creates new one by name
     CLIENTMESSAGE_REQUEST_USER_DATA,     //user data über e uuid requeste
     SERVERMESSAGE_USER_DATA,             //returns user data (name, stats, bild, etc)
 
@@ -154,6 +155,22 @@ struct Message {
 std::unique_ptr<Message> deserialiseMessage(std::string string);
 
 //LAYER 1
+
+struct ServerMessageAvailableLobbies : public Message {
+    ServerMessageAvailableLobbies();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    bool fromJson(const rapidjson::Value& obj);
+
+    std::map<std::string, uint> lobbies; //name and players
+};
+
+struct ClientMessageJoinLobby : public Message {
+    ClientMessageJoinLobby();
+    void getContent(rapidjson::Value &content, Allocator &allocator) const;
+    bool fromJson(const rapidjson::Value& obj);
+
+    std::string lobby_name; //will create a new one if it does not allready exist
+};
 
 struct ClientMessageRequestUserData : public Message {
     ClientMessageRequestUserData();
@@ -280,6 +297,12 @@ std::unique_ptr<Message> deserialiseMessage(std::string string) {
 
     std::unique_ptr<Message> message;
     switch (type) {
+        case SERVERMESSAGE_AVAILABLE_LOBBIES:
+            message = std::make_unique<ServerMessageAvailableLobbies>();
+        break;
+        case CLIENTMESSAGE_JOIN_LOBBY:
+            message = std::make_unique<ClientMessageJoinLobby>();
+        break;
         case CLIENTMESSAGE_REQUEST_USER_DATA:
             message = std::make_unique<ClientMessageRequestUserData>();
         break;
@@ -341,7 +364,13 @@ std::string Message::toJson() const {
 }
 
 
-// LAYER 1
+ServerMessageAvailableLobbies::ServerMessageAvailableLobbies() {messageType = SERVERMESSAGE_AVAILABLE_LOBBIES; }
+void ServerMessageUserData::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
+bool ServerMessageUserData::fromJson(const rapidjson::Value& obj) {  return false; /*TODO*/ }
+
+ClientMessageJoinLobby::ClientMessageJoinLobby() {messageType = CLIENTMESSAGE_JOIN_LOBBY; }
+void ClientMessageJoinLobby::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
+bool ClientMessageJoinLobby::fromJson(const rapidjson::Value& obj) {  return false; /*TODO*/ }
 
 ClientMessageRequestUserData::ClientMessageRequestUserData() { messageType = CLIENTMESSAGE_REQUEST_USER_DATA; }
 void ClientMessageRequestUserData::getContent(rapidjson::Value &content, Allocator &allocator) const {

@@ -19,9 +19,9 @@ void reflectEvent(State &state);
 void pickUpEvent(State &state);
 
 
-void attackCard();
-void defendCard();
-void coattackCard();
+void attackCard(State &state);
+void defendCard(State &state);
+void coattackCard(State &state);
 
 void resetAvailableActions(State &state); //delette this?
 //die werded verschickt und chönd au grad benuzt werde zum luege ob en action wo öpper macht legal isch

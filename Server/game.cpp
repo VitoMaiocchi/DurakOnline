@@ -15,7 +15,7 @@ using namespace GameLogic;
 
 
 //ctor
-Game::Game(Player player_count, Instance* parent_instance_m, Durak previous_durak) : game_state_m(player_count, previous_durak){
+Game::Game(Player player_count, Instance* parent_instance_m, Player previous_durak) : game_state_m(player_count, previous_durak){
     
     GameHelpers::cardSetup(game_state_m); //setup deck, distribute cards, etc..
 

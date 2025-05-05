@@ -389,6 +389,7 @@ void startNewBattle(State &state){
     GameHelpers::resetAvailableActions(state);
 }    
 
+
 namespace GameHelpers {
     
         void cardSetup(State &state){
@@ -511,6 +512,11 @@ namespace GameHelpers {
             state.available_actions[defender_idx].clear();
         }
 
+        void attackCard(State &state){
+            //check if validMoveAttacker 
+            //placeCard & change stage
+            //check if still cards, if not set to finish
+        }
         //useless? probably
         void resetAvailableActions(State &state){
             using namespace Protocol;

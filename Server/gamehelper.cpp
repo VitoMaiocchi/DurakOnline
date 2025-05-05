@@ -64,6 +64,10 @@ void drawFromMiddle(Player player, State &state){
     }
 }
 
+uint countCardsInMiddle(State &state){
+
+}
+
 void distributeNewCards(State &state){
     using namespace Protocol;
     auto& roles = state.player_roles;
@@ -102,6 +106,11 @@ Player findAttacker(State &state){
         attacker_idx = std::distance(roles.begin(), it);
     }
     return attacker_idx;
+}
+
+Player findDefender(State &state){
+    Player defender = (findAttacker(state) + 1) % state.player_count;
+    return defender;
 }
 
 void movePlayerRoles(State &state){
@@ -268,54 +277,6 @@ void removeFinishedPlayers(State &state){
     }
 }
 
-void deleteOldBattle(State &state){
-    auto& btype = state.battle_type;
-
-    clearMiddle(state);
-
-    switch(btype){
-        case BATTLETYPE_FIRST : {
-            btype = BATTLETYPE_NORMAL; //start normal game
-            distributeNewCards(state);
-            movePlayerRoles(state);
-            break;
-        }
-        case BATTLETYPE_NORMAL : {
-            distributeNewCards(state);
-
-            if (state.draw_pile.empty()) {
-                btype = BATTLETYPE_ENDGAME; //start the endgame
-                removeFinishedPlayers(state); //moves the roles automatically
-                break;
-            }
-            movePlayerRoles(state);
-            break;
-        }
-        case BATTLETYPE_ENDGAME : {
-            removeFinishedPlayers(state); //moves the roles automatically
-            break;
-        }
-    }
-
-}
-
-void startNewBattle(State &state){
-    using namespace Protocol;
-    if(onlyOnePlayerLeft(state)) return; //dont start a new battle
-
-    switch(state.stage){
-        case GAMESTAGE_DEFEND : {
-            break;
-        }
-        case GAMESTAGE_POST_PICKUP : {
-            movePlayerRoles(state);
-            break;
-        }
-    }
-    state.stage = GAMESTAGE_FIRST_ATTACK;
-    GameHelpers::resetAvailableActions(state);
-}
-
 bool topSlotsClear(State &state){
     for(uint slot = 6; slot < 12; ++slot){
         if(state.middle_cards[slot].has_value()) return false;
@@ -361,6 +322,74 @@ std::optional<Card> getReflectCard(Player player, State &state){
     }
     return std::nullopt;
 }
+
+bool attackedWithMaxCards(State &state){ //check if defender can even defend the cards
+    auto& middle = state.middle_cards;
+
+    Player defender_idx = findDefender(state);
+    uint d_card_count = state.player_hands[defender_idx].size();
+    switch(state.battle_type){
+        case BATTLETYPE_FIRST: { //max cards are 5
+
+        }
+    }
+}
+
+void tryPickUp(State &state){
+    
+}        
+
+void deleteOldBattle(State &state){
+    auto& btype = state.battle_type;
+
+    clearMiddle(state);
+
+    switch(btype){
+        case BATTLETYPE_FIRST : {
+            btype = BATTLETYPE_NORMAL; //start normal game
+            distributeNewCards(state);
+            movePlayerRoles(state);
+            break;
+        }    
+        case BATTLETYPE_NORMAL : {
+            distributeNewCards(state);
+
+            if (state.draw_pile.empty()) {
+                btype = BATTLETYPE_ENDGAME; //start the endgame
+                removeFinishedPlayers(state); //moves the roles automatically
+                break;
+            }    
+            movePlayerRoles(state);
+            break;
+        }    
+        case BATTLETYPE_ENDGAME : {
+            removeFinishedPlayers(state); //moves the roles automatically
+            break;
+        }    
+    }    
+
+}    
+
+void startNewBattle(State &state){
+    using namespace Protocol;
+    if(onlyOnePlayerLeft(state)) return; //dont start a new battle
+
+    switch(state.stage){
+        case GAMESTAGE_DEFEND : {
+            break;
+        }    
+        case GAMESTAGE_POST_PICKUP : {
+            tryPickUp(state);
+            movePlayerRoles(state);
+            break;
+        }    
+    }    
+    state.stage = GAMESTAGE_FIRST_ATTACK;
+    //attackers and defender no more available actions
+    GameHelpers::resetAvailableActions(state);
+}    
+
+
 namespace GameHelpers {
     
         void cardSetup(State &state){
@@ -445,6 +474,7 @@ namespace GameHelpers {
                     if(count == 2) ok[CO_ATTACKER] = true;
 
                     if(ok[ATTACKER] && ok[CO_ATTACKER]){
+                        tryPickUp(state);
                         deleteOldBattle(state);
                         startNewBattle(state);
                     }
@@ -469,12 +499,24 @@ namespace GameHelpers {
         }
         
         void pickUpEvent(State &state){
-            //trytopickup
+            using namespace Protocol;
             //only defender can trigger this
             //it should only be visible when theres undefended cards
             //i.e. battle stage must be Open
+            if(state.stage != GAMESTAGE_OPEN) return;
+            //set stage to post pickup
+            state.stage = GAMESTAGE_POST_PICKUP;
+            //if attackedWithMaxCards -> startnextbattle
+            //else wait till the others pressed done
+            int defender_idx = (findAttacker(state) + 1) % state.player_count;
+            state.available_actions[defender_idx].clear();
         }
 
+        void attackCard(State &state){
+            //check if validMoveAttacker 
+            //placeCard & change stage
+            //check if still cards, if not set to finish
+        }
         //useless? probably
         void resetAvailableActions(State &state){
             using namespace Protocol;

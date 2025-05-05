@@ -64,7 +64,7 @@ enum CardSlot {
 
 enum GameAction {
     GAMEACTION_READY,
-    GAMEACTION_PASS_ON,
+    GAMEACTION_REFLECT, 
     GAMEACTION_PICK_UP,
 };
 

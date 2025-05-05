@@ -28,7 +28,7 @@ Game::Game(Player player_count, Instance* parent_instance_m, Durak previous_dura
 
 void Game::handlePlayerAction(Player player, PlayerAction action) {
     switch(action){
-        case PlayerAction::GAMEACTION_PASS_ON : {
+        case PlayerAction::GAMEACTION_REFLECT : {
             //reflectevent
             GameHelpers::reflectEvent(game_state_m);
             break;

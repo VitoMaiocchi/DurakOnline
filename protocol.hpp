@@ -365,8 +365,8 @@ std::string Message::toJson() const {
 
 
 ServerMessageAvailableLobbies::ServerMessageAvailableLobbies() {messageType = SERVERMESSAGE_AVAILABLE_LOBBIES; }
-void ServerMessageUserData::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
-bool ServerMessageUserData::fromJson(const rapidjson::Value& obj) {  return false; /*TODO*/ }
+void ServerMessageAvailableLobbies::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }
+bool ServerMessageAvailableLobbies::fromJson(const rapidjson::Value& obj) {  return false; /*TODO*/ }
 
 ClientMessageJoinLobby::ClientMessageJoinLobby() {messageType = CLIENTMESSAGE_JOIN_LOBBY; }
 void ClientMessageJoinLobby::getContent(rapidjson::Value &content, Allocator &allocator) const { /*TODO*/ }

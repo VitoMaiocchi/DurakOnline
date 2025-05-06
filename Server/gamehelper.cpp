@@ -65,7 +65,7 @@ void drawFromMiddle(Player player, State &state){
 }
 
 uint countCardsInMiddle(State &state){
-
+    return 0;
 }
 
 void distributeNewCards(State &state){

@@ -517,6 +517,7 @@ namespace GameHelpers {
             //placeCard & change stage
             //check if still cards, if not set to finish
         }
+        
         //useless? probably
         void resetAvailableActions(State &state){
             using namespace Protocol;

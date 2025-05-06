@@ -15,8 +15,16 @@ using namespace GameLogic;
 
 
 //ctor
-Game::Game(Player player_count, Instance* parent_instance_m, Player previous_durak) : game_state_m(player_count, previous_durak){
+Game::Game(Player player_count, Instance* parent_instance_m, Player previous_durak) {
     
+    game_state_m.player_count = player_count;
+    game_state_m.middle_cards = {}; 
+    game_state_m.durak = previous_durak;
+    game_state_m.player_roles.resize(player_count);
+    game_state_m.player_hands.resize(player_count);
+    game_state_m.available_actions.resize(player_count);
+    game_state_m.ok_msg = {{Protocol::PlayerRole::ATTACKER, false}, {Protocol::PlayerRole::CO_ATTACKER, false}};
+
     GameHelpers::cardSetup(game_state_m); //setup deck, distribute cards, etc..
 
     GameHelpers::findFirstAttacker(game_state_m); //find first attacker

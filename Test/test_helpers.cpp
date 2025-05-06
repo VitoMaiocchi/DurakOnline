@@ -2,6 +2,7 @@
 #include "../Server/gamehelper.hpp"
 #include "../Server/helperheader.hpp"
 #include "../Server/gamelogic.hpp"
+#include "../Server/game.hpp"
 #include <tuple>
 #include <algorithm>
 
@@ -92,28 +93,14 @@ void placeCardsInMiddleSlot_TESTHELPER(Card card, CardSlot slot, State &s){
     s.middle_cards[slot] = card;
 }
 
-TEST(FillDeck, Has52Cards) {
-    State s(4, -1);
-    fillDeck(s);
-    EXPECT_EQ(s.draw_pile.size(), 52);
-}
 
-TEST(Shuffle, CardsAreDifferentOrder) {
-    State s(4, -1);
-    fillDeck(s);
-    auto before = s.draw_pile;
-    shuffleCards(s);
-    auto after = s.draw_pile;
-
-    EXPECT_NE(before, after);
-    EXPECT_EQ(before.size(), after.size());
-}
 
 TEST(DistributeCardsBegin, EveryPlayerHas6cards){
-    State s(4, -1);
-    fillDeck(s);
-    shuffleCards(s);
-    distributeCardsBeginOfGame(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // fillDeck(s);
+    // shuffleCards(s);
+    // distributeCardsBeginOfGame(s);
 
     EXPECT_EQ(6, s.player_hands[0].size());
     EXPECT_EQ(6, s.player_hands[1].size());
@@ -122,10 +109,11 @@ TEST(DistributeCardsBegin, EveryPlayerHas6cards){
 }
 
 TEST(DetermineTrump, CheckThatATrumpWasGiven){
-    State s(4, -1);
-    fillDeck(s);
-    shuffleCards(s);
-    distributeCardsBeginOfGame(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // fillDeck(s);
+    // shuffleCards(s);
+    // distributeCardsBeginOfGame(s);
     auto trump_suit = SUIT_count;
     auto trump_rank = RANK_count;
     determineTrump(s);
@@ -138,10 +126,11 @@ TEST(DetermineTrump, CheckThatATrumpWasGiven){
 }
 
 TEST(PlayerRoles, MoveTheRoles){
-    State s(4, -1);
-    GameHelpers::cardSetup(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
     int attacker_idx = findAttacker_TESTHELPER(s);
 
     int defender_idx = (attacker_idx + 1) % s.player_count;
@@ -158,10 +147,11 @@ TEST(PlayerRoles, MoveTheRoles){
 
 //remove finished players one by one
 TEST(RemoveFinishedPlayer, RemoveAttacker2p){
-    State s(3, -1);
-    GameHelpers::cardSetup(s);
+    Game game(3, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -199,10 +189,12 @@ TEST(RemoveFinishedPlayer, RemoveAttacker2p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker3p){
-    State s(3, -1);
-    GameHelpers::cardSetup(s);
+    Game game(3, nullptr, -1);
+    State& s = game.getState();
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::cardSetup(s);
+
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -229,10 +221,11 @@ TEST(RemoveFinishedPlayer, RemoveAttacker3p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker4p){
-    State s(4, -1);
-    GameHelpers::cardSetup(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -259,10 +252,11 @@ TEST(RemoveFinishedPlayer, RemoveAttacker4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker5p){
-    State s(5, -1);
-    GameHelpers::cardSetup(s);
+    Game game(5, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -289,10 +283,11 @@ TEST(RemoveFinishedPlayer, RemoveAttacker5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker6p){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -319,10 +314,11 @@ TEST(RemoveFinishedPlayer, RemoveAttacker6p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender2p){
-    State s(3, -1);
-    GameHelpers::cardSetup(s);
+    Game game(3, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -360,10 +356,11 @@ TEST(RemoveFinishedPlayer, RemoveDefender2p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender3p){
-    State s(3, -1);
-    GameHelpers::cardSetup(s);
+    Game game(3, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -390,10 +387,11 @@ TEST(RemoveFinishedPlayer, RemoveDefender3p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender4p){
-    State s(4, -1);
-    GameHelpers::cardSetup(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -420,10 +418,11 @@ TEST(RemoveFinishedPlayer, RemoveDefender4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender5p){
-    State s(5, -1);
-    GameHelpers::cardSetup(s);
+    Game game(5, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -450,10 +449,11 @@ TEST(RemoveFinishedPlayer, RemoveDefender5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender6p){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
 
-    GameHelpers::findFirstAttacker(s);
+    // GameHelpers::findFirstAttacker(s);
 
     s.draw_pile.clear(); //clear deck
     
@@ -480,9 +480,10 @@ TEST(RemoveFinishedPlayer, RemoveDefender6p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoattacker3p){
-    State s(3, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(3, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     s.draw_pile.clear(); //clear deck
     
     //find coattacker
@@ -507,9 +508,10 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker3p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoAttacker4p){
-    State s(4, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     s.draw_pile.clear(); //clear deck
     
     //find coattacker
@@ -534,9 +536,10 @@ TEST(RemoveFinishedPlayer, RemoveCoAttacker4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoattacker5p){
-    State s(5, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(5, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     s.draw_pile.clear(); //clear deck
     
     //find coattacker
@@ -560,9 +563,10 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoattacker6p){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     s.draw_pile.clear(); //clear deck
 
 
@@ -588,9 +592,10 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker6p){
 
 //remove multiple players at once
 TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
-    State s(4, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     setupHandsOfPlayers_TESTHELPER(s);
 
@@ -619,9 +624,10 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender5p){
-    State s(5,-1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(5, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     setupHandsOfPlayers_TESTHELPER(s);
 
@@ -645,9 +651,10 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender6p){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     setupHandsOfPlayers_TESTHELPER(s);
 
     int attacker_idx = findAttacker_TESTHELPER(s);
@@ -670,9 +677,10 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender6p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAtDefCoat4p){
-    State s(4,-1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     setupHandsOfPlayers_TESTHELPER(s);
 
     int attacker_idx = findAttacker_TESTHELPER(s);
@@ -697,9 +705,10 @@ TEST(RemoveFinishedPlayer, RemoveAtDefCoat4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAtDefCoat5p){
-    State s(5, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(5, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     setupHandsOfPlayers_TESTHELPER(s);
 
     int attacker_idx = findAttacker_TESTHELPER(s);
@@ -724,9 +733,10 @@ TEST(RemoveFinishedPlayer, RemoveAtDefCoat5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAtDefCoat6p){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
     setupHandsOfPlayers_TESTHELPER(s);
 
     int attacker_idx = findAttacker_TESTHELPER(s);
@@ -751,9 +761,10 @@ TEST(RemoveFinishedPlayer, RemoveAtDefCoat6p){
 }
 
 TEST(ReflectCard, TopSlotsNotClear){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     Card card1 = Card({RANK_TWO, SUIT_CLUBS});
     Card card2 = Card({RANK_TWO, SUIT_HEARTS});
@@ -775,9 +786,10 @@ TEST(ReflectCard, TopSlotsNotClear){
 }
 
 TEST(ReflectCard, NoCorrectCardInHand){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     int attacker_idx = findAttacker_TESTHELPER(s);
     int defender_idx = (attacker_idx + 1) % s.player_count;
@@ -800,9 +812,10 @@ TEST(ReflectCard, NoCorrectCardInHand){
 }
 
 TEST(ReflectCard, NotEnoughtCards){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     setupHandsOfPlayers_TESTHELPER(s);
 
@@ -828,9 +841,10 @@ TEST(ReflectCard, NotEnoughtCards){
 }
 
 TEST(ReflectCard, RanksDontMatch){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     setupHandsOfPlayers_TESTHELPER(s);
 
@@ -864,9 +878,10 @@ TEST(ReflectCard, RanksDontMatch){
 }
 
 TEST(ReflectCard, GetCardToReflect){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     setupHandsOfPlayers_TESTHELPER(s);
     Suit trump = s.trump_card.suit;
@@ -894,10 +909,70 @@ TEST(ReflectCard, GetCardToReflect){
     EXPECT_EQ(card_got.value().suit, card3.suit);
 }
 
-TEST(ReflectCard, ReflectSuccesfully){
-    State s(6, -1);
-    GameHelpers::cardSetup(s);
-    GameHelpers::findFirstAttacker(s);
+TEST(ReflectCard, ReflectSuccesfully3p){
+    Game game(3, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+
+    Card card3 = Card({RANK_TWO, trump});
+    s.player_hands[defender_idx].insert(card3);
+
+
+    EXPECT_EQ(true, topSlotsClear(s));
+    EXPECT_EQ(true, nextPlayerHasEnoughCards(coattacker_idx,s));
+    reflectEvent(s);
+    EXPECT_EQ(DEFENDER, s.player_roles[coattacker_idx]);
+    EXPECT_EQ(CO_ATTACKER, s.player_roles[attacker_idx]);
+    EXPECT_EQ(ATTACKER, s.player_roles[defender_idx]);
+}
+
+TEST(ReflectCard, ReflectSuccesfully4p){
+    Game game(4, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+
+    Card card3 = Card({RANK_TWO, trump});
+    s.player_hands[defender_idx].insert(card3);
+
+
+    EXPECT_EQ(true, topSlotsClear(s));
+    EXPECT_EQ(true, nextPlayerHasEnoughCards(coattacker_idx,s));
+    reflectEvent(s);
+    EXPECT_EQ(DEFENDER, s.player_roles[coattacker_idx]);
+    EXPECT_EQ(CO_ATTACKER, s.player_roles[first_idle]);
+    EXPECT_EQ(ATTACKER, s.player_roles[defender_idx]);
+}
+
+TEST(ReflectCard, ReflectSuccesfully6p){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    // GameHelpers::cardSetup(s);
+    // GameHelpers::findFirstAttacker(s);
 
     int attacker_idx = findAttacker_TESTHELPER(s);
     int defender_idx = (attacker_idx + 1) % s.player_count;

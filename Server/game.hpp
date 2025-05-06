@@ -20,4 +20,7 @@ class Game {
         void handlePlayerAction(GameLogic::Player player, GameLogic::PlayerAction action);
         void playerCardEvent(GameLogic::Player player, uint slot, std::list<GameLogic::Card> card);
         void disconnectNotify(GameLogic::Player player); //unexpected disconnect mid game;
+
+        //getter to test all helpers
+        GameLogic::State& getState() {return game_state_m;}
 };

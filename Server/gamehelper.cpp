@@ -326,13 +326,16 @@ std::optional<Card> getReflectCard(Player player, State &state){
 bool attackedWithMaxCards(State &state){ //check if defender can even defend the cards
     auto& middle = state.middle_cards;
 
+    /*TODO*/
     Player defender_idx = findDefender(state);
     uint d_card_count = state.player_hands[defender_idx].size();
     switch(state.battle_type){
         case BATTLETYPE_FIRST: { //max cards are 5
-
+            
         }
+        break;
     }
+    return false;
 }
 
 void tryPickUp(State &state){

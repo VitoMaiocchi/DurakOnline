@@ -49,7 +49,6 @@ namespace GameLogic {
         std::map<Protocol::PlayerRole, bool> ok_msg;
         Player durak;
 
-        State() = default; //ctor
     };
 
 

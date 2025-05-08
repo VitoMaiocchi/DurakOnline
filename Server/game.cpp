@@ -12,6 +12,7 @@ using namespace GameLogic;
 #define Pcount game_state_m.player_count
 #define Tcard game_state_m.trump_card
 #define Btype game_state_m.battle_type
+#define GStage game_state_m.stage
 
 
 //ctor
@@ -31,6 +32,7 @@ Game::Game(Player player_count, Instance* parent_instance_m, Player previous_dur
     
     //start first battle
     Btype = BattleType::BATTLETYPE_FIRST;
+    GStage = Protocol::GameStage::GAMESTAGE_FIRST_ATTACK;
 
 }
 

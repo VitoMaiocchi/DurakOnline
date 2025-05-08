@@ -91,6 +91,10 @@ void printRoles_TEST_HELPER(State &s){
 
 void placeCardsInMiddleSlot_TESTHELPER(Card card, CardSlot slot, State &s){
     s.middle_cards[slot] = card;
+    if(slot < 6) s.stage = GAMESTAGE_OPEN;
+
+    auto cards = countCardsInMiddle(s);
+    if(slot >= 6 && cards.second == 0) s.stage = GAMESTAGE_DEFEND;
 }
 
 
@@ -997,3 +1001,225 @@ TEST(ReflectCard, ReflectSuccesfully6p){
     EXPECT_EQ(CO_ATTACKER, s.player_roles[first_idle]);
     EXPECT_EQ(ATTACKER, s.player_roles[defender_idx]);
 }
+
+TEST(attackedMaxCards, DidNotAttackWithMaxCards_2a){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+
+    // std::cout << "small check for stage and btype:\n" << "stage: " << s.stage << " btype: " << s.battle_type<< std::endl;
+    EXPECT_EQ(false, attackedWithMaxCards(s));
+}
+
+//the numbers at the end:
+//cards attacked with --- cards defended with --- battle type
+TEST(attackedMaxCards, AttackWithMaxCards_5a_0d_0){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_SPADES});
+    Card card4 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card5 = Card({RANK_THREE, SUIT_SPADES});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+    placeCardsInMiddleSlot_TESTHELPER(card3, CARDSLOT_3, s);
+    placeCardsInMiddleSlot_TESTHELPER(card4, CARDSLOT_4, s);
+    placeCardsInMiddleSlot_TESTHELPER(card5, CARDSLOT_5, s);
+    // placeCardsInMiddleSlot_TESTHELPER(card6, CARDSLOT_6, s);
+    // std::cout << "small check for stage and btype:\n" << "stage: " << s.stage << " btype: " << s.battle_type<< std::endl;
+    EXPECT_EQ(true, attackedWithMaxCards(s));
+}
+
+TEST(attackedMaxCards, AttackWithMaxCards_5a_2d_0){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_SPADES});
+    Card card4 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card5 = Card({RANK_THREE, SUIT_SPADES});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    Card cardD1 = Card({RANK_THREE, SUIT_CLUBS});
+    Card cardD2 = Card({RANK_FOUR, SUIT_HEARTS});
+
+    //attacking cards
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+    placeCardsInMiddleSlot_TESTHELPER(card3, CARDSLOT_3, s);
+    placeCardsInMiddleSlot_TESTHELPER(card4, CARDSLOT_4, s);
+    //def cards
+    placeCardsInMiddleSlot_TESTHELPER(cardD1, CARDSLOT_1_TOP, s);
+    placeCardsInMiddleSlot_TESTHELPER(cardD2, CARDSLOT_2_TOP, s);
+
+    placeCardsInMiddleSlot_TESTHELPER(card5, CARDSLOT_5, s);
+    // placeCardsInMiddleSlot_TESTHELPER(card6, CARDSLOT_6, s);
+    // std::cout << "small check for stage and btype:\n" << "stage: " << s.stage << " btype: " << s.battle_type<< std::endl;
+    EXPECT_EQ(true, attackedWithMaxCards(s));
+}
+//the numbers at the end:
+//cards attacked with --- cards defended with --- battle type
+TEST(attackedMaxCards, AttackWithMaxCards_6a_0d_1){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    s.battle_type = BATTLETYPE_NORMAL;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_SPADES});
+    Card card4 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card5 = Card({RANK_THREE, SUIT_SPADES});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+    placeCardsInMiddleSlot_TESTHELPER(card3, CARDSLOT_3, s);
+    placeCardsInMiddleSlot_TESTHELPER(card4, CARDSLOT_4, s);
+    placeCardsInMiddleSlot_TESTHELPER(card5, CARDSLOT_5, s);
+    placeCardsInMiddleSlot_TESTHELPER(card6, CARDSLOT_6, s);
+    // std::cout << "small check for stage and btype:\n" << "stage: " << s.stage << " btype: " << s.battle_type<< std::endl;
+    EXPECT_EQ(true, attackedWithMaxCards(s));
+}
+
+TEST(attackedMaxCards, AttackWithMaxCards_6a_2d_1){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    s.battle_type = BATTLETYPE_NORMAL;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_SPADES});
+    Card card4 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card5 = Card({RANK_THREE, SUIT_SPADES});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    Card cardD1 = Card({RANK_THREE, SUIT_CLUBS});
+    Card cardD2 = Card({RANK_FOUR, SUIT_HEARTS});
+
+    //attacking cards
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+    placeCardsInMiddleSlot_TESTHELPER(card3, CARDSLOT_3, s);
+    placeCardsInMiddleSlot_TESTHELPER(card4, CARDSLOT_4, s);
+    //def cards
+    placeCardsInMiddleSlot_TESTHELPER(cardD1, CARDSLOT_1_TOP, s);
+    placeCardsInMiddleSlot_TESTHELPER(cardD2, CARDSLOT_2_TOP, s);
+
+    placeCardsInMiddleSlot_TESTHELPER(card5, CARDSLOT_5, s);
+    placeCardsInMiddleSlot_TESTHELPER(card6, CARDSLOT_6, s);
+    // std::cout << "small check for stage and btype:\n" << "stage: " << s.stage << " btype: " << s.battle_type<< std::endl;
+    EXPECT_EQ(true, attackedWithMaxCards(s));
+}
+
+TEST(attackedMaxCards, AttackWithMaxCards_3a_2d_1){
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    s.battle_type = BATTLETYPE_NORMAL;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    s.player_hands[defender_idx].clear();
+    Card cardD3 = Card({RANK_FIVE, SUIT_DIAMONDS});
+    s.player_hands[defender_idx].insert(cardD3);
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_SPADES});
+    Card card4 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card5 = Card({RANK_THREE, SUIT_SPADES});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    Card cardD1 = Card({RANK_THREE, SUIT_CLUBS});
+    Card cardD2 = Card({RANK_FOUR, SUIT_HEARTS});
+
+    //attacking cards
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+    placeCardsInMiddleSlot_TESTHELPER(card3, CARDSLOT_3, s);
+    //def cards
+    placeCardsInMiddleSlot_TESTHELPER(cardD1, CARDSLOT_1_TOP, s);
+    placeCardsInMiddleSlot_TESTHELPER(cardD2, CARDSLOT_2_TOP, s);
+
+    // std::cout << "small check for stage and btype:\n" << "stage: " << s.stage << " btype: " << s.battle_type<< std::endl;
+    EXPECT_EQ(true, attackedWithMaxCards(s));
+}
+
+TEST(checkStages, StageFirstAttack){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+
+    //stage should be first attack = 0
+    EXPECT_EQ(GAMESTAGE_FIRST_ATTACK, s.stage);
+}
+
+TEST(checkStages, StageOpen){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+
+    Suit trump = s.trump_card.suit;
+
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    placeCardsInMiddleSlot_TESTHELPER(card1, CARDSLOT_1, s);
+    placeCardsInMiddleSlot_TESTHELPER(card2, CARDSLOT_2, s);
+    //stage should be first attack = 0
+    EXPECT_EQ(GAMESTAGE_OPEN, s.stage);
+}
+
+
+/*TODO:*/
+//test available actions 

@@ -37,3 +37,6 @@ bool topSlotsClear(State &state);
 bool nextPlayerHasEnoughCards(Player next_player, State &state);
 bool ranksMatchToPassOn(Protocol::Rank rank, State &state);
 std::optional<Card> getReflectCard(Player player, State &state);
+
+bool attackedWithMaxCards(State &state);
+std::pair<uint, uint> countCardsInMiddle(State &state);

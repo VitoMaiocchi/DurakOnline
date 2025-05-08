@@ -64,8 +64,16 @@ void drawFromMiddle(Player player, State &state){
     }
 }
 
-uint countCardsInMiddle(State &state){
-    return 0;
+std::pair<uint, uint> countCardsInMiddle(State &state){
+    auto& middle = state.middle_cards;
+    uint total = 0;
+    uint undefended = 0;
+    for(auto slot = 0; slot < 6; ++slot){ //only loop over bottom slots
+        if(middle[slot].has_value()) total++;
+        if(middle[slot].has_value() && !middle[slot + 6].has_value()) undefended++;
+    }
+
+    return {total, undefended};
 }
 
 void distributeNewCards(State &state){
@@ -325,15 +333,26 @@ std::optional<Card> getReflectCard(Player player, State &state){
 
 bool attackedWithMaxCards(State &state){ //check if defender can even defend the cards
     auto& middle = state.middle_cards;
-
+    auto cards = countCardsInMiddle(state); //how many already in middle
     /*TODO*/
     Player defender_idx = findDefender(state);
     uint d_card_count = state.player_hands[defender_idx].size();
     switch(state.battle_type){
         case BATTLETYPE_FIRST: { //max cards are 5
-            
+            if(cards.first == 5) return true; //total cards cannot be > 5
+            return false;
+        }break;
+        case BATTLETYPE_NORMAL : {
+            if(cards.second == d_card_count) return true; //undefended cards cannot be > cards in hand
+            if(cards.first == 6) return true; //total cards cannot be > 6
+            return false;
+        }break;
+        case BATTLETYPE_ENDGAME : {
+            if(cards.second == d_card_count) return true; //undefended cards cannot be > cards in hand
+            if(cards.first == 6) return true; //total cards cannot be > 6
+            //implement a check and return if the last card from a hand has been played
+            return false;
         }
-        break;
     }
     return false;
 }

@@ -316,6 +316,15 @@ bool ranksMatchToPassOn(Protocol::Rank rank, State &state){
     return true;
 }
 
+bool atLeastOneCardInMiddleMatchesRank(Protocol::Rank rank, State &state){
+    auto& middle = state.middle_cards;
+
+    for(auto slot : middle){
+        if(slot.has_value() && slot.value().rank == rank) return true;
+    }
+    return false;
+}
+
 std::optional<Card> getReflectCard(Player player, State &state){
     using namespace Protocol;
     if(state.player_roles[player] != DEFENDER) return std::nullopt;
@@ -358,8 +367,54 @@ bool attackedWithMaxCards(State &state){ //check if defender can even defend the
 }
 
 void tryPickUp(State &state){
-    
+    auto& middle = state.middle_cards;
+    auto& hands = state.player_hands;
+    Player defender_idx = findDefender(state);
+    //do we need checks?
+    for(auto slot : middle){
+        if(slot.has_value()) {
+            hands[defender_idx].insert(slot.value());
+            slot = std::nullopt;
+        }
+    }
 }        
+
+bool isValidMoveAttacker(Protocol::Card card, State &state){
+    using namespace Protocol;
+    if(state.ok_msg[ATTACKER]) return false; //cannot play card after pressing done
+    if(attackedWithMaxCards(state)) return false; //cannot play more cards than possible
+
+    //check if the card matches rank with at least one card in the middle
+    if(!atLeastOneCardInMiddleMatchesRank(card.rank, state)) return false;
+
+    return true;
+}
+bool isValidMoveCoAttacker(State &state){
+    return false;
+}
+bool isValidMoveDefender(State &state){
+    return false;
+}
+
+void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT){
+    using namespace Protocol;
+    auto& hand = state.player_hands;
+    auto& middle = state.middle_cards;
+    auto& roles = state.player_roles;
+
+    if(roles[player] == DEFENDER){
+        if(!middle[slot].has_value()) middle[slot] = card;
+        return;
+    }
+    //attacker or coattacker 
+    for(uint s = CARDSLOT_1; s < CARDSLOT_1_TOP; ++s){
+        if(!middle[s].has_value()) {
+            middle[s] = card;
+            return;
+        }
+    }
+    std::cout << "no free slot available to place card" << std::endl;
+}
 
 void deleteOldBattle(State &state){
     auto& btype = state.battle_type;
@@ -529,15 +584,21 @@ namespace GameHelpers {
             //set stage to post pickup
             state.stage = GAMESTAGE_POST_PICKUP;
             //if attackedWithMaxCards -> startnextbattle
+            if(attackedWithMaxCards(state)) startNewBattle(state);
             //else wait till the others pressed done
             int defender_idx = (findAttacker(state) + 1) % state.player_count;
             state.available_actions[defender_idx].clear();
         }
 
-        void attackCard(State &state){
+        void attackCard(Protocol::Card card, State &state){
             //check if validMoveAttacker 
+            Player attacker_id = findAttacker(state);
             //placeCard & change stage
             //check if still cards, if not set to finish
+            if(isValidMoveAttacker(card, state)){
+                //place card
+                placeCard(attacker_id, card, state);
+            }
         }
         
         //useless? probably

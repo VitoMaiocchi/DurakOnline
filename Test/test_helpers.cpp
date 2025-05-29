@@ -1221,5 +1221,136 @@ TEST(checkStages, StageOpen){
 }
 
 
+
+TEST(placeCard, AttackerSlot0){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1); 
+}
+
+TEST(placeCard, AttackerSlot1){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    
+    placeCard(attacker_idx, card1, s);
+    placeCard(attacker_idx, card2, s);
+    EXPECT_EQ(middle[1].value(), card2); 
+}
+
+TEST(placeCard, AttackerSlot6){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card4 = Card({RANK_TWO, SUIT_SPADES});
+    Card card5 = Card({RANK_THREE, SUIT_HEARTS});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    placeCard(attacker_idx, card1, s);
+    placeCard(attacker_idx, card2, s);
+    placeCard(attacker_idx, card3, s);
+    placeCard(attacker_idx, card4, s);
+    placeCard(attacker_idx, card5, s);
+    placeCard(attacker_idx, card6, s);
+    EXPECT_EQ(middle[5].value(), card6); 
+}
+
+TEST(placeCard, DefenderSlot1Top){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_THREE, SUIT_CLUBS});
+    
+    placeCard(attacker_idx, card1, s);
+    placeCard(defender_idx, card2, s, CARDSLOT_1_TOP);
+    EXPECT_EQ(middle[6].value(), card2); 
+}
+
+TEST(placeCard, DefenderSlot6Top){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_TWO, SUIT_DIAMONDS});
+    Card card4 = Card({RANK_TWO, SUIT_SPADES});
+    Card card5 = Card({RANK_THREE, SUIT_HEARTS});
+    Card card6 = Card({RANK_THREE, SUIT_DIAMONDS});
+
+    Card card7 = Card({RANK_THREE, SUIT_CLUBS});
+    Card card8 = Card({RANK_FOUR, SUIT_HEARTS});
+    Card card9 = Card({RANK_FOUR, SUIT_DIAMONDS});
+    Card card10 = Card({RANK_THREE, SUIT_SPADES});
+    Card card11 = Card({RANK_FIVE, SUIT_HEARTS});
+    Card card12 = Card({RANK_FIVE, SUIT_DIAMONDS});
+
+    //4 attack cards
+    placeCard(attacker_idx, card1, s);
+    placeCard(attacker_idx, card2, s);
+    placeCard(attacker_idx, card3, s);
+    placeCard(attacker_idx, card4, s);
+
+    //4 defend cards
+    placeCard(defender_idx, card7, s, CARDSLOT_1_TOP);
+    placeCard(defender_idx, card8, s, CARDSLOT_2_TOP);
+    placeCard(defender_idx, card9, s, CARDSLOT_3_TOP);
+    placeCard(defender_idx, card10, s, CARDSLOT_4_TOP);
+    
+    //2 attack cards
+    placeCard(attacker_idx, card5, s);
+    placeCard(attacker_idx, card6, s);
+
+    //2 defend cards
+    placeCard(defender_idx, card11, s, CARDSLOT_5_TOP);
+    placeCard(defender_idx, card12, s, CARDSLOT_6_TOP);
+
+    EXPECT_EQ(middle[11].value(), card12); 
+}
 /*TODO:*/
 //test available actions 

@@ -19,7 +19,7 @@ void reflectEvent(State &state);
 void pickUpEvent(State &state);
 
 
-void attackCard(State &state);
+void attackCard(Protocol::Card card, State &state);
 void defendCard(State &state);
 void coattackCard(State &state);
 

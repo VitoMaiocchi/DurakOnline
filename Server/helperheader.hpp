@@ -40,3 +40,6 @@ std::optional<Card> getReflectCard(Player player, State &state);
 
 bool attackedWithMaxCards(State &state);
 std::pair<uint, uint> countCardsInMiddle(State &state);
+
+// attack event
+void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT);

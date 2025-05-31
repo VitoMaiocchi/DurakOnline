@@ -381,13 +381,22 @@ void tryPickUp(State &state){
 
 bool isValidMoveAttacker(Protocol::Card card, State &state){
     using namespace Protocol;
+    auto& middle = state.middle_cards;
+
     if(state.ok_msg[ATTACKER]) return false; //cannot play card after pressing done
     if(attackedWithMaxCards(state)) return false; //cannot play more cards than possible
 
+    if(state.stage == GAMESTAGE_FIRST_ATTACK) {
+        std::cout << "is true becuase its first attack" << std::endl;
+        return true;
+    }
     //check if the card matches rank with at least one card in the middle
-    if(!atLeastOneCardInMiddleMatchesRank(card.rank, state)) return false;
+    if(atLeastOneCardInMiddleMatchesRank(card.rank, state)) {
+        std::cout << "is true becuase rank matches" << std::endl;
+        return true;
+    }
 
-    return true;
+    return false;
 }
 bool isValidMoveCoAttacker(State &state){
     return false;

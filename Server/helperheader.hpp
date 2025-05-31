@@ -40,6 +40,11 @@ std::optional<Card> getReflectCard(Player player, State &state);
 
 bool attackedWithMaxCards(State &state);
 std::pair<uint, uint> countCardsInMiddle(State &state);
+bool atLeastOneCardInMiddleMatchesRank(Protocol::Rank rank, State &state);
 
+//check validity of moves
+bool isValidMoveAttacker(Protocol::Card card, State &state);
+bool isValidMoveCoAttacker(State &state);
+bool isValidMoveDefender(State &state);
 // attack event
 void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT);

@@ -1352,5 +1352,132 @@ TEST(placeCard, DefenderSlot6Top){
 
     EXPECT_EQ(middle[11].value(), card12); 
 }
+
+TEST(oneCardMatchesRank, Match1Card){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1);
+
+    bool check = atLeastOneCardInMiddleMatchesRank(card2.rank, s);
+    EXPECT_EQ(check, true);
+}
+TEST(oneCardMatchesRank, DoesntMatch1Card){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_THREE, SUIT_HEARTS});
+    
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1);
+
+    bool check = atLeastOneCardInMiddleMatchesRank(card2.rank, s);
+    EXPECT_EQ(check, false);
+}
+
+
+TEST(validMove, AttackerInvalid2Card){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_THREE, SUIT_HEARTS});
+    
+    bool check = isValidMoveAttacker(card1, s);
+    EXPECT_EQ(check, true);
+
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1);
+    
+    s.stage = GAMESTAGE_OPEN;
+
+    bool check2 = isValidMoveAttacker(card2, s);
+    EXPECT_EQ(check2, false);
+}
+
+TEST(validMove, AttackerValid1Card){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    
+    bool check = isValidMoveAttacker(card1, s);
+    EXPECT_EQ(check, true);
+
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1);
+
+    s.stage = GAMESTAGE_OPEN;
+    
+    bool check2 = isValidMoveAttacker(card2, s);
+    EXPECT_EQ(check2, true);
+
+    placeCard(attacker_idx, card2, s);
+    EXPECT_EQ(middle[1].value(), card2);
+}
+
+TEST(validMove, AttackerValid2Cards){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    
+    bool check = isValidMoveAttacker(card1, s);
+    EXPECT_EQ(check, true);
+
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1);
+    
+    s.stage = GAMESTAGE_OPEN;
+
+    bool check2 = isValidMoveAttacker(card2, s);
+    EXPECT_EQ(check2, true);
+    
+    placeCard(attacker_idx, card2, s);
+    EXPECT_EQ(middle[1].value(), card2);
+}
 /*TODO:*/
 //test available actions 

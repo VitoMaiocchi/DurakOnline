@@ -1422,6 +1422,39 @@ TEST(validMove, AttackerInvalid2Card){
     EXPECT_EQ(check2, false);
 }
 
+TEST(validMove, AttackerInvalid3Card){
+    using namespace Protocol;
+    Game game(6, nullptr, -1);
+    State& s = game.getState();
+    auto& middle = s.middle_cards;
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
+    Card card3 = Card({RANK_THREE, SUIT_CLUBS});
+
+    bool check = isValidMoveAttacker(card1, s);
+    EXPECT_EQ(check, true);
+
+    placeCard(attacker_idx, card1, s);
+    EXPECT_EQ(middle[0].value(), card1);
+    
+    s.stage = GAMESTAGE_OPEN;
+
+    bool check2 = isValidMoveAttacker(card2, s);
+    EXPECT_EQ(check2, true);
+
+    placeCard(attacker_idx, card2, s);
+    EXPECT_EQ(middle[1].value(), card2);
+
+    bool check3 = isValidMoveAttacker(card3, s);
+    EXPECT_EQ(check3, false);
+}
+
 TEST(validMove, AttackerValid1Card){
     using namespace Protocol;
     Game game(6, nullptr, -1);
@@ -1479,5 +1512,36 @@ TEST(validMove, AttackerValid2Cards){
     placeCard(attacker_idx, card2, s);
     EXPECT_EQ(middle[1].value(), card2);
 }
+
+
+
+TEST(cardEvent, Attacker2Cards){
+    using namespace Protocol;
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
+    // array with 12 slots for each cards, bottom slots->attacking, top slots->defending
+    // CARDSLOT_1 -> attack
+    // CARDSLOT_1_TOP -> defend
+    auto& middle = s.middle_cards; 
+
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_THREE, SUIT_HEARTS});
+    std::unordered_set<Card> cards = {card1, card2};
+    cardEvent(attacker_idx, cards, s);
+    
+    EXPECT_EQ(middle[0].has_value(), false);
+    EXPECT_EQ(middle[1].has_value(), false);
+}
+
 /*TODO:*/
 //test available actions 

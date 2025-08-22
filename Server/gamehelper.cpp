@@ -1,4 +1,5 @@
 #include "gamehelper.hpp"
+#include <unordered_map>
 
 
 void fillDeck(State &state){
@@ -64,7 +65,7 @@ void drawFromMiddle(Player player, State &state){
     }
 }
 
-std::pair<uint, uint> countCardsInMiddle(State &state){
+std::pair<uint, uint> countCardsInMiddle(State &state){ //first = total, second = undefended
     auto& middle = state.middle_cards;
     uint total = 0;
     uint undefended = 0;
@@ -382,10 +383,10 @@ void tryPickUp(State &state){
 bool isValidMoveAttacker(Protocol::Card card, State &state){
     using namespace Protocol;
     auto& middle = state.middle_cards;
-
+    
     if(state.ok_msg[ATTACKER]) return false; //cannot play card after pressing done
     if(attackedWithMaxCards(state)) return false; //cannot play more cards than possible
-
+    
     if(state.stage == GAMESTAGE_FIRST_ATTACK) {
         std::cout << "is true becuase its first attack" << std::endl;
         return true;
@@ -395,7 +396,7 @@ bool isValidMoveAttacker(Protocol::Card card, State &state){
         std::cout << "is true becuase rank matches" << std::endl;
         return true;
     }
-
+    
     return false;
 }
 bool isValidMoveCoAttacker(State &state){
@@ -410,7 +411,7 @@ void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardS
     auto& hand = state.player_hands;
     auto& middle = state.middle_cards;
     auto& roles = state.player_roles;
-
+    
     if(roles[player] == DEFENDER){
         if(!middle[slot].has_value()) middle[slot] = card;
         return;
@@ -424,6 +425,36 @@ void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardS
     }
     std::cout << "no free slot available to place card" << std::endl;
 }
+
+void attackCard(std::unordered_set<Protocol::Card> cards, State &state){
+    using namespace Protocol;
+    //check if validMoveAttacker 
+    if(cards.empty()) return; //or throw exception idk
+
+    Player attacker_id = findAttacker(state);
+
+    Card first_card = *cards.begin();
+
+    std::pair<uint, uint> cards_in_middle = countCardsInMiddle(state);
+    uint total = cards_in_middle.first;
+    uint undefended = cards_in_middle.second;
+    if(total == 0){
+
+    }
+    //placeCard & change stage
+    std::unordered_map<Card, bool> valid_cards;
+    for(Card card : cards){
+        // TODO
+    }
+
+    //check if still cards, if not set to finish
+    Protocol::Card card = *cards.begin();
+    if(isValidMoveAttacker(card, state)){
+        //place card
+        placeCard(attacker_id, card, state);
+    }
+}
+
 
 void deleteOldBattle(State &state){
     auto& btype = state.battle_type;
@@ -599,17 +630,26 @@ namespace GameHelpers {
             state.available_actions[defender_idx].clear();
         }
 
-        void attackCard(Protocol::Card card, State &state){
-            //check if validMoveAttacker 
-            Player attacker_id = findAttacker(state);
-            //placeCard & change stage
-            //check if still cards, if not set to finish
-            if(isValidMoveAttacker(card, state)){
-                //place card
-                placeCard(attacker_id, card, state);
+        void cardEvent(Player player, std::unordered_set<Protocol::Card> cards, State &state){
+            using namespace Protocol;
+            auto& roles = state.player_roles;
+            size_t amount = cards.size(); //amount of cards played at once
+            switch(roles[player]){
+                case ATTACKER: {
+
+                    attackCard(cards, state);
+                    
+                    break;
+                }
+                case DEFENDER:
+                    break;
+                case CO_ATTACKER:
+                    break;
+                default:
+                    std::cout << "No valid role wants to play a card" << std::endl;
+                    break;
             }
         }
-        
         //useless? probably
         void resetAvailableActions(State &state){
             using namespace Protocol;

@@ -46,5 +46,10 @@ bool atLeastOneCardInMiddleMatchesRank(Protocol::Rank rank, State &state);
 bool isValidMoveAttacker(Protocol::Card card, State &state);
 bool isValidMoveCoAttacker(State &state);
 bool isValidMoveDefender(State &state);
+
+void attackCard(Protocol::Card card, State &state);
+void defendCard(State &state);
+void coattackCard(State &state);
+
 // attack event
 void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT);

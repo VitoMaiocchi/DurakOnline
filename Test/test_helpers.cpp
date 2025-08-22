@@ -9,7 +9,7 @@
 using namespace GameHelpers;
 using namespace Protocol;
 
-
+// compares two cards, the ranks and the suits, i think this is bullcrap and needs to be removed
 static auto card_cmp = [](Card const &a, Card const &b) {
     return std::tie(a.rank, a.suit) < std::tie(b.rank, b.suit);
 };
@@ -26,61 +26,35 @@ int findAttacker_TESTHELPER(State& s){
 }
 
 void setupHandsOfPlayers_TESTHELPER(State &s){
-    int attacker_idx = findAttacker_TESTHELPER(s);
-    int defender_idx = (attacker_idx + 1) % s.player_count;
-    int coattack_idx = -1;
-    int idlefirs_idx = -1;
-    int idleseco_idx = -1;
-    int idlethir_idx = -1;
-
-    //clear all hands
-    for(int offset = 0; offset < s.player_count; ++offset){
-        s.player_hands[(attacker_idx + offset) % s.player_count].clear();
+    const int n = s.player_count;
+    if(n < 2 || n > 6){
+        throw std::invalid_argument( " Wrong amount of players " );
     }
 
-    //hand out cards, controlled
+    //theres always at least an attacker and a defender, the others get distributed if the count is high enough
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+
+    //clear all hands
+    for(auto& hand : s.player_hands) hand.clear();
+
+    //hand out cards, controlled, attacker and defender
     s.player_hands[attacker_idx].insert({RANK_TWO, SUIT_CLUBS});
     s.player_hands[defender_idx].insert({RANK_THREE, SUIT_CLUBS});
 
-    switch(s.player_count){
-        case 2 : {
-            break;
-        }
-        case 3 : {
-            coattack_idx = (defender_idx + 1) % s.player_count;
-            s.player_hands[coattack_idx].insert({RANK_TWO, SUIT_HEARTS});
-            break;
-        }
-        case 4 : {
-            coattack_idx = (defender_idx + 1) % s.player_count;
-            s.player_hands[coattack_idx].insert({RANK_TWO, SUIT_HEARTS});
-            idlefirs_idx = (coattack_idx + 1) % s.player_count;
-            s.player_hands[idlefirs_idx].insert({RANK_FOUR, SUIT_HEARTS});
-            break;
-        }
-        case 5 : {
-            coattack_idx = (defender_idx + 1) % s.player_count;
-            s.player_hands[coattack_idx].insert({RANK_TWO, SUIT_HEARTS});
-            idlefirs_idx = (coattack_idx + 1) % s.player_count;
-            s.player_hands[idlefirs_idx].insert({RANK_FOUR, SUIT_HEARTS});
-            idleseco_idx = (idlefirs_idx + 1) % s.player_count;
-            s.player_hands[idleseco_idx].insert({RANK_FIVE, SUIT_HEARTS});
-            break;
-        }
-        case 6 : {
-            coattack_idx = (defender_idx + 1) % s.player_count;
-            s.player_hands[coattack_idx].insert({RANK_TWO, SUIT_HEARTS});
-            idlefirs_idx = (coattack_idx + 1) % s.player_count;
-            s.player_hands[idlefirs_idx].insert({RANK_FOUR, SUIT_HEARTS});
-            idleseco_idx = (idlefirs_idx + 1) % s.player_count;
-            s.player_hands[idleseco_idx].insert({RANK_FIVE, SUIT_HEARTS});
-            idlethir_idx = (idleseco_idx + 1) % s.player_count;
-            s.player_hands[idlethir_idx].insert({RANK_SIX, SUIT_HEARTS});
-            break;
-        }
-        default : { std::cout << "TOO MANY PLAYERS" << std::endl; break;}
-    }
+    //extra cards to be distributed among extra players if the count is bigger than 2
+    const Protocol::Card extras[] = {
+        {RANK_TWO,  SUIT_HEARTS},
+        {RANK_FOUR, SUIT_HEARTS},
+        {RANK_FIVE, SUIT_HEARTS},
+        {RANK_SIX,  SUIT_HEARTS}
+    };
 
+    int idx = (defender_idx + 1) % n; //currently on coattacker
+    for(int i = 0; i < n - 2; ++i){ //loop over extra players and give them cards
+        s.player_hands[idx].insert(extras[i]);
+        idx = (idx + 1) % n;
+    }
 }
 
 void printRoles_TEST_HELPER(State &s){
@@ -100,8 +74,14 @@ void placeCardsInMiddleSlot_TESTHELPER(Card card, CardSlot slot, State &s){
 
 
 TEST(DistributeCardsBegin, EveryPlayerHas6cards){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
+    using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
     // fillDeck(s);
     // shuffleCards(s);
     // distributeCardsBeginOfGame(s);
@@ -113,8 +93,13 @@ TEST(DistributeCardsBegin, EveryPlayerHas6cards){
 }
 
 TEST(DetermineTrump, CheckThatATrumpWasGiven){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
+    using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
     // fillDeck(s);
     // shuffleCards(s);
     // distributeCardsBeginOfGame(s);
@@ -130,11 +115,14 @@ TEST(DetermineTrump, CheckThatATrumpWasGiven){
 }
 
 TEST(PlayerRoles, MoveTheRoles){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
     int attacker_idx = findAttacker_TESTHELPER(s);
 
     int defender_idx = (attacker_idx + 1) % s.player_count;
@@ -151,11 +139,13 @@ TEST(PlayerRoles, MoveTheRoles){
 
 //remove finished players one by one
 TEST(RemoveFinishedPlayer, RemoveAttacker2p){
-    Game game(3, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 3;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -184,7 +174,6 @@ TEST(RemoveFinishedPlayer, RemoveAttacker2p){
     // std::cout << "roles after second removal" << std::endl;
     // printRoles_TEST_HELPER(s);
 
-
     EXPECT_EQ(3, s.player_count);
     EXPECT_EQ(new_attacker_idx, defender_idx);
     EXPECT_EQ(FINISHED, s.player_roles[attacker_idx]);
@@ -193,12 +182,13 @@ TEST(RemoveFinishedPlayer, RemoveAttacker2p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker3p){
-    Game game(3, nullptr, -1);
-    State& s = game.getState();
+    using namespace Protocol;
+    GameLogic::Player player_count = 3;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::cardSetup(s);
-
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -211,7 +201,7 @@ TEST(RemoveFinishedPlayer, RemoveAttacker3p){
     setupHandsOfPlayers_TESTHELPER(s);
     
     s.player_hands[attacker_idx].clear(); //clear attackers hand
-    
+
     // std::cout << "roles before removal" << std::endl;
     // printRoles_TEST_HELPER(s);
     removeFinishedPlayers(s); //should remove finished player and setup new roles
@@ -225,11 +215,13 @@ TEST(RemoveFinishedPlayer, RemoveAttacker3p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker4p){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -256,11 +248,13 @@ TEST(RemoveFinishedPlayer, RemoveAttacker4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker5p){
-    Game game(5, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 5;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -287,11 +281,13 @@ TEST(RemoveFinishedPlayer, RemoveAttacker5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttacker6p){
-    Game game(6, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -318,11 +314,13 @@ TEST(RemoveFinishedPlayer, RemoveAttacker6p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender2p){
-    Game game(3, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 3;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -338,7 +336,6 @@ TEST(RemoveFinishedPlayer, RemoveDefender2p){
 
     // std::cout << "roles before removal" << std::endl;
     // printRoles_TEST_HELPER(s);
-
     removeFinishedPlayers(s); //should remove finished player and setup new roles
 
     // std::cout << "roles after first removal" << std::endl;
@@ -360,11 +357,13 @@ TEST(RemoveFinishedPlayer, RemoveDefender2p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender3p){
-    Game game(3, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 3;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -391,11 +390,13 @@ TEST(RemoveFinishedPlayer, RemoveDefender3p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender4p){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -422,11 +423,13 @@ TEST(RemoveFinishedPlayer, RemoveDefender4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender5p){
-    Game game(5, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 5;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -453,11 +456,13 @@ TEST(RemoveFinishedPlayer, RemoveDefender5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveDefender6p){
-    Game game(6, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    // GameHelpers::findFirstAttacker(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
     s.draw_pile.clear(); //clear deck
     
@@ -484,10 +489,14 @@ TEST(RemoveFinishedPlayer, RemoveDefender6p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoattacker3p){
-    Game game(3, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 3;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
     s.draw_pile.clear(); //clear deck
     
     //find coattacker
@@ -512,10 +521,14 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker3p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoAttacker4p){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
     s.draw_pile.clear(); //clear deck
     
     //find coattacker
@@ -540,10 +553,14 @@ TEST(RemoveFinishedPlayer, RemoveCoAttacker4p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoattacker5p){
-    Game game(5, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 5;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
     s.draw_pile.clear(); //clear deck
     
     //find coattacker
@@ -567,10 +584,14 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker5p){
 }
 
 TEST(RemoveFinishedPlayer, RemoveCoattacker6p){
-    Game game(6, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
+    using namespace Protocol;
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
     s.draw_pile.clear(); //clear deck
 
 
@@ -593,6 +614,8 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker6p){
     EXPECT_EQ(s.player_roles[attacker_idx], IDLE);
     EXPECT_EQ(FINISHED, s.player_roles[coattack_idx]);
 }
+
+// TODO ===========================
 
 //remove multiple players at once
 TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){

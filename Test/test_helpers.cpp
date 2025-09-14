@@ -1619,11 +1619,37 @@ TEST(cardEvent, InvalidAttacker2Cards){
     Card card1 = Card({RANK_TWO, SUIT_CLUBS});
     Card card2 = Card({RANK_THREE, SUIT_HEARTS});
 
-    //erase the first two cards of the hand
-    auto it = *hands[attacker_idx].begin();
-    hands[attacker_idx].erase(it);
-    it = *hands[attacker_idx].begin();
-    hands[attacker_idx].erase(it);
+    bool found1 = true;
+    bool found2 = true;
+    auto it1 = hands[attacker_idx].find(card1);
+    if(it1 == hands[attacker_idx].end()){ //not found
+        found1 = false;
+    }
+    // hands[attacker_idx].erase(*hands[attacker_idx].begin()); //erase first card in the set
+
+    auto it2 = hands[attacker_idx].find(card2);
+    if(it2 == hands[attacker_idx].end()){ //not found
+        found2 = false;
+    }
+    if(found1 && found2){
+        //no erase
+    }
+    if(found1 && !found2){
+        //erase the neighbour of 1
+        if(it1 == hands[attacker_idx].begin()){
+            hands[attacker_idx].erase(*(++it1));
+        } else hands[attacker_idx].erase(*hands[attacker_idx].begin());
+    }
+    if(!found1 && found2){
+        //erase the neighbour of 2
+        if(it2 == hands[attacker_idx].begin()){
+            hands[attacker_idx].erase(*(++it2));
+        } else hands[attacker_idx].erase(*hands[attacker_idx].begin());  
+    }
+    if(!found1 && !found2){
+        hands[attacker_idx].erase(*hands[attacker_idx].begin());
+        hands[attacker_idx].erase(*hands[attacker_idx].begin());
+    }
 
     hands[attacker_idx].insert(card1);
     hands[attacker_idx].insert(card2);
@@ -1666,11 +1692,38 @@ TEST(cardEvent, Attacker2Cards){
     Card card1 = Card({RANK_TWO, SUIT_CLUBS});
     Card card2 = Card({RANK_TWO, SUIT_HEARTS});
 
-    //erase the first two cards of the hand
-    auto it = *hands[attacker_idx].begin();
-    hands[attacker_idx].erase(it);
-    it = *hands[attacker_idx].begin();
-    hands[attacker_idx].erase(it);
+    bool found1 = true;
+    bool found2 = true;
+    auto it1 = hands[attacker_idx].find(card1);
+    if(it1 == hands[attacker_idx].end()){ //not found
+        found1 = false;
+    }
+    // hands[attacker_idx].erase(*hands[attacker_idx].begin()); //erase first card in the set
+
+    auto it2 = hands[attacker_idx].find(card2);
+    if(it2 == hands[attacker_idx].end()){ //not found
+        found2 = false;
+    }
+    if(found1 && found2){
+        //no erase
+    }
+    if(found1 && !found2){
+        //erase the neighbour of 1
+        if(it1 == hands[attacker_idx].begin()){
+            hands[attacker_idx].erase(*(++it1));
+        } else hands[attacker_idx].erase(*hands[attacker_idx].begin());
+    }
+    if(!found1 && found2){
+        //erase the neighbour of 2
+        if(it2 == hands[attacker_idx].begin()){
+            hands[attacker_idx].erase(*(++it2));
+        } else hands[attacker_idx].erase(*hands[attacker_idx].begin());  
+    }
+    if(!found1 && !found2){
+        hands[attacker_idx].erase(*hands[attacker_idx].begin());
+        hands[attacker_idx].erase(*hands[attacker_idx].begin());
+    }
+    // hands[attacker_idx].erase(*hands[attacker_idx].begin()); //erase first card in the set
 
     hands[attacker_idx].insert(card1);
     hands[attacker_idx].insert(card2);
@@ -1714,9 +1767,10 @@ TEST(cardEvent, Attacker1Card){
     Card card1 = Card({RANK_TWO, SUIT_CLUBS});
     Card card2 = Card({RANK_THREE, SUIT_HEARTS});
 
-    //erase the first two cards of the hand
-    auto it = *hands[attacker_idx].begin();
-    hands[attacker_idx].erase(it);
+    auto it = hands[attacker_idx].find(card1);
+    if(it == hands[attacker_idx].end()){
+        hands[attacker_idx].erase(*hands[attacker_idx].begin());
+    }
 
     hands[attacker_idx].insert(card1);
 

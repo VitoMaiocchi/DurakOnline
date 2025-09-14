@@ -509,12 +509,9 @@ void placeCard(Player player, Protocol::Card card, State &state,
   auto &roles = state.player_roles;
   auto &stage = state.stage;
   
-  bool placed_a_card = false;
-
   if (roles[player] == DEFENDER) { // is this check relevant? it should be checked in valid move defender
     if (!middle[slot].has_value()){
       middle[slot] = card;
-      placed_a_card = true;
       updateGameStage(state);
     }
     return;
@@ -523,7 +520,6 @@ void placeCard(Player player, Protocol::Card card, State &state,
   for (uint s = CARDSLOT_1; s < CARDSLOT_1_TOP; ++s) {
     if (!middle[s].has_value()) {
       middle[s] = card;
-      placed_a_card = true;
       updateGameStage(state);
       return;
     }

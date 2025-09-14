@@ -615,25 +615,68 @@ TEST(RemoveFinishedPlayer, RemoveCoattacker6p){
     EXPECT_EQ(FINISHED, s.player_roles[coattack_idx]);
 }
 
-// TODO ===========================
-
 //remove multiple players at once
-TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
-    Game game(4, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
 
-    setupHandsOfPlayers_TESTHELPER(s);
+TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender3p){
+//this should technically finish the game and set the durak
+//TODO: check again with other function
+ using namespace Protocol;
+    GameLogic::Player player_count = 3;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
+    s.draw_pile.clear(); //clear deck
+
+
+    //more rigorous check for correct role assignment
     int attacker_idx = findAttacker_TESTHELPER(s);
     int defender_idx = (attacker_idx + 1) % s.player_count;
-    
+    int coattack_idx = (defender_idx + 1) % s.player_count;
+
+    //setup the player hands in a controlled manner
+    setupHandsOfPlayers_TESTHELPER(s);
     s.player_hands[attacker_idx].clear();
     s.player_hands[defender_idx].clear();
 
-    //more rigorous check
-    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    // std::cout << "roles before removal" << std::endl;
+    // printRoles_TEST_HELPER(s);
+    removeFinishedPlayers(s); //should remove finished player and setup new roles
+    // std::cout << "roles after removal" << std::endl;
+    // printRoles_TEST_HELPER(s);
+
+    EXPECT_EQ(3, s.player_count);
+    EXPECT_EQ(FINISHED, s.player_roles[attacker_idx]);
+    EXPECT_EQ(FINISHED, s.player_roles[defender_idx]);
+    EXPECT_EQ(ATTACKER, s.player_roles[coattack_idx]);
+    // A, D, C, I -> A, D
+    // A, D, C, I -> I, A, D, C -> C, I, A, D
+
+}
+
+TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
+ using namespace Protocol;
+    GameLogic::Player player_count = 4;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
+    s.draw_pile.clear(); //clear deck
+
+
+    //more rigorous check for correct role assignment
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattack_idx = (defender_idx + 1) % s.player_count;
+
+    //setup the player hands in a controlled manner
+    setupHandsOfPlayers_TESTHELPER(s);
+    s.player_hands[attacker_idx].clear();
+    s.player_hands[defender_idx].clear();
 
     // std::cout << "roles before removal" << std::endl;
     // printRoles_TEST_HELPER(s);
@@ -644,24 +687,31 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender4p){
     EXPECT_EQ(4, s.player_count);
     EXPECT_EQ(FINISHED, s.player_roles[attacker_idx]);
     EXPECT_EQ(FINISHED, s.player_roles[defender_idx]);
-    EXPECT_EQ(ATTACKER, s.player_roles[coattacker_idx]);
+    EXPECT_EQ(ATTACKER, s.player_roles[coattack_idx]);
     // A, D, C, I -> A, D
     // A, D, C, I -> I, A, D, C -> C, I, A, D
 
 }
 
+
 TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender5p){
-    Game game(5, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
+    GameLogic::Player player_count = 5;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
-    setupHandsOfPlayers_TESTHELPER(s);
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
 
+    s.draw_pile.clear(); //clear deck
+
+
+    //more rigorous check for correct role assignment
     int attacker_idx = findAttacker_TESTHELPER(s);
     int defender_idx = (attacker_idx + 1) % s.player_count;
-    int coattacker_idx = (defender_idx + 1) % s.player_count;
-    //empty the hands
+    int coattack_idx = (defender_idx + 1) % s.player_count;
+
+    //setup the player hands in a controlled manner
+    setupHandsOfPlayers_TESTHELPER(s);
     s.player_hands[attacker_idx].clear();
     s.player_hands[defender_idx].clear();
 
@@ -674,20 +724,27 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender5p){
     EXPECT_EQ(5, s.player_count);
     EXPECT_EQ(FINISHED, s.player_roles[attacker_idx]);
     EXPECT_EQ(FINISHED, s.player_roles[defender_idx]);
-    EXPECT_EQ(ATTACKER, s.player_roles[coattacker_idx]);
+    EXPECT_EQ(ATTACKER, s.player_roles[coattack_idx]);
 }
 
 TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender6p){
-    Game game(6, nullptr, -1);
-    State& s = game.getState();
-    // GameHelpers::cardSetup(s);
-    // GameHelpers::findFirstAttacker(s);
-    setupHandsOfPlayers_TESTHELPER(s);
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
 
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
+    s.draw_pile.clear(); //clear deck
+
+
+    //more rigorous check for correct role assignment
     int attacker_idx = findAttacker_TESTHELPER(s);
     int defender_idx = (attacker_idx + 1) % s.player_count;
-    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int coattack_idx = (defender_idx + 1) % s.player_count;
 
+    //setup the player hands in a controlled manner
+    setupHandsOfPlayers_TESTHELPER(s);
     s.player_hands[attacker_idx].clear();
     s.player_hands[defender_idx].clear();
 
@@ -700,8 +757,9 @@ TEST(RemoveFinishedPlayer, RemoveAttackerAndDefender6p){
     EXPECT_EQ(6, s.player_count);
     EXPECT_EQ(FINISHED, s.player_roles[attacker_idx]);
     EXPECT_EQ(FINISHED, s.player_roles[defender_idx]);
-    EXPECT_EQ(ATTACKER, s.player_roles[coattacker_idx]);
+    EXPECT_EQ(ATTACKER, s.player_roles[coattack_idx]);
 }
+// TODO ===========================
 
 TEST(RemoveFinishedPlayer, RemoveAtDefCoat4p){
     Game game(4, nullptr, -1);
@@ -1537,6 +1595,53 @@ TEST(validMove, AttackerValid2Cards){
 }
 
 
+//testing attack card, but calling cardEvent to test both at same time
+TEST(cardEvent, InvalidAttacker2Cards){
+    using namespace Protocol;
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
+    // array with 12 slots for each cards, bottom slots->attacking, top slots->defending
+    // CARDSLOT_1 -> attack
+    // CARDSLOT_1_TOP -> defend
+    auto& middle  = s.middle_cards; 
+    auto& hands   = s.player_hands;
+    auto& stage   = s.stage;
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_THREE, SUIT_HEARTS});
+
+    //erase the first two cards of the hand
+    auto it = *hands[attacker_idx].begin();
+    hands[attacker_idx].erase(it);
+    it = *hands[attacker_idx].begin();
+    hands[attacker_idx].erase(it);
+
+    hands[attacker_idx].insert(card1);
+    hands[attacker_idx].insert(card2);
+    std::unordered_set<Card> cards = {card1, card2};
+    cardEvent(attacker_idx, cards, s);
+    
+    // std::cout << "btype: " <<  s.battle_type << " stage: " << s.stage << std::endl;
+    EXPECT_EQ(middle[0].has_value(), false);
+    EXPECT_EQ(middle[1].has_value(), false);
+    EXPECT_EQ(middle[2].has_value(), false);
+    EXPECT_EQ(middle[3].has_value(), false);
+    EXPECT_EQ(middle[4].has_value(), false);
+    EXPECT_EQ(middle[5].has_value(), false);
+
+
+    EXPECT_EQ(hands[attacker_idx].size(), 6);
+    EXPECT_EQ(stage, GAMESTAGE_FIRST_ATTACK);
+}
 
 TEST(cardEvent, Attacker2Cards){
     using namespace Protocol;
@@ -1550,8 +1655,57 @@ TEST(cardEvent, Attacker2Cards){
     // array with 12 slots for each cards, bottom slots->attacking, top slots->defending
     // CARDSLOT_1 -> attack
     // CARDSLOT_1_TOP -> defend
-    auto& middle = s.middle_cards; 
+    auto& middle  = s.middle_cards; 
+    auto& hands   = s.player_hands;
+    auto& stage   = s.stage;
+    int attacker_idx = findAttacker_TESTHELPER(s);
+    int defender_idx = (attacker_idx + 1) % s.player_count;
+    int coattacker_idx = (defender_idx + 1) % s.player_count;
+    int first_idle = (coattacker_idx + 1) % s.player_count;
+    
+    Card card1 = Card({RANK_TWO, SUIT_CLUBS});
+    Card card2 = Card({RANK_TWO, SUIT_HEARTS});
 
+    //erase the first two cards of the hand
+    auto it = *hands[attacker_idx].begin();
+    hands[attacker_idx].erase(it);
+    it = *hands[attacker_idx].begin();
+    hands[attacker_idx].erase(it);
+
+    hands[attacker_idx].insert(card1);
+    hands[attacker_idx].insert(card2);
+    std::unordered_set<Card> cards = {card1, card2};
+    cardEvent(attacker_idx, cards, s);
+    
+    // std::cout << "btype: " <<  s.battle_type << " stage: " << s.stage << std::endl;
+    EXPECT_EQ(middle[0].has_value(), true);
+    EXPECT_EQ(middle[1].has_value(), true);
+    EXPECT_EQ(middle[2].has_value(), false);
+    EXPECT_EQ(middle[3].has_value(), false);
+    EXPECT_EQ(middle[4].has_value(), false);
+    EXPECT_EQ(middle[5].has_value(), false);
+
+
+    EXPECT_EQ(hands[attacker_idx].size(), 4);
+    EXPECT_EQ(stage, GAMESTAGE_OPEN);
+}
+
+
+TEST(cardEvent, Attacker1Card){
+    using namespace Protocol;
+    GameLogic::Player player_count = 6;
+    Instance* instance_ptr = nullptr; // not relevant
+    GameLogic::Player previous_durak = -1; //no durak 
+
+    Game game(player_count, instance_ptr, previous_durak); // setup the game
+    State& s = game.getState(); // fetch state to pass it to the functions
+
+    // array with 12 slots for each cards, bottom slots->attacking, top slots->defending
+    // CARDSLOT_1 -> attack
+    // CARDSLOT_1_TOP -> defend
+    auto& middle  = s.middle_cards; 
+    auto& hands   = s.player_hands;
+    auto& stage   = s.stage;
     int attacker_idx = findAttacker_TESTHELPER(s);
     int defender_idx = (attacker_idx + 1) % s.player_count;
     int coattacker_idx = (defender_idx + 1) % s.player_count;
@@ -1559,12 +1713,33 @@ TEST(cardEvent, Attacker2Cards){
     
     Card card1 = Card({RANK_TWO, SUIT_CLUBS});
     Card card2 = Card({RANK_THREE, SUIT_HEARTS});
-    std::unordered_set<Card> cards = {card1, card2};
+
+    //erase the first two cards of the hand
+    auto it = *hands[attacker_idx].begin();
+    hands[attacker_idx].erase(it);
+
+    hands[attacker_idx].insert(card1);
+
+    std::unordered_set<Card> cards = {card1};
     cardEvent(attacker_idx, cards, s);
     
-    EXPECT_EQ(middle[0].has_value(), false);
+    // std::cout << "btype: " <<  s.battle_type << " stage: " << s.stage << std::endl;
+    EXPECT_EQ(middle[0].has_value(), true);
     EXPECT_EQ(middle[1].has_value(), false);
-}
+    EXPECT_EQ(middle[2].has_value(), false);
+    EXPECT_EQ(middle[3].has_value(), false);
+    EXPECT_EQ(middle[4].has_value(), false);
+    EXPECT_EQ(middle[5].has_value(), false);
 
+
+    EXPECT_EQ(hands[attacker_idx].size(), 5);
+    EXPECT_EQ(stage, GAMESTAGE_OPEN);
+}
 /*TODO:*/
 //test available actions 
+
+
+/*
+TO TEST:
+
+*/

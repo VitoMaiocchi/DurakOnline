@@ -1,7 +1,7 @@
 #include "gamelogic.hpp"
-#include <random>
 #include <algorithm>
 #include <cassert>
+#include <random>
 #include <ranges>
 
 using namespace GameLogic;
@@ -17,8 +17,8 @@ void clearMiddle(State &state);
 void drawFromMiddle(Player player, State &state);
 void distributeNewCards(State &state);
 
-//doneEvent Helpers and more
-// role/hand removal
+// doneEvent Helpers and more
+//  role/hand removal
 void movePlayerRoles(State &state);
 void movePlayerRolesOneBack(State &state);
 std::vector<Player> findFinishedPlayers(State &state);
@@ -32,7 +32,7 @@ void removeFinishedPlayers(State &state);
 void deleteOldBattle(State &state);
 void startNewBattle(State &state);
 
-//reflect Event helpers And more
+// reflect Event helpers And more
 bool topSlotsClear(State &state);
 bool nextPlayerHasEnoughCards(Player next_player, State &state);
 bool ranksMatchToPassOn(Protocol::Rank rank, State &state);
@@ -42,14 +42,17 @@ bool attackedWithMaxCards(State &state);
 std::pair<uint, uint> countCardsInMiddle(State &state);
 bool atLeastOneCardInMiddleMatchesRank(Protocol::Rank rank, State &state);
 
-//check validity of moves
+// check validity of moves
 bool isValidMoveAttacker(Protocol::Card card, State &state);
 bool isValidMoveCoAttacker(State &state);
 bool isValidMoveDefender(State &state);
 
-void attackCard(Protocol::Card card, State &state);
+void updateGameStage(State &state);
+
+void attackCard(Protocol::Card &card, State &state);
 void defendCard(State &state);
 void coattackCard(State &state);
 
 // attack event
-void placeCard(Player player, Protocol::Card card, State &state, Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT);
+void placeCard(Player player, Protocol::Card card, State &state,
+               Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT);

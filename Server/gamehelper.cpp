@@ -91,7 +91,7 @@ void distributeNewCards(State &state) {
   auto &count = state.player_count;
 
   std::vector<int> drawOrder;
-  drawOrder.reserve(count);
+  drawOrder.resize(count);
 
   /*find the first to draw*/
   int first_idx = 0; // first is currently just the attacker
@@ -477,6 +477,29 @@ bool isValidMoveDefender(State &state) {
   return false; 
 }
 
+void updateGameStage(State &state){
+  using namespace Protocol;
+  auto &stage = state.stage;
+
+  uint total = countCardsInMiddle(state).second;
+  uint undefended = countCardsInMiddle(state).second;
+
+  switch(stage){
+    case GAMESTAGE_FIRST_ATTACK:
+      if(total > 0) stage = GAMESTAGE_OPEN;
+    break;
+    case GAMESTAGE_OPEN:
+      if(undefended == 0) stage = GAMESTAGE_DEFEND; //all cards were defended
+    break;
+    case GAMESTAGE_DEFEND:
+      if(undefended > 0) stage = GAMESTAGE_OPEN;
+    break;
+    case GAMESTAGE_DONE:
+    break;
+    case GAMESTAGE_POST_PICKUP:
+    break;
+  }
+}
 //places card on the field
 void placeCard(Player player, Protocol::Card card, State &state,
                Protocol::CardSlot slot = Protocol::CARDSLOT_COUNT) {
@@ -484,16 +507,24 @@ void placeCard(Player player, Protocol::Card card, State &state,
   auto &hand = state.player_hands;
   auto &middle = state.middle_cards;
   auto &roles = state.player_roles;
+  auto &stage = state.stage;
+  
+  bool placed_a_card = false;
 
   if (roles[player] == DEFENDER) { // is this check relevant? it should be checked in valid move defender
-    if (!middle[slot].has_value())
+    if (!middle[slot].has_value()){
       middle[slot] = card;
+      placed_a_card = true;
+      updateGameStage(state);
+    }
     return;
   }
   // attacker or coattacker
   for (uint s = CARDSLOT_1; s < CARDSLOT_1_TOP; ++s) {
     if (!middle[s].has_value()) {
       middle[s] = card;
+      placed_a_card = true;
+      updateGameStage(state);
       return;
     }
   }
@@ -502,32 +533,63 @@ void placeCard(Player player, Protocol::Card card, State &state,
 
 /*TODO: finished this function*/
 //attacker or coattacker want to attack
-void attackCard(std::unordered_set<Protocol::Card> cards, State &state) {
+/* 
+attackCard, takes a set of cards, and checks that all cards are valid either on their own if its just one card or all together
+it needs to validate all cards
+then place all cards in the first free bottom slots
+delete from player hand while placing the cards
+*/
+void attackCard(std::unordered_set<Protocol::Card>& cards, State &state) {
   using namespace Protocol;
-  // check if validMoveAttacker
-  if (cards.empty())
-    return; // or throw exception idk
+  auto &middle = state.middle_cards; //middle slots
+  auto &hands  = state.player_hands;
+  auto &btype  = state.battle_type;
+  auto &stage  = state.stage;
 
   Player attacker_id = findAttacker(state);
+  Player defender_id = findDefender(state);
 
-  Card first_card = *cards.begin();
-
-  auto total_cards = countCardsInMiddle(state).first;
-  auto undefended_cards = countCardsInMiddle(state).second;
-
-  if (total_cards == 0) {
+// ================================================= this part is all checks to protect bad behaviour
+  
+  Rank common_rank = (*cards.begin()).rank; //rank of the first card to check that all have the same rank
+  if(stage == GAMESTAGE_FIRST_ATTACK){
+    for(auto &card : cards){
+      if(common_rank != card.rank) return;
+    }
   }
-  // placeCard & change stage
-  std::unordered_map<Card, bool> valid_cards;
-  for (Card card : cards) {
-    // TODO
+  for(auto &card : cards){
+    if (!isValidMoveAttacker(card, state)) return;
   }
 
-  // check if still cards, if not set to finish
-  Protocol::Card card = *cards.begin();
-  if (isValidMoveAttacker(card, state)) {
-    // place card
-    placeCard(attacker_id, card, state);
+  uint total = countCardsInMiddle(state).first;
+  uint undefended = countCardsInMiddle(state).second;
+  uint defenders_hand_size = state.player_hands[defender_id].size();
+  //fetch defenders cards on hand, they should equal or be more than undefended + cards.size()
+  if(btype == BATTLETYPE_FIRST){
+    if(total + cards.size() > 5) return;
+  }
+  if(btype == BATTLETYPE_NORMAL || btype == BATTLETYPE_ENDGAME){
+    if(total + cards.size() > 6) return;
+    if(undefended + cards.size() > defenders_hand_size) return;
+  }
+
+  for(auto &card : cards){
+    //find card in attackers hand, if yes then good, if no then return
+    auto it = hands[attacker_id].find(card);
+    if(it == hands[attacker_id].end()){
+      std::cerr << "card not found in attackers hand" << std::endl;
+      return;
+    }
+  }
+//========================================================================================
+std::cout << "passed all the checks" << std::endl;
+//==================================== this part is where the cards are placed on the field and erased from the player hand
+
+  while(!cards.empty()){
+    Card current_card = *cards.begin();
+    placeCard(attacker_id, current_card, state, CARDSLOT_COUNT); //any card slot, place Card determines slot byitself
+    hands[attacker_id].erase(current_card); //why doesnt this erase 
+    cards.erase(current_card);
   }
 }
 

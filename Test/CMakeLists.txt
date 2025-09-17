@@ -22,25 +22,25 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 # Test for Helpers
-add_executable(test_helpers test_helpers.cpp
+add_executable(game_tests test_helpers.cpp test_cardEvent.cpp
                ${CMAKE_SOURCE_DIR}/Server/gamehelper.cpp
                ${CMAKE_SOURCE_DIR}/Server/game.cpp)
 
 # include headers
-target_include_directories(test_helpers
+target_include_directories(game_tests
   PRIVATE
   ${CMAKE_SOURCE_DIR}        # project root headers
   ${CMAKE_SOURCE_DIR}/Server # server headers
 )
              
 # target_link_libraries(hello_world_test gtest_main)
-target_link_libraries(test_helpers gtest_main)
+target_link_libraries(game_tests gtest_main)
 
 # Register tests
-add_test(NAME DurakTestHelpers COMMAND test_helpers)
+# add_test(NAME DurakTestHelpers COMMAND game_tests)
 
 
 include(GoogleTest)
-gtest_discover_tests(test_helpers)
+gtest_discover_tests(game_tests)
 
 

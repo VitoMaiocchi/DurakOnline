@@ -473,6 +473,9 @@ bool isValidMoveCoAttacker(State &state) {
   return false; 
 }
 bool isValidMoveDefender(State &state) { 
+  using namespace Protocol;
+  auto &middle = state.middle_cards;
+
   /*TODO*/
   return false; 
 }
@@ -764,7 +767,7 @@ void pickUpEvent(State &state) {
   // if attackedWithMaxCards -> startnextbattle
   if (attackedWithMaxCards(state))
     startNewBattle(state);
-  // else wait till the others pressed done
+  // else wait till the oth on fers pressed done
   int defender_idx = (findAttacker(state) + 1) % state.player_count;
   state.available_actions[defender_idx].clear();
 }
@@ -787,6 +790,9 @@ void cardEvent(Player player, std::unordered_set<Protocol::Card> cards,
     break;
   }
   case DEFENDER:
+    //do the switch of passing on and defending here
+    //pass on check calls pass on function if true
+    //else defendCard function
     break;
   case CO_ATTACKER:
     break;
